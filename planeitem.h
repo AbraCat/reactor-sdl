@@ -12,14 +12,14 @@
 class PlaneItem : public Widget
 {
 public:
-    PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vec> colors, double yScale, double cutStepY, IntVec TL, IntVec BR);
+    PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, IntVec TL, IntVec BR);
 
     void drawCuts();
     void drawGraphs();
     virtual void paint() override;
 
-    IntVec planeToObjectCoord(Vec coord);
-    Vec objectToPlaneCoord(IntVec coord);
+    IntVec planeToObjectCoord(Vector coord);
+    Vector objectToPlaneCoord(IntVec coord);
 
     void addPoint(std::vector<double> point);
 
@@ -29,7 +29,7 @@ private:
 
     int nGraphs, nPoints;
     std::vector<std::vector<double>> points;
-    std::vector<Vec> colors;
+    std::vector<Vector> colors;
 };
 
 #endif // PLANEITEM_H

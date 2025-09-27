@@ -14,20 +14,25 @@
 #include <SDL3/SDL_main.h>
 
 #include "planeitem.h"
+#include "reactor.h"
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
+static Reactor* reactor;
 static PlaneItem* plane1;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    srand(1);
+
     if (!SDL_CreateWindowAndRenderer("Hello World", 800, 600, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    plane1 = new PlaneItem(renderer, 2, std::vector{Vec(255, 0, 0), Vec(0, 0, 255)}, 10, 1, {0, 0, 0}, {200, 200, 0});
+    // plane1 = new PlaneItem(renderer, 2, std::vector{Vector(255, 0, 0), Vector(0, 0, 255)}, 10, 1, {0, 0, 0}, {200, 200, 0});
+    reactor = new Reactor(renderer, {10, 10, 0}, {600, 600, 0});
     return SDL_APP_CONTINUE;
 }
 
@@ -46,11 +51,16 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     SDL_SetWindowFullscreen(window, 0);
 
-    plane1->addPoint({-5, -4});
-    plane1->paint();
+    // plane1->addPoint({-5, -4});
+    // plane1->paint();
 
     // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     // SDL_RenderPoint(renderer, 100, 100);
+
+    reactor->paint();
+    reactor->advance();
+    // reactor->paint();
+    SDL_Delay(1000.0 / 60);
 
     SDL_RenderPresent(renderer);
     return SDL_APP_CONTINUE;
@@ -59,5 +69,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 /* This function runs once at shutdown. */
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-    delete plane1;
+    // delete plane1;
+    delete reactor;
 }

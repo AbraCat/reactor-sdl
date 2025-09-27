@@ -2,7 +2,7 @@
 
 const int axisWidth = 3, cutsWidth = 1, borderWidth = 1, cutsLength = 5, pointSize = 3;
 
-PlaneItem::PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vec> colors, double yScale, double cutStepY, 
+PlaneItem::PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
     IntVec TL, IntVec BR) : Widget(renderer, TL, BR)
 {
     this->centre = IntVec(TL.x * 0.8 + BR.x * 0.2, TL.y * 0.2 + BR.y * 0.8, 0);
@@ -37,7 +37,7 @@ void PlaneItem::drawGraphs()
         SDL_SetRenderDrawColor(renderer, colors[nGraph].x, colors[nGraph].y, colors[nGraph].z, 255);
         for (int i = 0; i < nPoints; ++i)
         {
-            IntVec objectPoint = planeToObjectCoord(Vec(i, points[nGraph][i], 0));
+            IntVec objectPoint = planeToObjectCoord(Vector(i, points[nGraph][i], 0));
             if (inRect(objectPoint))
             {
                 SDL_SetRenderDrawColor(renderer, colors[nGraph].x, colors[nGraph].y, colors[nGraph].z, 255);
@@ -66,7 +66,7 @@ void PlaneItem::paint()
     drawGraphs();
 }
 
-IntVec PlaneItem::planeToObjectCoord(Vec coord)
+IntVec PlaneItem::planeToObjectCoord(Vector coord)
 {
     IntVec objectCoord;
     objectCoord.x = coord.x * xScale + centre.x;
@@ -74,9 +74,9 @@ IntVec PlaneItem::planeToObjectCoord(Vec coord)
     return objectCoord;
 }
 
-Vec PlaneItem::objectToPlaneCoord(IntVec coord)
+Vector PlaneItem::objectToPlaneCoord(IntVec coord)
 {
-    Vec planeCoord;
+    Vector planeCoord;
     planeCoord.x = (coord.x - centre.x) * 1.0 / xScale;
     planeCoord.y = (coord.y - centre.y) * 1.0 / yScale;
     return planeCoord;

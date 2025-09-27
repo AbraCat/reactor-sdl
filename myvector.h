@@ -1,67 +1,76 @@
 #ifndef MYVECTOR_H
 #define MYVECTOR_H
 
-template<class T>
+
 class Vector
 {
 public:
     Vector();
-    Vector(T x, T y, T z);
+    Vector(double x, double y, double z);
 
-    T x, y, z;
+    double x, y, z;
 };
-
-using Vec = Vector<double>;
-using IntVec = Vector<int>;
 
 class FixedVector
 {
 public:
-    Vec p1, p2;
+    Vector p1, p2;
 };
 
-template<class T>
-Vector<T> operator+(Vector<T> v1, Vector<T> v2);
-template<class T>
-Vector<T> operator-(Vector<T> v1, Vector<T> v2);
-template<class T>
-Vector<T> operator*(Vector<T> v1, Vector<T> v2);
+Vector operator+(Vector v1, Vector v2);
+Vector operator-(Vector v1, Vector v2);
+Vector operator*(Vector v1, Vector v2);
 
-template<class T>
-Vector<T>& operator+=(Vector<T>& v1, Vector<T> v2);
-template<class T>
-Vector<T>& operator-=(Vector<T>& v1, Vector<T> v2);
-template<class T>
-Vector<T>& operator*=(Vector<T>& v, double a);
-template<class T>
-Vector<T>& operator/=(Vector<T>& v, double a);
+Vector& operator+=(Vector& v1, Vector v2);
+Vector& operator-=(Vector& v1, Vector v2);
+Vector& operator*=(Vector& v, double a);
+Vector& operator/=(Vector& v, double a);
 
-template<class T>
-Vector<T> operator*(Vector<T> v, double a);
-template<class T>
-Vector<T> operator/(Vector<T> v, double a);
+Vector operator*(Vector v, double a);
+Vector operator/(Vector v, double a);
 
-template<class T>
-double operator*(Vector<T> v);
-template<class T>
-Vector<T> operator!(Vector<T> v);
-template<class T>
-double operator^(Vector<T> a, Vector<T> b);
+double operator*(Vector v);
+Vector operator!(Vector v);
+double operator^(Vector a, Vector b);
 
-template<class T>
-Vector<T> limitVector(Vector<T> v, T lower, T upper);
+Vector proj(Vector a, Vector n);
+Vector ortog(Vector a, Vector n);
+double dist(Vector p, Vector a, Vector n);
+Vector limitVector(Vector v, double lower, double upper);
 
-template<class T>
-Vector<T> proj(Vector<T> a, Vector<T> n);
-template<class T>
-Vector<T> ortog(Vector<T> a, Vector<T> n);
-template<class T>
-double dist(Vector<T> p, Vector<T> a, Vector<T> n);
 
-Vec fixedToFree(FixedVector v);
-FixedVector freeToFixed(Vec v, Vec start);
+
+
+class IntVec
+{
+public:
+    IntVec();
+    IntVec(int x, int y, int z);
+
+    int x, y, z;
+};
+
+IntVec operator+(IntVec v1, IntVec v2);
+IntVec operator-(IntVec v1, IntVec v2);
+IntVec operator*(IntVec v1, IntVec v2);
+
+IntVec& operator+=(IntVec& v1, IntVec v2);
+IntVec& operator-=(IntVec& v1, IntVec v2);
+
+int operator^(IntVec a, IntVec b);
+
+IntVec proj(IntVec a, IntVec n);
+IntVec ortog(IntVec a, IntVec n);
+int dist(IntVec p, IntVec a, IntVec n);
+IntVec limitVector(IntVec v, int lower, int upper);
+
+
+
+
+Vector fixedToFree(FixedVector v);
+FixedVector freeToFixed(Vector v, Vector start);
 FixedVector rotateV(FixedVector v, double angle);
 
-void print(Vec v);
+void print(Vector v);
 
 #endif // MYVECTOR_H
