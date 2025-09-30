@@ -9,7 +9,7 @@ const double Pi = 3.1415926;
 const double dt = 1, explodeDT = 0.3, unitRadius = 5, spawnV = 10;
 const int spawnM = 1, spawnPad = 10, nSpawn = 300, nReserve = std::max(100, nSpawn * 3); //fps = 60;
 
-const int buttonSize = 50, buttonGap = 10;
+const int wallDist = 20, buttonSize = 50, buttonGap = 10;
 const double unpressColorCoeff = 0.7;
 
 bool isZero(double a)
@@ -217,6 +217,9 @@ Reactor::Reactor(SDL_Renderer* renderer, IntVec TL, IntVec BR) : Widget(renderer
     #define BUTTON_ACTION(function)\
     QObject::connect(buttons[buttons.size() - 1], &Button::pressed, this, [this]{ function; });
 
+    wallTL = TL + IntVec(wallDist, wallDist, 0);
+    wallBR = BR - IntVec(wallDist, wallDist, 0);
+
     mols = std::vector<Molecule*>();
     mols.reserve(nReserve);
     for (int nMol = 0; nMol < nSpawn; ++nMol)
@@ -254,26 +257,26 @@ void Reactor::checkWallCollision(Molecule* mol)
 {
     Vector newPos = mol->pos + mol->v * dt;
 
-    if (newPos.x > BR.x)
+    if (newPos.x > wallBR.x)
     {
         // rgtImpulse += mol->mass * mol->v.x;
-        mol->pos = Vector(2 * BR.x - newPos.x, newPos.y, 0);
+        mol->pos = Vector(2 * wallBR.x - newPos.x, newPos.y, 0);
         mol->v.x *= -1;
     }
-    else if (newPos.x < TL.x)
+    else if (newPos.x < wallTL.x)
     {
-        mol->pos = Vector(2 * TL.x - newPos.x, newPos.y, 0);
+        mol->pos = Vector(2 * wallTL.x - newPos.x, newPos.y, 0);
         mol->v.x *= -1;
         // mol->v.x += lftTemp / mol->mass;
     }
-    else if (newPos.y < TL.y)
+    else if (newPos.y < wallTL.y)
     {
-        mol->pos = Vector(newPos.x, 2 * TL.y - newPos.y, 0);
+        mol->pos = Vector(newPos.x, 2 * wallTL.y - newPos.y, 0);
         mol->v.y *= -1;
     }
-    else if (newPos.y > BR.y)
+    else if (newPos.y > wallBR.y)
     {
-        mol->pos = Vector(newPos.x, 2 * BR.y - newPos.y, 0);
+        mol->pos = Vector(newPos.x, 2 * wallBR.y - newPos.y, 0);
         mol->v.y *= -1;
     }
     else
@@ -350,18 +353,14 @@ void Reactor::advance()
 
 void Reactor::paint()
 {
-    Widget::paint();
-    // painter->setPen(QPen(Qt::black, 3));
-    // painter->setBrush(Qt::transparent);
-    // painter->drawRect(TL.x, -TL.y, BR.x - TL.x, TL.y - BR.y);
-    // painter->setPen(QPen(Qt::transparent, 0));
+    fill();
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_FRect rect;
-    rect.x = TL.x;
-    rect.y = TL.y;
-    rect.w = width;
-    rect.h = height;
+    rect.x = wallTL.x;
+    rect.y = wallTL.y;
+    rect.w = wallBR.x - wallTL.x;
+    rect.h = wallBR.y - wallTL.y;
     SDL_RenderRect(renderer, &rect);
 
     for (std::vector<Molecule*>::iterator molIter = mols.begin(); molIter != mols.end(); molIter++)

@@ -1,5 +1,6 @@
 #include "planeitem.h"
 
+const int stdNPoints = 100;
 const int axisWidth = 3, cutsWidth = 1, borderWidth = 1, cutsLength = 5, pointSize = 3;
 
 PlaneItem::PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
@@ -8,7 +9,7 @@ PlaneItem::PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> co
     this->centre = IntVec(TL.x * 0.8 + BR.x * 0.2, TL.y * 0.2 + BR.y * 0.8, 0);
 
     this->nGraphs = nGraphs;
-    this->nPoints = 100;
+    this->nPoints = stdNPoints;
     this->colors = colors;
     this->points = std::vector<std::vector<double>>(nGraphs, std::vector<double>(nPoints, 0));
 
@@ -37,7 +38,7 @@ void PlaneItem::drawGraphs()
         SDL_SetRenderDrawColor(renderer, colors[nGraph].x, colors[nGraph].y, colors[nGraph].z, 255);
         for (int i = 0; i < nPoints; ++i)
         {
-            IntVec objectPoint = planeToObjectCoord(Vector(i, points[nGraph][i], 0));
+            IntVec objectPoint = planeToObjectCoord(Vector(i, -points[nGraph][i], 0));
             if (inRect(objectPoint))
             {
                 SDL_SetRenderDrawColor(renderer, colors[nGraph].x, colors[nGraph].y, colors[nGraph].z, 255);
@@ -49,7 +50,7 @@ void PlaneItem::drawGraphs()
 
 void PlaneItem::paint()
 {
-    Widget::paint();
+    fill();
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderLine(renderer, TL.x, centre.y, BR.x, centre.y);

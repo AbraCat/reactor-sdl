@@ -102,6 +102,7 @@ public:
     void addButton(Vector color);
     void advance();
 
+    IntVec wallTL, wallBR;
     std::vector<Molecule*> mols;
 
     std::vector<Button*> buttons;

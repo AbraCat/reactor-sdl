@@ -12,7 +12,8 @@
 class PlaneItem : public Widget
 {
 public:
-    PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, IntVec TL, IntVec BR);
+    PlaneItem(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
+        IntVec TL, IntVec BR);
 
     void drawCuts();
     void drawGraphs();
