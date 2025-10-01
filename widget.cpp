@@ -32,7 +32,16 @@ bool Widget::inRect(IntVec point)
     return point.x > TL.x && point.x < BR.x && point.y > TL.y && point.y < BR.y;
 }
 
-void Widget::fill(Vector color)
+void Widget::resize(IntVec newTL, IntVec newBR)
+{
+    this->TL = newTL;
+    this->BR = newBR;
+
+    width = BR.x - TL.x;
+    height = BR.y - TL.y;
+}
+
+void Widget::drawRect(bool fill, Vector color)
 {
     SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 255);
     SDL_FRect rect;
@@ -40,7 +49,9 @@ void Widget::fill(Vector color)
     rect.y = TL.y;
     rect.w = width;
     rect.h = height;
-    SDL_RenderFillRect(renderer, &rect);
+    
+    if (fill) SDL_RenderFillRect(renderer, &rect);
+    else SDL_RenderRect(renderer, &rect);
 }
 
 void Widget::put()
@@ -61,15 +72,43 @@ void Widget::addChild(Widget* widget)
 bool Widget::handleEvent(Event* e)
 {
     for (Widget* w: children)
-    {
-        if (e->dispatch(w)) return 1;
-    }
+        if (w->handleEvent(e)) return 1;
     return e->dispatch(this);
 }
 
 bool Widget::mousePressEvent(MouseEvent* e)
 {
     return 0;
+}
+
+bool Widget::mouseReleaseEvent(MouseEvent* e)
+{
+    return 0;
+}
+
+WContainer::WContainer(SDL_Renderer* renderer, IntVec TL, IntVec BR, int nChildren) : Widget(renderer, TL, BR)
+{
+    this->nChildren = nChildren;
+    this->padding = 10;
+
+    this->childWidth = (width - padding * (nChildren + 1)) / nChildren;
+    this->childHeight = height - 2 * padding;
+}
+
+void WContainer::addWidget(Widget* w)
+{
+    assert(children.size() < nChildren);
+
+    int nChild = children.size();
+    w->resize(IntVec(TL.x + padding * (nChild + 1) + childWidth * nChild, TL.y + padding), 
+        IntVec(TL.x + (padding + childWidth) * (nChild + 1), BR.y - padding));
+
+    addChild(w);
+}
+
+void WContainer::paint()
+{
+    drawRect(0, Vector(255, 255, 255));
 }
 
 MouseEvent::MouseEvent(bool down, int x, int y)
@@ -81,5 +120,6 @@ MouseEvent::MouseEvent(bool down, int x, int y)
 
 bool MouseEvent::dispatch(Widget* w)
 {
-    return w->mousePressEvent(this);
+    if (down) return w->mousePressEvent(this);
+    else return w->mouseReleaseEvent(this);
 }

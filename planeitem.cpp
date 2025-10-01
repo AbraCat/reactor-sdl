@@ -50,18 +50,12 @@ void PlaneItem::drawGraphs()
 
 void PlaneItem::paint()
 {
-    fill();
+    drawRect(1);
+    drawRect(0, Vector(255, 255, 255));
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderLine(renderer, TL.x, centre.y, BR.x, centre.y);
     SDL_RenderLine(renderer, centre.x, TL.y, centre.x, BR.y);
-
-    SDL_FRect rect;
-    rect.x = TL.x;
-    rect.y = TL.y;
-    rect.w = width;
-    rect.h = height;
-    SDL_RenderRect(renderer, &rect);
 
     drawCuts();
     drawGraphs();

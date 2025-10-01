@@ -22,6 +22,14 @@ static SDL_Renderer *renderer = NULL;
 
 static App* app;
 
+/*
+idle events
+only redraw widgets if they change
+sdl adapter
+clock
+texture manager (texture is an array of pixel colors)
+*/
+
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);
@@ -30,7 +38,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    
+
     app = new App(renderer);
     return SDL_APP_CONTINUE;
 }

@@ -214,6 +214,13 @@ Reactor::~Reactor()
         delete mol;
 }
 
+void Reactor::resize(IntVec newTL, IntVec newBR)
+{
+    Widget::resize(newTL, newBR);
+    wallTL = TL + IntVec(wallDist, wallDist, 0);
+    wallBR = BR - IntVec(wallDist, wallDist, 0);
+}
+
 void Reactor::checkWallCollision(Molecule* mol)
 {
     Vector newPos = mol->pos + mol->v * dt;
@@ -314,7 +321,7 @@ void Reactor::advance()
 
 void Reactor::paint()
 {
-    fill();
+    drawRect(1);
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_FRect rect;

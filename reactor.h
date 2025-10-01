@@ -65,6 +65,7 @@ public:
     Reactor(SDL_Renderer* renderer, IntVec TL, IntVec BR);
     ~Reactor();
     virtual void paint() override;
+    virtual void resize(IntVec newTL, IntVec newBR) override;
 
     Molecule* randMolecule();
 

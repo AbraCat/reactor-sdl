@@ -17,14 +17,16 @@ public:
     Widget(SDL_Renderer* renderer, IntVec TL, IntVec BR, Widget* parent = nullptr);
     ~Widget();
 
-    void fill(Vector color = Vector(0, 0, 0));
+    void drawRect(bool fill, Vector color = Vector(0, 0, 0));
     bool inRect(IntVec point);
+    virtual void resize(IntVec newTL, IntVec newBR);
     void put();
     virtual void paint();
 
     void addChild(Widget* widget);
 
     virtual bool mousePressEvent(MouseEvent* e);
+    virtual bool mouseReleaseEvent(MouseEvent* e);
     bool handleEvent(Event* e);
 
     IntVec TL, BR;
@@ -33,6 +35,18 @@ public:
 
     Widget *parent;
     std::vector<Widget*> children;
+};
+
+class WContainer : public Widget
+{
+public:
+    WContainer(SDL_Renderer* renderer, IntVec TL, IntVec BR, int nChildren);
+    virtual void paint() override;
+
+    void addWidget(Widget* widget);
+
+private:
+    int nChildren, padding, childWidth, childHeight;
 };
 
 class Event

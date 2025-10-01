@@ -19,6 +19,7 @@ public:
 private:
     Reactor *reactor;
     PlaneItem *energy_graph, *cnt_graph;
+    WContainer *button_container;
 };
 
 #endif // MY_APP_H

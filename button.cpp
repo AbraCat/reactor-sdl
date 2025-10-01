@@ -1,28 +1,41 @@
 #include "button.h"
 
+#include <cassert>
+
 const double unpressColorCoeff = 0.7;
 
-Button::Button(SDL_Renderer* renderer, IntVec TL, IntVec BR, Vector color) : Widget(renderer, TL, BR)
+Button::Button(SDL_Renderer* renderer, IntVec TL, IntVec BR, Vector color, std::string text) : Widget(renderer, TL, BR)
 {
     this->press_color = color;
     this->unpress_color = color * unpressColorCoeff;
     this->is_pressed = 0;
+
+    this->text = text;
 }
 
 void Button::paint()
 {
-    if (is_pressed) fill(press_color);
-    else fill(unpress_color);
+    if (is_pressed) drawRect(1, press_color);
+    else drawRect(1, unpress_color);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDebugText(renderer, TL.x, TL.y, text.c_str());
 }
 
 bool Button::mousePressEvent(MouseEvent* e)
 {
     if (!inRect(IntVec(e->x, e->y))) return 0;
-    if (is_pressed) return 1;
+    if (is_pressed) return 0;
 
     is_pressed = 1;
     action();
     return 1;
+}
+
+bool Button::mouseReleaseEvent(MouseEvent* e)
+{
+    is_pressed = 0;
+    return 0;
 }
 
 void Button::unpress()
@@ -30,13 +43,14 @@ void Button::unpress()
     is_pressed = 0;
 }
 
-MoveWallButton::MoveWallButton(SDL_Renderer* renderer, Reactor* reactor, IntVec TL, IntVec BR, 
-    Vector color) : Button(renderer, TL, BR, color)
+MoveWallButton::MoveWallButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, int step, std::string text)
+    : Button(renderer, IntVec(), IntVec(), color, text)
 {
     this->reactor = reactor;
+    this->step = step;
 }
 
 void MoveWallButton::action()
 {
-    reactor->moveWall(10);
+    reactor->moveWall(step);
 }
