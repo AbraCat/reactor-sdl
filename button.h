@@ -37,4 +37,26 @@ private:
     int step;
 };
 
+class TemperatureButton : public Button
+{
+public:
+    TemperatureButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, double step, std::string text);
+    virtual void action() override;
+
+private:
+    Reactor* reactor;
+    double step;
+};
+
+class AddMolButton : public Button
+{
+public:
+    AddMolButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, int nAddMols, std::string text);
+    virtual void action() override;
+
+private:
+    Reactor* reactor;
+    int nAddMols;
+};
+
 #endif // MY_BUTTON_H

@@ -54,3 +54,27 @@ void MoveWallButton::action()
 {
     reactor->moveWall(step);
 }
+
+TemperatureButton::TemperatureButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, double step, std::string text)
+    : Button(renderer, IntVec(), IntVec(), color, text)
+{
+    this->reactor = reactor;
+    this->step = step;
+}
+
+void TemperatureButton::action()
+{
+    reactor->increaseTemp(step);
+}
+
+AddMolButton::AddMolButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, int nAddMols, std::string text)
+    : Button(renderer, IntVec(), IntVec(), color, text)
+{
+    this->reactor = reactor;
+    this->nAddMols = nAddMols;
+}
+
+void AddMolButton::action()
+{
+    reactor->addRandomMols(nAddMols);
+}

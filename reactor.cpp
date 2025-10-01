@@ -235,7 +235,7 @@ void Reactor::checkWallCollision(Molecule* mol)
     {
         mol->pos = Vector(2 * wallTL.x - newPos.x, newPos.y, 0);
         mol->v.x *= -1;
-        // mol->v.x += lftTemp / mol->mass;
+        mol->v.x += lftTemp / mol->mass;
     }
     else if (newPos.y < wallTL.y)
     {
