@@ -34,7 +34,7 @@ bool Widget::inRect(IntVec point)
 
 void Widget::fill(Vector color)
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 255);
     SDL_FRect rect;
     rect.x = TL.x;
     rect.y = TL.y;
@@ -56,4 +56,30 @@ void Widget::addChild(Widget* widget)
 
     children.push_back(widget);
     widget->parent = this;
+}
+
+bool Widget::handleEvent(Event* e)
+{
+    for (Widget* w: children)
+    {
+        if (e->dispatch(w)) return 1;
+    }
+    return e->dispatch(this);
+}
+
+bool Widget::mousePressEvent(MouseEvent* e)
+{
+    return 0;
+}
+
+MouseEvent::MouseEvent(bool down, int x, int y)
+{
+    this->down = down;
+    this->x = x;
+    this->y = y;
+}
+
+bool MouseEvent::dispatch(Widget* w)
+{
+    return w->mousePressEvent(this);
 }

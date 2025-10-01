@@ -6,6 +6,7 @@
 #include "widget.h"
 #include "planeitem.h"
 #include "reactor.h"
+#include "button.h"
 
 class App : public Widget
 {

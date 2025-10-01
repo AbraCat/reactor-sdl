@@ -4,6 +4,12 @@
 #include <cstdio>
 
 Vector::Vector() { this->x = this->y = this->z = 0; };
+Vector::Vector(double x, double y)
+{
+    this->x = x;
+    this->y = y;
+    this->z = 0;
+}
 Vector::Vector(double x, double y, double z)
 {
     this->x = x;
@@ -70,6 +76,12 @@ Vector limitVector(Vector v, double lower, double upper)
 
 
 IntVec::IntVec() { this->x = this->y = this->z = 0; };
+IntVec::IntVec(int x, int y)
+{
+    this->x = x;
+    this->y = y;
+    this->z = 0;
+}
 IntVec::IntVec(int x, int y, int z)
 {
     this->x = x;

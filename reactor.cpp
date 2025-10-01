@@ -7,10 +7,9 @@
 const double Pi = 3.1415926;
 
 const double dt = 1, explodeDT = 0.3, unitRadius = 5, spawnV = 10;
-const int spawnM = 1, spawnPad = 10, nSpawn = 300, nReserve = std::max(100, nSpawn * 3); //fps = 60;
+const int spawnM = 1, spawnPad = 10, nSpawn = 300, nReserve = std::max(100, nSpawn * 3);
 
 const int wallDist = 20, buttonSize = 50, buttonGap = 10;
-const double unpressColorCoeff = 0.7;
 
 bool isZero(double a)
 {
@@ -137,46 +136,10 @@ Molecule* Reactor::randMolecule()
     else return new SquareMol(randInt(1, spawnM), v, pos);
 }
 
-Button::Button(SDL_Renderer* renderer, IntVec TL, IntVec BR, Vector color) : Widget(renderer, TL, BR)
-{
-    this->press_color = color;
-    this->unpress_color = color * unpressColorCoeff;
-    this->is_pressed = 0;
-}
-
-void Button::action()
-{
-    is_pressed = 1;
-    // emit pressed();
-}
-
-void Button::unpress()
-{
-    is_pressed = 0;
-}
-
-// void Reactor::mousePressEvent(QGraphicsSceneMouseEvent* event)
-// {
-//     int xPos = event->pos().x(), yPos = -event->pos().y();
-//     for (Button* button: buttons)
-//     {
-//         if (button->TL.x <= xPos && xPos <= button->BR.x && button->BR.y <= yPos && yPos <= button->TL.y)
-//         {
-//             button->action();
-//             break;
-//         }
-//     }
-// }
-
-// void Reactor::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
-// {
-//     for (Button* button: buttons)
-//         button->unpress();
-// }
-
 void Reactor::moveWall(int step)
 {
-    TL.x -= step;
+    TL.x += step;
+    wallTL.x += step;
 }
 
 void Reactor::increaseTemp(double step)
@@ -205,7 +168,7 @@ void Reactor::addRandomMols(int nMols)
 
 void Reactor::addButton(Vector color)
 {
-    int nButton = buttons.size();
+    // int nButton = buttons.size();
     // buttons.push_back(new Button(TL.x + (buttonSize + buttonGap) * nButton, TL.y + buttonSize + 10,
     //                              TL.x + (buttonSize) * (nButton + 1) + buttonGap * nButton, TL.y + 10, color));
 
@@ -225,7 +188,7 @@ Reactor::Reactor(SDL_Renderer* renderer, IntVec TL, IntVec BR) : Widget(renderer
     for (int nMol = 0; nMol < nSpawn; ++nMol)
         mols.push_back(randMolecule());
 
-    buttons = std::vector<Button*>();
+    // buttons = std::vector<Button*>();
     // addButton(Vector(0, 0, 1));
     // BUTTON_ACTION(moveWall(10))
     // addButton(Vector(0.6, 0, 1));
@@ -249,8 +212,6 @@ Reactor::~Reactor()
 {
     for (Molecule* mol: mols)
         delete mol;
-    for (Button* button: buttons)
-        delete button;
 }
 
 void Reactor::checkWallCollision(Molecule* mol)

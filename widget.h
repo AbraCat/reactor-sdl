@@ -7,6 +7,10 @@
 
 #include "myvector.h"
 
+class Widget;
+class Event;
+class MouseEvent;
+
 class Widget
 {
 public:
@@ -20,12 +24,31 @@ public:
 
     void addChild(Widget* widget);
 
+    virtual bool mousePressEvent(MouseEvent* e);
+    bool handleEvent(Event* e);
+
     IntVec TL, BR;
     int width, height;
     SDL_Renderer* renderer;
 
     Widget *parent;
     std::vector<Widget*> children;
+};
+
+class Event
+{
+public:
+    virtual bool dispatch(Widget* w) = 0;
+};
+
+class MouseEvent : public Event
+{
+public:
+    MouseEvent(bool down, int x, int y);
+    virtual bool dispatch(Widget* w) override;
+
+    int x, y;
+    bool down;
 };
 
 #endif // WIDGET_H

@@ -6,6 +6,7 @@ class Vector
 {
 public:
     Vector();
+    Vector(double x, double y);
     Vector(double x, double y, double z);
 
     double x, y, z;
@@ -45,6 +46,7 @@ class IntVec
 {
 public:
     IntVec();
+    IntVec(int x, int y);
     IntVec(int x, int y, int z);
 
     int x, y, z;

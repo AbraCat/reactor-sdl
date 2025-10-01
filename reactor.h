@@ -59,33 +59,12 @@ public:
     virtual void draw(SDL_Renderer* renderer) override;
 };
 
-class Button : public Widget
-{
-public:
-    Button(SDL_Renderer* renderer, IntVec TL, IntVec BR, Vector color);
-    virtual void action();
-    void unpress();
-
-    Vector press_color, unpress_color;
-    bool is_pressed;
-};
-
-// class MoveButton : public Button
-// {
-//     Q_OBJECT
-// public:
-//     virtual void action() override;
-// };
-
 class Reactor : public Widget
 {
 public:
     Reactor(SDL_Renderer* renderer, IntVec TL, IntVec BR);
     ~Reactor();
     virtual void paint() override;
-
-    // virtual void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
-    // virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
     Molecule* randMolecule();
 
@@ -105,7 +84,6 @@ public:
     IntVec wallTL, wallBR;
     std::vector<Molecule*> mols;
 
-    std::vector<Button*> buttons;
     double lftTemp, rgtImpulse;
 };
 
