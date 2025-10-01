@@ -1,19 +1,27 @@
-#include "app.h"
-#include "planeitem.h"
+#include "desktop.h"
+#include "plane.h"
 #include "reactor.h"
 
 IntVec stdTL(0, 0, 0), stdBR(500, 500, 0);
 int nButtons = 6, wallStep = 10, nAddMols = 10;
 double tempStep = 1;
 
-App::App(SDL_Renderer* renderer) : Widget(renderer, stdTL, stdBR)
+Desktop::Desktop(SDL_Renderer* renderer) : Widget(renderer, stdTL, stdBR)
 {
     reactor = new Reactor(renderer, {0, 0, 0}, {600, 600, 0});
-    energy_graph = new PlaneItem(renderer, 1, {{255, 255, 255}}, 0.03, 1e3, {700, 10, 0}, {1000, 310, 0});
-    cnt_graph = new PlaneItem(renderer, 2, {{0, 0, 255}, {255, 0, 0}}, 1, 10, {700, 320, 0}, {1000, 620, 0});
     addChild(reactor);
+
+    energy_graph = new Graph(renderer, 1, {{255, 255, 255}}, 0.03, 1e3, {700, 10, 0}, {1000, 310, 0});
+    cnt_graph = new Graph(renderer, 2, {{0, 0, 255}, {255, 0, 0}}, 1, 10, {700, 320, 0}, {1000, 620, 0});
     addChild(energy_graph);
     addChild(cnt_graph);
+
+    // Plane* plane = new Plane(renderer, {700, 700}, {1000, 1000}, {850, 850}, 10, 1, 10, 1);
+    // plane->addPoint({5, 2}, {255, 0, 0});
+    // addChild(plane);
+
+    clock = new Clock(renderer, {700, 700}, {1000, 1000}, 100, 3.14 / 60, 1);
+    addChild(clock);
 
     MoveWallButton* lftButton = new MoveWallButton(renderer, reactor, Vector(0, 0, 255), -wallStep, "move left");
     MoveWallButton* rgtButton = new MoveWallButton(renderer, reactor, Vector(255, 0, 255), wallStep, "move right");
@@ -34,17 +42,15 @@ App::App(SDL_Renderer* renderer) : Widget(renderer, stdTL, stdBR)
     addChild(button_container);
 }
 
-App::~App()
+Desktop::~Desktop()
 {
     //
 }
 
-void App::advance()
+bool Desktop::onIdle(IdleEvent* e)
 {
-    reactor->advance();
-
     energy_graph->addPoint({reactor->energy()});
     cnt_graph->addPoint(reactor->molCnt());
 
-    this->put();
+    return 0;
 }

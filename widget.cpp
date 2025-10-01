@@ -76,15 +76,10 @@ bool Widget::handleEvent(Event* e)
     return e->dispatch(this);
 }
 
-bool Widget::mousePressEvent(MouseEvent* e)
-{
-    return 0;
-}
+bool Widget::mousePressEvent(MouseEvent* e) { return 0; }
+bool Widget::mouseReleaseEvent(MouseEvent* e) { return 0; }
+bool Widget::onIdle(IdleEvent* e) { return 0; }
 
-bool Widget::mouseReleaseEvent(MouseEvent* e)
-{
-    return 0;
-}
 
 WContainer::WContainer(SDL_Renderer* renderer, IntVec TL, IntVec BR, int nChildren) : Widget(renderer, TL, BR)
 {
@@ -111,6 +106,8 @@ void WContainer::paint()
     drawRect(0, Vector(255, 255, 255));
 }
 
+
+
 MouseEvent::MouseEvent(bool down, int x, int y)
 {
     this->down = down;
@@ -122,4 +119,9 @@ bool MouseEvent::dispatch(Widget* w)
 {
     if (down) return w->mousePressEvent(this);
     else return w->mouseReleaseEvent(this);
+}
+
+bool IdleEvent::dispatch(Widget* w)
+{
+    return w->onIdle(this);
 }

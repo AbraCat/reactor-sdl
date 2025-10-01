@@ -10,6 +10,7 @@
 class Widget;
 class Event;
 class MouseEvent;
+class IdleEvent;
 
 class Widget
 {
@@ -24,10 +25,11 @@ public:
     virtual void paint();
 
     void addChild(Widget* widget);
+    bool handleEvent(Event* e);
 
+    virtual bool onIdle(IdleEvent* e);
     virtual bool mousePressEvent(MouseEvent* e);
     virtual bool mouseReleaseEvent(MouseEvent* e);
-    bool handleEvent(Event* e);
 
     IntVec TL, BR;
     int width, height;
@@ -49,6 +51,8 @@ private:
     int nChildren, padding, childWidth, childHeight;
 };
 
+
+
 class Event
 {
 public:
@@ -63,6 +67,11 @@ public:
 
     int x, y;
     bool down;
+};
+
+class IdleEvent : public Event
+{
+    virtual bool dispatch(Widget* w) override;
 };
 
 #endif // WIDGET_H

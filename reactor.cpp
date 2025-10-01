@@ -292,6 +292,12 @@ void clearInvalidMols(std::vector<Molecule*>& mols)
     }
 }
 
+bool Reactor::onIdle(IdleEvent* e)
+{
+    advance();
+    return 0;
+}
+
 void Reactor::advance()
 {
     std::vector<Molecule*>::iterator molsEnd = mols.end();

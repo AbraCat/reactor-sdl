@@ -67,6 +67,8 @@ public:
     virtual void paint() override;
     virtual void resize(IntVec newTL, IntVec newBR) override;
 
+    virtual bool onIdle(IdleEvent* e) override;
+
     Molecule* randMolecule();
 
     double energy();

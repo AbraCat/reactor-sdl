@@ -93,9 +93,15 @@ IntVec::IntVec(int x, int y, int z)
 IntVec operator+(IntVec v1, IntVec v2) { return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z}; }
 IntVec operator-(IntVec v1, IntVec v2) { return {v1.x - v2.x, v1.y - v2.y, v1.z - v2.z}; }
 IntVec operator*(IntVec v1, IntVec v2) { return {v1.x * v2.x, v1.y * v2.y, v1.z * v2.z}; }
+
+IntVec operator*(IntVec v, int a) { return {v.x * a, v.y * a, v.z * a}; }
+IntVec operator/(IntVec v, int a) { return {v.x / a, v.y / a, v.z / a}; }
  
 IntVec& operator+=(IntVec& v1, IntVec v2) { v1 = v1 + v2; return v1; }
 IntVec& operator-=(IntVec& v1, IntVec v2) { v1 = v1 - v2; return v1; }
+
+IntVec& operator*=(IntVec& v, int a) { v = v * a; return v; }
+IntVec& operator/=(IntVec& v, int a) { v = v / a; return v; }
 
 int operator^(IntVec a, IntVec b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 void print(IntVec v) { printf("vector %d %d %d\n", v.x, v.y, v.z); }

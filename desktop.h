@@ -4,21 +4,24 @@
 #include <SDL3/SDL.h>
 
 #include "widget.h"
-#include "planeitem.h"
+#include "plane.h"
 #include "reactor.h"
 #include "button.h"
 
-class App : public Widget
+class Desktop : public Widget
 {
 public:
-    App(SDL_Renderer* renderer);
-    ~App();
+    Desktop(SDL_Renderer* renderer);
+    ~Desktop();
 
-    void advance();
+    virtual bool onIdle(IdleEvent* e) override;
 
 private:
     Reactor *reactor;
-    PlaneItem *energy_graph, *cnt_graph;
+
+    Graph *energy_graph, *cnt_graph;
+    Clock* clock;
+
     WContainer *button_container;
 };
 

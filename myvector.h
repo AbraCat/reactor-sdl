@@ -56,8 +56,13 @@ IntVec operator+(IntVec v1, IntVec v2);
 IntVec operator-(IntVec v1, IntVec v2);
 IntVec operator*(IntVec v1, IntVec v2);
 
+IntVec operator*(IntVec v, int a);
+IntVec operator/(IntVec v, int a);
+
 IntVec& operator+=(IntVec& v1, IntVec v2);
 IntVec& operator-=(IntVec& v1, IntVec v2);
+IntVec& operator*=(IntVec& v, int a);
+IntVec& operator/=(IntVec& v, int a);
 
 int operator^(IntVec a, IntVec b);
 
