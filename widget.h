@@ -15,10 +15,10 @@ class IdleEvent;
 class Widget
 {
 public:
-    Widget(SDL_Renderer* renderer, IntVec TL, IntVec BR, Widget* parent = nullptr);
+    Widget(IntVec TL, IntVec BR, Widget* parent = nullptr);
     ~Widget();
 
-    void drawRect(bool fill, Vector color = Vector(0, 0, 0));
+    void drawWidgetRect(bool fill, Vector color = Vector(0, 0, 0));
     bool inRect(IntVec point);
     virtual void resize(IntVec newTL, IntVec newBR);
     void put();
@@ -33,7 +33,6 @@ public:
 
     IntVec TL, BR;
     int width, height;
-    SDL_Renderer* renderer;
 
     Widget *parent;
     std::vector<Widget*> children;
@@ -42,7 +41,7 @@ public:
 class WContainer : public Widget
 {
 public:
-    WContainer(SDL_Renderer* renderer, IntVec TL, IntVec BR, int nChildren);
+    WContainer(IntVec TL, IntVec BR, int nChildren);
     virtual void paint() override;
 
     void addWidget(Widget* widget);

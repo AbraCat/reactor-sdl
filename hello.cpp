@@ -41,7 +41,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     setRenderer(renderer);
 
-    desktop = new Desktop(renderer);
+    desktop = new Desktop();
     return SDL_APP_CONTINUE;
 }
 
@@ -77,7 +77,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     desktop->put();
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(1000.0 / 30);
+    SDL_Delay(1000.0 / 60);
     return SDL_APP_CONTINUE;
 }
 

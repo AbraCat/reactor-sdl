@@ -1,10 +1,11 @@
 #include "button.h"
+#include "sdl-adapter.h"
 
 #include <cassert>
 
 const double unpressColorCoeff = 0.7;
 
-Button::Button(SDL_Renderer* renderer, IntVec TL, IntVec BR, Vector color, std::string text) : Widget(renderer, TL, BR)
+Button::Button(IntVec TL, IntVec BR, Vector color, std::string text) : Widget(TL, BR)
 {
     this->press_color = color;
     this->unpress_color = color * unpressColorCoeff;
@@ -15,11 +16,11 @@ Button::Button(SDL_Renderer* renderer, IntVec TL, IntVec BR, Vector color, std::
 
 void Button::paint()
 {
-    if (is_pressed) drawRect(1, press_color);
-    else drawRect(1, unpress_color);
+    if (is_pressed) drawWidgetRect(1, press_color);
+    else drawWidgetRect(1, unpress_color);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDebugText(renderer, TL.x, TL.y, text.c_str());
+    setColor({255, 255, 255});
+    putText(text, TL, BR);
 }
 
 bool Button::mousePressEvent(MouseEvent* e)
@@ -43,8 +44,8 @@ void Button::unpress()
     is_pressed = 0;
 }
 
-MoveWallButton::MoveWallButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, int step, std::string text)
-    : Button(renderer, IntVec(), IntVec(), color, text)
+MoveWallButton::MoveWallButton(Reactor* reactor, Vector color, int step, std::string text)
+    : Button(IntVec(), IntVec(), color, text)
 {
     this->reactor = reactor;
     this->step = step;
@@ -55,8 +56,8 @@ void MoveWallButton::action()
     reactor->moveWall(step);
 }
 
-TemperatureButton::TemperatureButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, double step, std::string text)
-    : Button(renderer, IntVec(), IntVec(), color, text)
+TemperatureButton::TemperatureButton(Reactor* reactor, Vector color, double step, std::string text)
+    : Button(IntVec(), IntVec(), color, text)
 {
     this->reactor = reactor;
     this->step = step;
@@ -67,8 +68,8 @@ void TemperatureButton::action()
     reactor->increaseTemp(step);
 }
 
-AddMolButton::AddMolButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, int nAddMols, std::string text)
-    : Button(renderer, IntVec(), IntVec(), color, text)
+AddMolButton::AddMolButton(Reactor* reactor, Vector color, int nAddMols, std::string text)
+    : Button(IntVec(), IntVec(), color, text)
 {
     this->reactor = reactor;
     this->nAddMols = nAddMols;

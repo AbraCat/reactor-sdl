@@ -1,4 +1,5 @@
 #include "reactor.h"
+#include "sdl-adapter.h"
 
 #include <cstdlib>
 #include <cmath>
@@ -106,24 +107,16 @@ void SquareMol::collide(std::vector<Molecule*>& mols, Vector collidePos, Molecul
     }
 }
 
-void RoundMol::draw(SDL_Renderer* renderer)
+void RoundMol::draw()
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    SDL_FRect rect;
-    rect.x = pos.x - r;
-    rect.y = pos.y - r;
-    rect.w = rect.h = r * 2;
-    SDL_RenderFillRect(renderer, &rect);
+    setColor({0, 0, 255});
+    drawCircle(pos, r, 1);
 }
 
-void SquareMol::draw(SDL_Renderer* renderer)
+void SquareMol::draw()
 {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_FRect rect;
-    rect.x = pos.x - r;
-    rect.y = pos.y - r;
-    rect.w = rect.h = r * 2;
-    SDL_RenderFillRect(renderer, &rect);
+    setColor({255, 0, 0});
+    drawRect(pos - Vector(r, r), pos + Vector(r, r), 1);
 }
 
 Molecule* Reactor::randMolecule()
@@ -175,7 +168,7 @@ void Reactor::addButton(Vector color)
     //
 }
 
-Reactor::Reactor(SDL_Renderer* renderer, IntVec TL, IntVec BR) : Widget(renderer, TL, BR)
+Reactor::Reactor(IntVec TL, IntVec BR) : Widget(TL, BR)
 {
     #define BUTTON_ACTION(function)\
     QObject::connect(buttons[buttons.size() - 1], &Button::pressed, this, [this]{ function; });
@@ -327,32 +320,15 @@ void Reactor::advance()
 
 void Reactor::paint()
 {
-    drawRect(1);
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_FRect rect;
-    rect.x = wallTL.x;
-    rect.y = wallTL.y;
-    rect.w = wallBR.x - wallTL.x;
-    rect.h = wallBR.y - wallTL.y;
-    SDL_RenderRect(renderer, &rect);
+    drawWidgetRect(1);
+    setColor({255, 255, 255});
+    drawRect(wallTL, wallBR, 0);
 
     for (std::vector<Molecule*>::iterator molIter = mols.begin(); molIter != mols.end(); molIter++)
     {
         Molecule* mol = *molIter;
-        mol->draw(renderer);
+        mol->draw();
     }
-
-    // for (Button* button: buttons)
-    // {
-    //     Vector color;
-    //     if (button->is_pressed) color = button->press_color;
-    //     else color = button->unpress_color;
-    //     color *= 255;
-
-    //     painter->setBrush(QColor(color.x, color.y, color.z));
-    //     painter->drawRect(button->TL.x, -button->TL.y, button->BR.x - button->TL.x, button->TL.y - button->BR.y);
-    // }
 }
 
 double Reactor::energy()

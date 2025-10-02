@@ -11,17 +11,42 @@ static SDL_Renderer* rend = nullptr;
 void setRenderer(SDL_Renderer* renderer) { rend = renderer; }
 void setColor(Vector color) { SDL_SetRenderDrawColor(rend, color.x, color.y, color.z, 255); }
 
-void drawCircle(IntVec centre, int r, Vector color, bool fill)
+void drawPoint(IntVec p)
 {
-    setColor(color);
+    SDL_RenderPoint(rend, p.x, p.y);
+}
 
+void drawLine(IntVec p1, IntVec p2)
+{
+    SDL_RenderLine(rend, p1.x, p1.y, p2.x, p2.y);
+}
+
+void drawRect(IntVec tl, IntVec br, bool fill)
+{
+    SDL_FRect rect;
+    rect.x = tl.x;
+    rect.y = tl.y;
+    rect.w = br.x - tl.x;
+    rect.h = br.y - tl.y;
+
+    if (fill) SDL_RenderFillRect(rend, &rect);
+    else SDL_RenderRect(rend, &rect);
+}
+
+void putText(std::string text, IntVec tl, IntVec br)
+{
+    SDL_RenderDebugText(rend, tl.x, (tl.y + br.y) / 2 - 5, text.c_str());
+}
+
+void drawCircle(IntVec centre, int r, bool fill)
+{
     if (fill)
     {
         for (int x = centre.x - r; x <= centre.x + r; ++x)
         {
             for (int y = centre.y - r; y <= centre.y + r; ++y)
             {
-                if ((x - centre.x) * (x - centre.x) + (y - centre.y) * (y - centre.y) <= r * r)
+                if ((x - centre.x) * (x - centre.x) + (y - centre.y) * (y - centre.y) < r * r)
                     SDL_RenderPoint(rend, x, y);
             }
         }
@@ -40,11 +65,9 @@ void drawCircle(IntVec centre, int r, Vector color, bool fill)
     }
 }
 
-void fillConvexPolygon(std::vector<IntVec> points, Vector color)
+void fillConvexPolygon(std::vector<IntVec> points)
 {
     // assume points go in clockwise order
-
-    setColor(color);
     int nPts = points.size();
     assert(nPts >= 3);
 

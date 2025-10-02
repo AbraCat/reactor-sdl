@@ -10,8 +10,8 @@ const double arrowCoeff = 0.1;
 
 
 
-BasePlane::BasePlane(SDL_Renderer* renderer, IntVec TL, IntVec BR, IntVec centre,
-    double xScale, double cutStepX, double yScale, double cutStepY) : Widget(renderer, TL, BR),
+BasePlane::BasePlane(IntVec TL, IntVec BR, IntVec centre,
+    double xScale, double cutStepX, double yScale, double cutStepY) : Widget(TL, BR),
     xScale(xScale), yScale(yScale), cutStepX(cutStepX), cutStepY(cutStepY), centre(centre)
 {
     axisVisible = 1;
@@ -24,26 +24,28 @@ void BasePlane::setAxisVisible(bool axisVisible)
 
 void BasePlane::drawCuts()
 {
+    setColor({255, 255, 255});
+
     for (int x = centre.x; x < BR.x; x += xScale * cutStepX)
-        SDL_RenderLine(renderer, x, centre.y - cutsLength, x, centre.y + cutsLength);
+        drawLine({x, centre.y - cutsLength}, {x, centre.y + cutsLength});
     for (int x = centre.x; x > TL.x; x -= xScale * cutStepX)
-        SDL_RenderLine(renderer, x, centre.y - cutsLength, x, centre.y + cutsLength);
+        drawLine({x, centre.y - cutsLength}, {x, centre.y + cutsLength});
     for (int y = centre.y; y < BR.y; y += yScale * cutStepY)
-        SDL_RenderLine(renderer, centre.x - cutsLength, y, centre.x + cutsLength, y);
+        drawLine({centre.x - cutsLength, y}, {centre.x + cutsLength, y});
     for (int y = centre.y; y > TL.y; y -= yScale * cutStepY)
-        SDL_RenderLine(renderer, centre.x - cutsLength, y, centre.x + cutsLength, y);
+        drawLine({centre.x - cutsLength, y}, {centre.x + cutsLength, y});
 }
 
 void BasePlane::paint()
 {
-    drawRect(1);
-    drawRect(0, Vector(255, 255, 255));
+    drawWidgetRect(1);
+    drawWidgetRect(0, Vector(255, 255, 255));
 
     if (axisVisible)
     {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderLine(renderer, TL.x, centre.y, BR.x, centre.y);
-        SDL_RenderLine(renderer, centre.x, TL.y, centre.x, BR.y);
+        setColor({255, 255, 255});
+        drawLine({TL.x, centre.y}, {BR.x, centre.y});
+        drawLine({centre.x, TL.y}, {centre.x, BR.y});
 
         drawCuts();
     }
@@ -66,9 +68,9 @@ Vector BasePlane::objectToPlaneCoord(IntVec coord)
 }
 
 
-Plane::Plane(SDL_Renderer* renderer, IntVec TL, IntVec BR, IntVec centre,
+Plane::Plane(IntVec TL, IntVec BR, IntVec centre,
     double xScale, double cutStepX, double yScale, double cutStepY) :
-    BasePlane(renderer, TL, BR, centre, xScale, cutStepX, yScale, cutStepY)
+    BasePlane(TL, BR, centre, xScale, cutStepX, yScale, cutStepY)
 {
     //
 }
@@ -81,16 +83,17 @@ void Plane::paint()
     {
         Vector point = points[nPoint], color = pointColors[nPoint];
         IntVec planePoint = planeToObjectCoord(point);
-        SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 255);
-    
-        SDL_RenderPoint(renderer, planePoint.x, planePoint.y);
+
+        setColor(color);
+        drawPoint(planePoint);
     }
 
     for (int nVec = 0; nVec < vectors.size(); ++nVec)
     {
         FixedVector vec = vectors[nVec];
         Vector color = vectorColors[nVec];
-        SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 255);
+
+        setColor(color);
         drawVector(vec, color);
     }
 }
@@ -109,16 +112,17 @@ void Plane::addVector(FixedVector vec, Vector color)
 
 void Plane::drawVector(FixedVector v, Vector color)
 {
-    SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 255);
+    setColor(color);
     IntVec p1 = planeToObjectCoord(v.p1), p2 = planeToObjectCoord(v.p2);
-    SDL_RenderLine(renderer, p1.x, p1.y, p2.x, p2.y);
+    drawLine({p1.x, p1.y}, {p2.x, p2.y});
 
     Vector vec = fixedToFree(v);
     Vector ort1 = {vec.y, -vec.x}, ort2 = {-vec.y, vec.x};
     Vector e1 = (ort1 - vec) * arrowCoeff, e2 = (ort2 - vec) * arrowCoeff;
     IntVec e1Int = planeToObjectCoord(v.p2 + e1), e2Int = planeToObjectCoord(v.p2 + e2);
 
-    fillConvexPolygon({p2, e2Int, e1Int}, color);
+    setColor(color);
+    fillConvexPolygon({p2, e2Int, e1Int});
 }
 
 
@@ -127,9 +131,9 @@ void Plane::drawVector(FixedVector v, Vector color)
 
 
 
-Graph::Graph(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
+Graph::Graph(int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
     IntVec TL, IntVec BR) : 
-    BasePlane(renderer, TL, BR, IntVec(TL.x * 0.8 + BR.x * 0.2, TL.y * 0.2 + BR.y * 0.8, 0), 
+    BasePlane(TL, BR, IntVec(TL.x * 0.8 + BR.x * 0.2, TL.y * 0.2 + BR.y * 0.8, 0), 
     1, 10, yScale, cutStepY)
 {
     this->nGraphs = nGraphs;
@@ -144,14 +148,14 @@ void Graph::drawGraphs()
 {
     for (int nGraph = 0; nGraph < nGraphs; ++nGraph)
     {
-        SDL_SetRenderDrawColor(renderer, colors[nGraph].x, colors[nGraph].y, colors[nGraph].z, 255);
+        setColor(colors[nGraph]);
         for (int i = 0; i < nPoints; ++i)
         {
             IntVec objectPoint = planeToObjectCoord(Vector(i, -points[nGraph][i], 0));
             if (inRect(objectPoint))
             {
-                SDL_SetRenderDrawColor(renderer, colors[nGraph].x, colors[nGraph].y, colors[nGraph].z, 255);
-                SDL_RenderPoint(renderer, objectPoint.x, objectPoint.y);
+                setColor(colors[nGraph]);
+                drawPoint(objectPoint);
             }
         }
     }
@@ -159,12 +163,12 @@ void Graph::drawGraphs()
 
 void Graph::paint()
 {
-    drawRect(1);
-    drawRect(0, Vector(255, 255, 255));
+    drawWidgetRect(1);
+    drawWidgetRect(0, Vector(255, 255, 255));
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderLine(renderer, TL.x, centre.y, BR.x, centre.y);
-    SDL_RenderLine(renderer, centre.x, TL.y, centre.x, BR.y);
+    setColor({255, 255, 255});
+    drawLine({TL.x, centre.y}, {BR.x, centre.y});
+    drawLine({centre.x, TL.y}, {centre.x, BR.y});
 
     drawCuts();
     drawGraphs();
@@ -183,8 +187,8 @@ void Graph::addPoint(std::vector<double> point)
 
 
 
-Clock::Clock(SDL_Renderer* renderer, IntVec TL, IntVec BR, double scale, double angleStep, double arrowLen) :
-    Plane(renderer, TL, BR, (TL + BR) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
+Clock::Clock(IntVec TL, IntVec BR, double scale, double angleStep, double arrowLen) :
+    Plane(TL, BR, (TL + BR) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
 {
     setAxisVisible(0);
     nCuts = 12;
@@ -197,7 +201,8 @@ void Clock::paint()
 {
     Plane::paint();
     int pixelArrowLen = arrowLen * xScale;
-    drawCircle(centre, pixelArrowLen, {255, 255, 255}, 0);
+    setColor({255, 255, 255});
+    drawCircle(centre, pixelArrowLen, 0);
 
     setColor({255, 255, 255});
     for (double angle = 0; angle < 3.1415 * 2; angle += 2 * 3.1415 / nCuts)
@@ -206,7 +211,8 @@ void Clock::paint()
             (pixelArrowLen - cutsLength) * std::sin(angle));
         IntVec v2 = centre + IntVec((pixelArrowLen + cutsLength) * std::cos(angle), 
             (pixelArrowLen + cutsLength) * std::sin(angle));
-        SDL_RenderLine(renderer, v1.x, v1.y, v2.x, v2.y);
+            
+        drawLine({v1.x, v1.y}, {v2.x, v2.y});
     }
 }
 

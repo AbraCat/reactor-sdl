@@ -1,12 +1,11 @@
 #include "widget.h"
+#include "sdl-adapter.h"
 
 #include <iostream>
-
 #include <cassert>
 
-Widget::Widget(SDL_Renderer* renderer, IntVec TL, IntVec BR, Widget* parent)
+Widget::Widget(IntVec TL, IntVec BR, Widget* parent)
 {
-    this->renderer = renderer;
     this->TL = TL;
     this->BR = BR;
 
@@ -41,17 +40,10 @@ void Widget::resize(IntVec newTL, IntVec newBR)
     height = BR.y - TL.y;
 }
 
-void Widget::drawRect(bool fill, Vector color)
+void Widget::drawWidgetRect(bool fill, Vector color)
 {
-    SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 255);
-    SDL_FRect rect;
-    rect.x = TL.x;
-    rect.y = TL.y;
-    rect.w = width;
-    rect.h = height;
-    
-    if (fill) SDL_RenderFillRect(renderer, &rect);
-    else SDL_RenderRect(renderer, &rect);
+    setColor(color);
+    drawRect(TL, BR, fill);
 }
 
 void Widget::put()
@@ -81,7 +73,7 @@ bool Widget::mouseReleaseEvent(MouseEvent* e) { return 0; }
 bool Widget::onIdle(IdleEvent* e) { return 0; }
 
 
-WContainer::WContainer(SDL_Renderer* renderer, IntVec TL, IntVec BR, int nChildren) : Widget(renderer, TL, BR)
+WContainer::WContainer(IntVec TL, IntVec BR, int nChildren) : Widget(TL, BR)
 {
     this->nChildren = nChildren;
     this->padding = 10;
@@ -103,7 +95,7 @@ void WContainer::addWidget(Widget* w)
 
 void WContainer::paint()
 {
-    drawRect(0, Vector(255, 255, 255));
+    drawWidgetRect(0, Vector(255, 255, 255));
 }
 
 

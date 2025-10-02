@@ -4,15 +4,13 @@
 #include "widget.h"
 #include "reactor.h"
 
-#include <SDL3/SDL.h>
-
 #include <cstdio>
 #include <string>
 
 class Button : public Widget
 {
 public:
-    Button(SDL_Renderer* renderer, IntVec TL, IntVec BR, Vector color, std::string text);
+    Button(IntVec TL, IntVec BR, Vector color, std::string text);
     virtual void paint() override;
 
     virtual bool mousePressEvent(MouseEvent* e) override;
@@ -29,7 +27,7 @@ public:
 class MoveWallButton : public Button
 {
 public:
-    MoveWallButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, int step, std::string text);
+    MoveWallButton(Reactor* reactor, Vector color, int step, std::string text);
     virtual void action() override;
 
 private:
@@ -40,7 +38,7 @@ private:
 class TemperatureButton : public Button
 {
 public:
-    TemperatureButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, double step, std::string text);
+    TemperatureButton(Reactor* reactor, Vector color, double step, std::string text);
     virtual void action() override;
 
 private:
@@ -51,7 +49,7 @@ private:
 class AddMolButton : public Button
 {
 public:
-    AddMolButton(SDL_Renderer* renderer, Reactor* reactor, Vector color, int nAddMols, std::string text);
+    AddMolButton(Reactor* reactor, Vector color, int nAddMols, std::string text);
     virtual void action() override;
 
 private:

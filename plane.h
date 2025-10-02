@@ -1,8 +1,6 @@
 #ifndef PLANEITEM_H
 #define PLANEITEM_H
 
-#include <SDL3/SDL.h>
-
 #include <vector>
 #include <iostream>
 
@@ -12,7 +10,7 @@
 class BasePlane : public Widget
 {
 public:
-    BasePlane(SDL_Renderer* renderer, IntVec TL, IntVec BR, IntVec centre,
+    BasePlane(IntVec TL, IntVec BR, IntVec centre,
         double xScale, double cutStepX, double yScale, double cutStepY);
 
     void setAxisVisible(bool axisVisible);
@@ -31,7 +29,7 @@ protected:
 class Plane : public BasePlane
 {
 public:
-    Plane(SDL_Renderer* renderer, IntVec TL, IntVec BR, IntVec centre,
+    Plane(IntVec TL, IntVec BR, IntVec centre,
         double xScale, double cutStepX, double yScale, double cutStepY);
 
     void drawVector(FixedVector v, Vector color);
@@ -48,7 +46,7 @@ protected:
 class Graph : public BasePlane
 {
 public:
-    Graph(SDL_Renderer* renderer, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
+    Graph(int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
         IntVec TL, IntVec BR);
 
     void drawGraphs();
@@ -65,7 +63,7 @@ private:
 class Clock : public Plane
 {
 public:
-    Clock(SDL_Renderer* renderer, IntVec TL, IntVec BR, double scale, double angleStep, double arrowLen);
+    Clock(IntVec TL, IntVec BR, double scale, double angleStep, double arrowLen);
     virtual void paint() override;
     virtual bool onIdle(IdleEvent* e) override;
     

@@ -1,8 +1,6 @@
 #ifndef REACTOR_H
 #define REACTOR_H
 
-#include <SDL3/SDL.h>
-
 #include <vector>
 
 #include "myvector.h"
@@ -38,7 +36,7 @@ public:
     virtual ~Molecule() = default;
 
     virtual void collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule* other) = 0;
-    virtual void draw(SDL_Renderer* renderer) = 0;
+    virtual void draw() = 0;
 };
 
 class RoundMol : public Molecule
@@ -47,7 +45,7 @@ public:
     RoundMol(int mass, Vector v, Vector pos);
 
     virtual void collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule* other);
-    virtual void draw(SDL_Renderer* renderer) override;
+    virtual void draw() override;
 };
 
 class SquareMol : public Molecule
@@ -56,13 +54,13 @@ public:
     SquareMol(int mass, Vector v, Vector pos);
 
     virtual void collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule* other);
-    virtual void draw(SDL_Renderer* renderer) override;
+    virtual void draw() override;
 };
 
 class Reactor : public Widget
 {
 public:
-    Reactor(SDL_Renderer* renderer, IntVec TL, IntVec BR);
+    Reactor(IntVec TL, IntVec BR);
     ~Reactor();
     virtual void paint() override;
     virtual void resize(IntVec newTL, IntVec newBR) override;

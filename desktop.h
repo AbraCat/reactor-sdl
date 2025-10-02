@@ -1,8 +1,6 @@
 #ifndef MY_APP_H
 #define MY_APP_H
 
-#include <SDL3/SDL.h>
-
 #include "widget.h"
 #include "plane.h"
 #include "reactor.h"
@@ -11,7 +9,7 @@
 class Desktop : public Widget
 {
 public:
-    Desktop(SDL_Renderer* renderer);
+    Desktop();
     ~Desktop();
 
     virtual bool onIdle(IdleEvent* e) override;
