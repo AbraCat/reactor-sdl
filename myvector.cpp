@@ -16,7 +16,7 @@ Vector::Vector(double x, double y, double z)
     this->y = y;
     this->z = z;
 }
-
+Vector::Vector(IntVec v) : x(v.x), y(v.y), z(v.z) {};
 
 Vector operator+(Vector v1, Vector v2) { return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z}; }
 Vector operator-(Vector v1, Vector v2) { return {v1.x - v2.x, v1.y - v2.y, v1.z - v2.z}; }
@@ -74,6 +74,11 @@ Vector limitVector(Vector v, double lower, double upper)
     return v;
 }
 
+double arg(Vector v)
+{
+    return std::atan2(v.y, v.x);
+}
+
 
 IntVec::IntVec() { this->x = this->y = this->z = 0; };
 IntVec::IntVec(int x, int y)
@@ -88,20 +93,15 @@ IntVec::IntVec(int x, int y, int z)
     this->y = y;
     this->z = z;
 }
+IntVec::IntVec(Vector v) : x(v.x), y(v.y), z(v.z) {};
 
 
 IntVec operator+(IntVec v1, IntVec v2) { return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z}; }
 IntVec operator-(IntVec v1, IntVec v2) { return {v1.x - v2.x, v1.y - v2.y, v1.z - v2.z}; }
 IntVec operator*(IntVec v1, IntVec v2) { return {v1.x * v2.x, v1.y * v2.y, v1.z * v2.z}; }
-
-IntVec operator*(IntVec v, int a) { return {v.x * a, v.y * a, v.z * a}; }
-IntVec operator/(IntVec v, int a) { return {v.x / a, v.y / a, v.z / a}; }
  
 IntVec& operator+=(IntVec& v1, IntVec v2) { v1 = v1 + v2; return v1; }
 IntVec& operator-=(IntVec& v1, IntVec v2) { v1 = v1 - v2; return v1; }
-
-IntVec& operator*=(IntVec& v, int a) { v = v * a; return v; }
-IntVec& operator/=(IntVec& v, int a) { v = v / a; return v; }
 
 int operator^(IntVec a, IntVec b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 void print(IntVec v) { printf("vector %d %d %d\n", v.x, v.y, v.z); }

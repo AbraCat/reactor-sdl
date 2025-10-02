@@ -1,29 +1,84 @@
 #include "sdl-adapter.h"
 
 #include <cmath>
+#include <cassert>
 
+#include <cstdio>
+
+const double Pi = 3.1415926;
 static SDL_Renderer* rend = nullptr;
 
 void setRenderer(SDL_Renderer* renderer) { rend = renderer; }
-
 void setColor(Vector color) { SDL_SetRenderDrawColor(rend, color.x, color.y, color.z, 255); }
 
-void drawCircle(IntVec centre, int r, Vector color)
+void drawCircle(IntVec centre, int r, Vector color, bool fill)
 {
     setColor(color);
 
-    for (int x = centre.x - r; x <= centre.x + r; ++x)
+    if (fill)
     {
-        // (x - x0)^2 + (y - y0)^2 = r^2
-        int yUp = centre.y + std::sqrt(r * r - (centre.x - x) * (centre.x - x));
-        int yDown = centre.y - std::sqrt(r * r - (centre.x - x) * (centre.x - x));
+        for (int x = centre.x - r; x <= centre.x + r; ++x)
+        {
+            for (int y = centre.y - r; y <= centre.y + r; ++y)
+            {
+                if ((x - centre.x) * (x - centre.x) + (y - centre.y) * (y - centre.y) <= r * r)
+                    SDL_RenderPoint(rend, x, y);
+            }
+        }
 
-        SDL_RenderPoint(rend, x, yUp);
-        SDL_RenderPoint(rend, x, yDown);
+        return;
+    }
+
+    double angleStep = 0.01;
+    int nSteps = 3.1415 * 2 / angleStep;
+    FixedVector v{Vector(centre.x, centre.y), Vector(centre.x, centre.y) + Vector(r, 0)};
+
+    while (nSteps--)
+    {
+        SDL_RenderPoint(rend, v.p2.x, v.p2.y);
+        v = rotateV(v, angleStep);
     }
 }
 
 void fillConvexPolygon(std::vector<IntVec> points, Vector color)
 {
-    //
+    // assume points go in clockwise order
+
+    setColor(color);
+    int nPts = points.size();
+    assert(nPts >= 3);
+
+    IntVec tl = points[0], br = points[0];
+    for (int i = 0; i < nPts; ++i)
+    {
+        tl.x = std::min(tl.x, points[i].x);
+        tl.y = std::min(tl.y, points[i].y);
+        br.x = std::max(br.x, points[i].x);
+        br.y = std::max(br.y, points[i].y);
+    }
+
+    for (int x = tl.x; x <= br.x; ++x)
+    {
+        for (int y = tl.y; y <= br.y; ++y)
+        {
+            bool inPolygon = 1;
+            for (int i = 0; i < nPts; ++i)
+            {
+                IntVec pt1 = points[i], pt2 = points[(i + 1) % nPts];
+                Vector v1 = pt2 - pt1, v2 = IntVec(x, y) - pt2;
+
+                double arg1 = std::atan2(-v1.y, v1.x), arg2 = std::atan2(-v2.y, v2.x);
+                double angle = arg1 - arg2; // in [-2pi, 2pi]
+                if (-Pi <= angle && angle <= 0 || Pi <= angle && angle <= 2 * Pi)
+                {
+                    inPolygon = 0;
+                    break;
+                }
+            }
+
+            if (inPolygon)
+                SDL_RenderPoint(rend, x, y);
+        }
+    }
+
 }

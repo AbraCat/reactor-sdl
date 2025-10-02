@@ -1,6 +1,8 @@
 #ifndef MYVECTOR_H
 #define MYVECTOR_H
 
+class Vector;
+class IntVec;
 
 class Vector
 {
@@ -8,6 +10,7 @@ public:
     Vector();
     Vector(double x, double y);
     Vector(double x, double y, double z);
+    Vector(IntVec v);
 
     double x, y, z;
 };
@@ -39,6 +42,8 @@ Vector ortog(Vector a, Vector n);
 double dist(Vector p, Vector a, Vector n);
 Vector limitVector(Vector v, double lower, double upper);
 
+double arg(Vector v);
+
 
 
 
@@ -48,6 +53,7 @@ public:
     IntVec();
     IntVec(int x, int y);
     IntVec(int x, int y, int z);
+    IntVec(Vector v);
 
     int x, y, z;
 };
@@ -56,13 +62,8 @@ IntVec operator+(IntVec v1, IntVec v2);
 IntVec operator-(IntVec v1, IntVec v2);
 IntVec operator*(IntVec v1, IntVec v2);
 
-IntVec operator*(IntVec v, int a);
-IntVec operator/(IntVec v, int a);
-
 IntVec& operator+=(IntVec& v1, IntVec v2);
 IntVec& operator-=(IntVec& v1, IntVec v2);
-IntVec& operator*=(IntVec& v, int a);
-IntVec& operator/=(IntVec& v, int a);
 
 int operator^(IntVec a, IntVec b);
 
