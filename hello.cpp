@@ -26,7 +26,6 @@ static Desktop* desktop;
 /*
 TODO:
 
-clock
 sdl adapter
 texture manager (texture is an array of pixel colors)
 only redraw widgets if they change
@@ -42,12 +41,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     setRenderer(renderer);
 
-    // drawCircle({500, 500}, 10, {255, 0, 0});
-    // int k = 3.5;
-    // IntVec v1(10 * k, 10 * k), v2(20 * k, 10 * k), v3(10 * k, 20 * k);
-    // fillConvexPolygon({v1, v2, v3}, {255, 0, 0});
-
-    // desktop = new Desktop(renderer);
+    desktop = new Desktop(renderer);
     return SDL_APP_CONTINUE;
 }
 
@@ -79,17 +73,11 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    // desktop->handleEvent(new IdleEvent());
-    // desktop->put();
-
-    int k = 10;
-    IntVec v1(11 * k, 9 * k), v2(20 * k, 10 * k), v4(190, 150), v5(150, 190), v3(10 * k, 20 * k);
-    fillConvexPolygon({v1, v2, v4, v5, v3}, {255, 127, 0});
-
-    drawCircle({200, 200}, 50, {255, 0, 0}, 1);
+    desktop->handleEvent(new IdleEvent());
+    desktop->put();
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(1000.0 / 10);
+    SDL_Delay(1000.0 / 30);
     return SDL_APP_CONTINUE;
 }
 

@@ -1,4 +1,5 @@
 #include "plane.h"
+#include "sdl-adapter.h"
 
 #include <cmath>
 
@@ -112,18 +113,12 @@ void Plane::drawVector(FixedVector v, Vector color)
     IntVec p1 = planeToObjectCoord(v.p1), p2 = planeToObjectCoord(v.p2);
     SDL_RenderLine(renderer, p1.x, p1.y, p2.x, p2.y);
 
-    // Vector vec = fixedToFree(v);
-    // Vector ort1 = {vec.y, -vec.x}, ort2 = {-vec.y, vec.x};
-    // Vector e1 = (ort1 - vec) * arrowCoeff, e2 = (ort2 - vec) * arrowCoeff;
-    // IntVec e1Int = planeToObjectCoord(v.p2 + e1), e2Int = planeToObjectCoord(v.p2 + e2);
+    Vector vec = fixedToFree(v);
+    Vector ort1 = {vec.y, -vec.x}, ort2 = {-vec.y, vec.x};
+    Vector e1 = (ort1 - vec) * arrowCoeff, e2 = (ort2 - vec) * arrowCoeff;
+    IntVec e1Int = planeToObjectCoord(v.p2 + e1), e2Int = planeToObjectCoord(v.p2 + e2);
 
-    // DRAW ARROW
-
-    // QPolygon polygon;
-    // polygon << QPoint(p2.x, -p2.y) << QPoint(e1Int.x, -e1Int.y) << QPoint(e2Int.x, -e2Int.y);
-    // painter->setBrush(Qt::black);
-    // painter->drawPolygon(polygon);
-    // painter->setBrush(Qt::transparent);
+    fillConvexPolygon({p2, e2Int, e1Int}, color);
 }
 
 
@@ -192,6 +187,7 @@ Clock::Clock(SDL_Renderer* renderer, IntVec TL, IntVec BR, double scale, double 
     Plane(renderer, TL, BR, (TL + BR) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
 {
     setAxisVisible(0);
+    nCuts = 12;
 
     vectors.push_back({{0, 0, 0}, {arrowLen, 0, 0}});
     vectorColors.push_back({255, 255, 255});
@@ -200,8 +196,18 @@ Clock::Clock(SDL_Renderer* renderer, IntVec TL, IntVec BR, double scale, double 
 void Clock::paint()
 {
     Plane::paint();
+    int pixelArrowLen = arrowLen * xScale;
+    drawCircle(centre, pixelArrowLen, {255, 255, 255}, 0);
 
-    //
+    setColor({255, 255, 255});
+    for (double angle = 0; angle < 3.1415 * 2; angle += 2 * 3.1415 / nCuts)
+    {
+        IntVec v1 = centre + IntVec((pixelArrowLen - cutsLength) * std::cos(angle), 
+            (pixelArrowLen - cutsLength) * std::sin(angle));
+        IntVec v2 = centre + IntVec((pixelArrowLen + cutsLength) * std::cos(angle), 
+            (pixelArrowLen + cutsLength) * std::sin(angle));
+        SDL_RenderLine(renderer, v1.x, v1.y, v2.x, v2.y);
+    }
 }
 
 bool Clock::onIdle(IdleEvent* e)

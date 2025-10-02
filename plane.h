@@ -70,6 +70,7 @@ public:
     virtual bool onIdle(IdleEvent* e) override;
     
 private:
+    int nCuts;
     double arrowLen, angleStep;
     FixedVector* arrow;
 };
