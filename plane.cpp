@@ -14,6 +14,9 @@ BasePlane::BasePlane(IntVec TL, IntVec BR, IntVec centre,
     double xScale, double cutStepX, double yScale, double cutStepY) : Widget(TL, BR),
     xScale(xScale), yScale(yScale), cutStepX(cutStepX), cutStepY(cutStepY), centre(centre)
 {
+    setBorderVisible(1);
+    setFillRect(1);
+
     axisVisible = 1;
 }
 
@@ -38,8 +41,7 @@ void BasePlane::drawCuts()
 
 void BasePlane::paint()
 {
-    drawWidgetRect(1);
-    drawWidgetRect(0, Vector(255, 255, 255));
+    Widget::paint();
 
     if (axisVisible)
     {
@@ -163,8 +165,7 @@ void Graph::drawGraphs()
 
 void Graph::paint()
 {
-    drawWidgetRect(1);
-    drawWidgetRect(0, Vector(255, 255, 255));
+    BasePlane::paint();
 
     setColor({255, 255, 255});
     drawLine({TL.x, centre.y}, {BR.x, centre.y});
@@ -191,8 +192,9 @@ Clock::Clock(IntVec TL, IntVec BR, double scale, double angleStep, double arrowL
     Plane(TL, BR, (TL + BR) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
 {
     setAxisVisible(0);
+    setBorderVisible(0);
+    
     nCuts = 12;
-
     vectors.push_back({{0, 0, 0}, {arrowLen, 0, 0}});
     vectorColors.push_back({255, 255, 255});
 }
@@ -200,6 +202,7 @@ Clock::Clock(IntVec TL, IntVec BR, double scale, double angleStep, double arrowL
 void Clock::paint()
 {
     Plane::paint();
+
     int pixelArrowLen = arrowLen * xScale;
     setColor({255, 255, 255});
     drawCircle(centre, pixelArrowLen, 0);

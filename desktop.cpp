@@ -2,37 +2,38 @@
 #include "plane.h"
 #include "reactor.h"
 
-IntVec stdTL(0, 0, 0), stdBR(500, 500, 0);
+IntVec stdTL(0, 0, 0), stdBR(1000, 1800, 0);
 int nButtons = 6, wallStep = 10, nAddMols = 10;
 double tempStep = 1;
 
+const int r_size = 600, b_pad = 200, c_size = 200;
+
 Desktop::Desktop() : Widget(stdTL, stdBR)
 {
-    reactor = new Reactor({0, 0, 0}, {600, 600, 0});
+    reactor = new Reactor({b_pad, 0}, {b_pad + r_size, r_size, 0});
     addChild(reactor);
 
-    energy_graph = new Graph(1, {{255, 255, 255}}, 0.03, 1e3, {700, 10, 0}, {1000, 310, 0});
-    cnt_graph = new Graph(2, {{0, 0, 255}, {255, 0, 0}}, 1, 10, {700, 320, 0}, {1000, 620, 0});
+    energy_graph = new Graph(1, {{255, 255, 255}}, 0.05, 1e3, 
+        {b_pad + r_size, 0}, {b_pad + r_size * 3 / 2, r_size / 2, 0});
+    cnt_graph = new Graph(2, {{0, 0, 255}, {255, 0, 0}}, 1.5, 10, 
+        {b_pad + r_size, r_size / 2}, {b_pad + r_size * 3 / 2, r_size, 0});
     addChild(energy_graph);
     addChild(cnt_graph);
 
-    // Plane* plane = new Plane({700, 700}, {1000, 1000}, {850, 850}, 10, 1, 10, 1);
-    // plane->addPoint({5, 2}, {255, 0, 0});
-    // addChild(plane);
-
-    clock = new Clock({700, 700}, {1000, 1000}, 100, 3.14 / 60, 1);
+    clock = new Clock({b_pad + r_size * 3 / 2, 0}, {b_pad + r_size * 3 / 2 + c_size, c_size}, 
+        c_size * 2 / 5, 3.14 / 60, 1);
     addChild(clock);
 
-    MoveWallButton* lftButton = new MoveWallButton(reactor, Vector(0, 0, 255), -wallStep, "move left");
-    MoveWallButton* rgtButton = new MoveWallButton(reactor, Vector(255, 0, 255), wallStep, "move right");
+    MoveWallButton* lftButton = new MoveWallButton(reactor, Vector(0, 0, 255), -wallStep, "Move left");
+    MoveWallButton* rgtButton = new MoveWallButton(reactor, Vector(255, 0, 255), wallStep, "Move right");
     TemperatureButton* tempUpButton = new TemperatureButton(reactor, Vector(255, 0, 0), 
-        tempStep, "temp up");
+        tempStep, "Temp up");
     TemperatureButton* tempDownButton = new TemperatureButton(reactor, Vector(255, 127, 0), 
-        -tempStep, "temp down");
-    AddMolButton* addMolButton = new AddMolButton(reactor, Vector(0, 255, 0), nAddMols, "add mols");
-    AddMolButton* removeMolButton = new AddMolButton(reactor, Vector(255, 255), -nAddMols, "remove mols");
+        -tempStep, "Temp down");
+    AddMolButton* addMolButton = new AddMolButton(reactor, Vector(0, 255, 0), nAddMols, "Add mols");
+    AddMolButton* removeMolButton = new AddMolButton(reactor, Vector(255, 255), -nAddMols, "Remove mols");
 
-    button_container = new WContainer(IntVec(0, 610), IntVec(600, 710), nButtons);
+    button_container = new WContainer({0, 0}, {b_pad, r_size}, nButtons, 1);
     button_container->addWidget(lftButton);
     button_container->addWidget(rgtButton);
     button_container->addWidget(tempUpButton);
@@ -45,6 +46,11 @@ Desktop::Desktop() : Widget(stdTL, stdBR)
 Desktop::~Desktop()
 {
     //
+}
+
+void Desktop::paint()
+{
+    drawWidgetRect(1);
 }
 
 bool Desktop::onIdle(IdleEvent* e)

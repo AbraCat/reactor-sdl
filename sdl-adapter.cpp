@@ -35,7 +35,11 @@ void drawRect(IntVec tl, IntVec br, bool fill)
 
 void putText(std::string text, IntVec tl, IntVec br)
 {
-    SDL_RenderDebugText(rend, tl.x, (tl.y + br.y) / 2 - 5, text.c_str());
+    double scale = 2;
+
+    SDL_SetRenderScale(rend, scale, scale);
+    SDL_RenderDebugText(rend, (tl.x + 5) / scale, ((tl.y + br.y) / 2 - 5) / scale, text.c_str());
+    SDL_SetRenderScale(rend, 1, 1);
 }
 
 void drawCircle(IntVec centre, int r, bool fill)

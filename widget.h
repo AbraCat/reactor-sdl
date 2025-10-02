@@ -18,9 +18,13 @@ public:
     Widget(IntVec TL, IntVec BR, Widget* parent = nullptr);
     ~Widget();
 
+    void setBorderVisible(bool visible);
+    void setFillRect(bool fill, Vector color = Vector(0, 0, 0));
+
     void drawWidgetRect(bool fill, Vector color = Vector(0, 0, 0));
     bool inRect(IntVec point);
     virtual void resize(IntVec newTL, IntVec newBR);
+
     void put();
     virtual void paint();
 
@@ -30,9 +34,12 @@ public:
     virtual bool onIdle(IdleEvent* e);
     virtual bool mousePressEvent(MouseEvent* e);
     virtual bool mouseReleaseEvent(MouseEvent* e);
-
+protected:
     IntVec TL, BR;
     int width, height;
+
+    Vector fill_rect_color;
+    bool border_visible, fill_rect;
 
     Widget *parent;
     std::vector<Widget*> children;
@@ -41,12 +48,13 @@ public:
 class WContainer : public Widget
 {
 public:
-    WContainer(IntVec TL, IntVec BR, int nChildren);
+    WContainer(IntVec TL, IntVec BR, int nChildren, bool vertical);
     virtual void paint() override;
 
     void addWidget(Widget* widget);
 
 private:
+    bool vertical;
     int nChildren, padding, childWidth, childHeight;
 };
 

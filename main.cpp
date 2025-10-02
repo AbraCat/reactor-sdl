@@ -26,7 +26,6 @@ static Desktop* desktop;
 /*
 TODO:
 
-sdl adapter
 texture manager (texture is an array of pixel colors)
 only redraw widgets if they change
 */
