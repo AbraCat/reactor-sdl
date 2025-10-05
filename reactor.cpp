@@ -45,7 +45,7 @@ void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* n
     *x2 = (-b + std::sqrt(d)) / (2 * a);
 }
 
-Molecule::Molecule(int mass, Vector v, Vector pos, MolType type)
+Molecule::Molecule(int mass, Vector v, Vector pos, MolType type, Reactor* reactor) : reactor(reactor)
 {
     this->status = MOL_VALID;
 
@@ -56,8 +56,10 @@ Molecule::Molecule(int mass, Vector v, Vector pos, MolType type)
     this->type = type;
 }
 
-RoundMol::RoundMol(int mass, Vector v, Vector pos) : Molecule(mass, v, pos, MOL_ROUND) {};
-SquareMol::SquareMol(int mass, Vector v, Vector pos) : Molecule(mass, v, pos, MOL_SQUARE) {};
+RoundMol::RoundMol(int mass, Vector v, Vector pos, Reactor* reactor) : 
+    Molecule(mass, v, pos, MOL_ROUND, reactor) {};
+SquareMol::SquareMol(int mass, Vector v, Vector pos, Reactor* reactor) : 
+    Molecule(mass, v, pos, MOL_SQUARE, reactor) {};
 
 void RoundMol::collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule* other)
 {
@@ -66,13 +68,13 @@ void RoundMol::collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule
         case MOL_ROUND:
         {
             Vector newV = (this->v * this->mass + other->v * other->mass) / (this->mass + other->mass);
-            SquareMol* newMol = new SquareMol(this->mass + other->mass, newV, collidePos);
+            SquareMol* newMol = new SquareMol(this->mass + other->mass, newV, collidePos, reactor);
             mols.push_back(newMol);
             break;
         }
         case MOL_SQUARE:
             Vector newV = (this->v * this->mass + other->v * other->mass) / (this->mass + other->mass);
-            SquareMol* newMol = new SquareMol(this->mass + other->mass, newV, collidePos);
+            SquareMol* newMol = new SquareMol(this->mass + other->mass, newV, collidePos, reactor);
             mols.push_back(newMol);
             break;
     }
@@ -99,7 +101,7 @@ void SquareMol::collide(std::vector<Molecule*>& mols, Vector collidePos, Molecul
             {
                 double angle = angle0 + i * (2 * Pi / n);
                 Vector newV = Vector(vMod * std::cos(angle), vMod * std::sin(angle), 0) + vImpulse;
-                mols.push_back(new RoundMol(1, newV, collidePos + newV * explodeDT));
+                mols.push_back(new RoundMol(1, newV, collidePos + newV * explodeDT, reactor));
             }
 
             break;
@@ -110,23 +112,24 @@ void SquareMol::collide(std::vector<Molecule*>& mols, Vector collidePos, Molecul
 void RoundMol::draw()
 {
     setColor({0, 0, 255});
-    drawCircle(pos, r, 1);
+    drawCircle(reactor->getAbsTL() + (IntVec)pos, r, 1);
 }
 
 void SquareMol::draw()
 {
     setColor({255, 0, 0});
-    drawRect(pos - Vector(r, r), pos + Vector(r, r), 1);
+    drawRect(reactor->getAbsTL() + (IntVec)pos - IntVec(r, r), 
+             reactor->getAbsTL() + (IntVec)pos + IntVec(r, r), 1);
 }
 
 Molecule* Reactor::randMolecule()
 {
     Vector v = Vector(randDouble(-spawnV, spawnV), randDouble(-spawnV, spawnV), 0);
-    Vector pos = Vector(randDouble(tl.x + spawnPad, br.x - spawnPad), 
-                        randDouble(tl.y + spawnPad, br.y - spawnPad), 0);
+    Vector pos = Vector(randDouble(spawnPad, width - spawnPad), 
+                        randDouble(spawnPad, height - spawnPad), 0);
 
-    if (rand() % 2) return new RoundMol(1, v, pos);
-    else return new SquareMol(randInt(1, spawnM), v, pos);
+    if (rand() % 2) return new RoundMol(1, v, pos, this);
+    else return new SquareMol(randInt(1, spawnM), v, pos, this);
 }
 
 void Reactor::moveWall(int step)
@@ -168,13 +171,12 @@ void Reactor::addButton(Vector color)
     //
 }
 
-Reactor::Reactor(IntVec tl, IntVec br) : Widget(tl, br)
+Reactor::Reactor(IntVec tl, IntVec br, Widget* parent) : Widget(tl, br, parent)
 {
     #define BUTTON_ACTION(function)\
     QObject::connect(buttons[buttons.size() - 1], &Button::pressed, this, [this]{ function; });
 
-    walltl = tl + IntVec(wallDist, wallDist, 0);
-    wallbr = br - IntVec(wallDist, wallDist, 0);
+    resize(tl, br);
 
     mols = std::vector<Molecule*>();
     mols.reserve(nReserve);
@@ -210,8 +212,9 @@ Reactor::~Reactor()
 void Reactor::resize(IntVec newtl, IntVec newbr)
 {
     Widget::resize(newtl, newbr);
-    walltl = tl + IntVec(wallDist, wallDist, 0);
-    wallbr = br - IntVec(wallDist, wallDist, 0);
+    
+    walltl = IntVec(wallDist, wallDist, 0);
+    wallbr = IntVec(width, height) - IntVec(wallDist, wallDist, 0);
 }
 
 void Reactor::checkWallCollision(Molecule* mol)
@@ -248,6 +251,7 @@ void Reactor::checkWallCollision(Molecule* mol)
 
     mol->status = MOL_WALL_BOUNCE;
 }
+
 
 void Reactor::checkMolCollision(Molecule* mol, Molecule* mol2)
 {
@@ -322,7 +326,7 @@ void Reactor::paint()
 {
     drawWidgetRect(1);
     setColor({255, 255, 255});
-    drawRect(walltl, wallbr, 0);
+    drawRect(absTL + walltl, absTL + wallbr, 0);
 
     for (std::vector<Molecule*>::iterator molIter = mols.begin(); molIter != mols.end(); molIter++)
     {

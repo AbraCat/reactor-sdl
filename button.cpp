@@ -5,7 +5,7 @@
 
 const double unpressColorCoeff = 0.7;
 
-Button::Button(IntVec tl, IntVec br, Vector color, std::string text) : Widget(tl, br)
+Button::Button(Widget* parent, IntVec tl, IntVec br, Vector color, std::string text) : Widget(tl, br, parent)
 {
     this->press_color = color;
     this->unpress_color = color * unpressColorCoeff;
@@ -20,12 +20,14 @@ void Button::paint()
     else drawWidgetRect(1, unpress_color);
 
     setColor({255, 255, 255});
-    putText(text, tl, br);
+    putText(text, absTL, absTL + wh);
 }
 
 bool Button::mousePressEvent(MouseEvent* e)
 {
-    if (!inRect(IntVec(e->x, e->y))) return 0;
+    Widget::mousePressEvent(e);
+
+    if (!inAbsRect(IntVec(e->x, e->y))) return 0;
     if (is_pressed) return 0;
 
     is_pressed = 1;
@@ -35,6 +37,8 @@ bool Button::mousePressEvent(MouseEvent* e)
 
 bool Button::mouseReleaseEvent(MouseEvent* e)
 {
+    Widget::mouseReleaseEvent(e);
+
     is_pressed = 0;
     return 0;
 }
@@ -44,8 +48,11 @@ void Button::unpress()
     is_pressed = 0;
 }
 
-MoveWallButton::MoveWallButton(Reactor* reactor, Vector color, int step, std::string text)
-    : Button(IntVec(), IntVec(), color, text)
+
+
+
+MoveWallButton::MoveWallButton(Widget* parent, Reactor* reactor, Vector color, int step, std::string text)
+    : Button(parent, IntVec(), IntVec(), color, text)
 {
     this->reactor = reactor;
     this->step = step;
@@ -56,8 +63,8 @@ void MoveWallButton::action()
     reactor->moveWall(step);
 }
 
-TemperatureButton::TemperatureButton(Reactor* reactor, Vector color, double step, std::string text)
-    : Button(IntVec(), IntVec(), color, text)
+TemperatureButton::TemperatureButton(Widget* parent, Reactor* reactor, Vector color, double step, std::string text)
+    : Button(parent, IntVec(), IntVec(), color, text)
 {
     this->reactor = reactor;
     this->step = step;
@@ -68,8 +75,8 @@ void TemperatureButton::action()
     reactor->increaseTemp(step);
 }
 
-AddMolButton::AddMolButton(Reactor* reactor, Vector color, int nAddMols, std::string text)
-    : Button(IntVec(), IntVec(), color, text)
+AddMolButton::AddMolButton(Widget* parent, Reactor* reactor, Vector color, int nAddMols, std::string text)
+    : Button(parent, IntVec(), IntVec(), color, text)
 {
     this->reactor = reactor;
     this->nAddMols = nAddMols;

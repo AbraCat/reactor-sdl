@@ -10,8 +10,10 @@ class ScrollButton;
 class ScrollBar : public Widget
 {
 public:
-    ScrollBar(IntVec tl, IntVec br, Widget* parent = nullptr);
+    ScrollBar(Widget* parent, IntVec tl, IntVec br);
     void moveThumb(double frac);
+    void thumbMoved(IntVec newThumbTL);
+    virtual void action(double frac);
 
     double posToFrac(IntVec thumbTL);
     IntVec fracToPos(double frac);
@@ -38,6 +40,7 @@ class ScrollThumb : public Button
 public:
     ScrollThumb(IntVec tl, IntVec br, ScrollBar* bar, Vector color = {63, 63, 63});
     virtual void action() override;
+    virtual void movePos(IntVec newTL) override;
 
 private:
     ScrollBar *bar;

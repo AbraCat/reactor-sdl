@@ -3,6 +3,10 @@
 
 class Vector;
 class IntVec;
+class Rect;
+
+
+
 
 class Vector
 {
@@ -71,6 +75,17 @@ IntVec proj(IntVec a, IntVec n);
 IntVec ortog(IntVec a, IntVec n);
 int dist(IntVec p, IntVec a, IntVec n);
 IntVec limitVector(IntVec v, int lower, int upper);
+
+
+
+
+class Rect
+{
+public:
+    Rect(IntVec tl, IntVec br);
+    
+    IntVec tl, br;
+};
 
 
 

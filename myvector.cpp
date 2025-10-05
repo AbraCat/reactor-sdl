@@ -3,6 +3,16 @@
 #include <cmath>
 #include <cstdio>
 
+
+
+
+Rect::Rect(IntVec tl, IntVec br) : tl(tl), br(br)
+{
+    //
+}
+
+
+
 Vector::Vector() { this->x = this->y = this->z = 0; };
 Vector::Vector(double x, double y)
 {

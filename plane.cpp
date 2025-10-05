@@ -10,8 +10,8 @@ const double arrowCoeff = 0.1;
 
 
 
-BasePlane::BasePlane(IntVec tl, IntVec br, IntVec centre,
-    double xScale, double cutStepX, double yScale, double cutStepY) : Widget(tl, br),
+BasePlane::BasePlane(Widget* parent, IntVec tl, IntVec br, IntVec centre,
+    double xScale, double cutStepX, double yScale, double cutStepY) : Widget(tl, br, parent),
     xScale(xScale), yScale(yScale), cutStepX(cutStepX), cutStepY(cutStepY), centre(centre)
 {
     setBorderVisible(1);
@@ -70,9 +70,9 @@ Vector BasePlane::objectToPlaneCoord(IntVec coord)
 }
 
 
-Plane::Plane(IntVec tl, IntVec br, IntVec centre,
+Plane::Plane(Widget* parent, IntVec tl, IntVec br, IntVec centre,
     double xScale, double cutStepX, double yScale, double cutStepY) :
-    BasePlane(tl, br, centre, xScale, cutStepX, yScale, cutStepY)
+    BasePlane(parent, tl, br, centre, xScale, cutStepX, yScale, cutStepY)
 {
     //
 }
@@ -133,9 +133,9 @@ void Plane::drawVector(FixedVector v, Vector color)
 
 
 
-Graph::Graph(int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
+Graph::Graph(Widget* parent, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
     IntVec tl, IntVec br) : 
-    BasePlane(tl, br, IntVec(tl.x * 0.8 + br.x * 0.2, tl.y * 0.2 + br.y * 0.8, 0), 
+    BasePlane(parent, tl, br, IntVec(tl.x * 0.8 + br.x * 0.2, tl.y * 0.2 + br.y * 0.8, 0), 
     1, 10, yScale, cutStepY)
 {
     this->nGraphs = nGraphs;
@@ -188,8 +188,8 @@ void Graph::addPoint(std::vector<double> point)
 
 
 
-Clock::Clock(IntVec tl, IntVec br, double scale, double angleStep, double arrowLen) :
-    Plane(tl, br, (tl + br) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
+Clock::Clock(Widget* parent, IntVec tl, IntVec br, double scale, double angleStep, double arrowLen) :
+    Plane(parent, tl, br, (tl + br) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
 {
     setAxisVisible(0);
     setBorderVisible(0);

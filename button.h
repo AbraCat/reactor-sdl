@@ -10,7 +10,7 @@
 class Button : public Widget
 {
 public:
-    Button(IntVec tl, IntVec br, Vector color, std::string text);
+    Button(Widget* parent, IntVec tl, IntVec br, Vector color, std::string text);
     virtual void paint() override;
 
     virtual bool mousePressEvent(MouseEvent* e) override;
@@ -27,7 +27,7 @@ public:
 class MoveWallButton : public Button
 {
 public:
-    MoveWallButton(Reactor* reactor, Vector color, int step, std::string text);
+    MoveWallButton(Widget* parent, Reactor* reactor, Vector color, int step, std::string text);
     virtual void action() override;
 
 private:
@@ -38,7 +38,7 @@ private:
 class TemperatureButton : public Button
 {
 public:
-    TemperatureButton(Reactor* reactor, Vector color, double step, std::string text);
+    TemperatureButton(Widget* parent, Reactor* reactor, Vector color, double step, std::string text);
     virtual void action() override;
 
 private:
@@ -49,7 +49,7 @@ private:
 class AddMolButton : public Button
 {
 public:
-    AddMolButton(Reactor* reactor, Vector color, int nAddMols, std::string text);
+    AddMolButton(Widget* parent, Reactor* reactor, Vector color, int nAddMols, std::string text);
     virtual void action() override;
 
 private:

@@ -12,6 +12,13 @@ class Event;
 class MouseEvent;
 class IdleEvent;
 
+/*
+coordinate systems:
+
+absTL - absolute
+tl, br - parent
+everything else - this (if not said otherwise)
+*/
 class Widget
 {
 public:
@@ -20,9 +27,12 @@ public:
 
     void setBorderVisible(bool visible);
     void setFillRect(bool fill, Vector color = Vector(0, 0, 0));
+    IntVec getAbsTL();
+    // void propagateAbsChange();
 
     void drawWidgetRect(bool fill, Vector color = Vector(0, 0, 0));
     bool inRect(IntVec point);
+    bool inAbsRect(IntVec point);
     virtual void resize(IntVec newtl, IntVec newbr);
     virtual void movePos(IntVec newtl);
 
@@ -34,10 +44,17 @@ public:
 
     virtual bool onIdle(IdleEvent* e);
     virtual bool mousePressEvent(MouseEvent* e);
+    virtual bool mouseMoveEvent(MouseEvent* e);
     virtual bool mouseReleaseEvent(MouseEvent* e);
+
+    void setDraggable(IntVec dragTL = IntVec(), IntVec dragBR = IntVec());
+
 protected:
-    IntVec tl, br;
+    IntVec tl, br, wh, absTL;
     int width, height;
+
+    bool draggable, dragged;
+    IntVec dragTL, dragBR, dragMouse; // relative to parent
 
     Vector fill_rect_color;
     bool border_visible, fill_rect;
@@ -67,14 +84,21 @@ public:
     virtual bool dispatch(Widget* w) = 0;
 };
 
+enum MouseEnum
+{
+    MOUSE_DOWN,
+    MOUSE_UP,
+    MOUSE_MOVE
+};
+
 class MouseEvent : public Event
 {
 public:
-    MouseEvent(bool down, int x, int y);
+    MouseEvent(MouseEnum type, int x, int y);
     virtual bool dispatch(Widget* w) override;
 
     int x, y;
-    bool down;
+    MouseEnum type;
 };
 
 class IdleEvent : public Event

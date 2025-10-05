@@ -32,17 +32,20 @@ public:
     int mass, r;
     Vector v, pos;
 
-    Molecule(int mass, Vector v, Vector pos, MolType type);
+    Molecule(int mass, Vector v, Vector pos, MolType type, Reactor* reactor);
     virtual ~Molecule() = default;
 
     virtual void collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule* other) = 0;
     virtual void draw() = 0;
+
+protected:
+    Reactor* reactor;
 };
 
 class RoundMol : public Molecule
 {
 public:
-    RoundMol(int mass, Vector v, Vector pos);
+    RoundMol(int mass, Vector v, Vector pos, Reactor* reactor);
 
     virtual void collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule* other);
     virtual void draw() override;
@@ -51,7 +54,7 @@ public:
 class SquareMol : public Molecule
 {
 public:
-    SquareMol(int mass, Vector v, Vector pos);
+    SquareMol(int mass, Vector v, Vector pos, Reactor* reactor);
 
     virtual void collide(std::vector<Molecule*>& mols, Vector collidePos, Molecule* other);
     virtual void draw() override;
@@ -60,7 +63,7 @@ public:
 class Reactor : public Widget
 {
 public:
-    Reactor(IntVec tl, IntVec br);
+    Reactor(IntVec tl, IntVec br, Widget* parent);
     ~Reactor();
     virtual void paint() override;
     virtual void resize(IntVec newtl, IntVec newbr) override;

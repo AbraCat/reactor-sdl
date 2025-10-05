@@ -15,18 +15,18 @@ static Desktop* desktop;
 /*
 TODO:
 
-text rendering
-relative coordinates
-draggable widgets
+text rendering       -
+relative coordinates +
+draggable widgets    +
 
-scroll bar {
-up/down buttons
-thumb
-mouse wheel }
+scroll bar:
+up/down buttons +
+thumb           +
+mouse wheel     -
 
-texture manager
-only redraw widgets if they change
-texture rescaling
+texture manager                     -
+only redraw widgets if they change  -
+texture rescaling                   -
 */
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -50,18 +50,26 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         return SDL_APP_SUCCESS;
     }
 
+    if (event->type == SDL_EVENT_MOUSE_MOTION)
+    {
+        MouseEvent e(MOUSE_MOVE, event->button.x, event->button.y);
+        desktop->handleEvent(&e);
+        return SDL_APP_CONTINUE;
+    }
+
     if (event->button.button == SDL_BUTTON_LEFT)
     {
-        if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+        MouseEnum type;
+        switch (event->type)
         {
-            MouseEvent e(1, event->button.x, event->button.y);
-            desktop->handleEvent(&e);
+            case SDL_EVENT_MOUSE_BUTTON_DOWN: type = MOUSE_DOWN; break;
+            case SDL_EVENT_MOUSE_BUTTON_UP: type = MOUSE_UP; break;
+            default: return SDL_APP_CONTINUE;
         }
-        else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
-        {
-            MouseEvent e(0, event->button.x, event->button.y);
-            desktop->handleEvent(&e);
-        }
+        
+        MouseEvent e(type, event->button.x, event->button.y);
+        desktop->handleEvent(&e);
+        return SDL_APP_CONTINUE;
     }
 
     return SDL_APP_CONTINUE;
