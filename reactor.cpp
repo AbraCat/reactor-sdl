@@ -122,8 +122,8 @@ void SquareMol::draw()
 Molecule* Reactor::randMolecule()
 {
     Vector v = Vector(randDouble(-spawnV, spawnV), randDouble(-spawnV, spawnV), 0);
-    Vector pos = Vector(randDouble(TL.x + spawnPad, BR.x - spawnPad), 
-                        randDouble(TL.y + spawnPad, BR.y - spawnPad), 0);
+    Vector pos = Vector(randDouble(tl.x + spawnPad, br.x - spawnPad), 
+                        randDouble(tl.y + spawnPad, br.y - spawnPad), 0);
 
     if (rand() % 2) return new RoundMol(1, v, pos);
     else return new SquareMol(randInt(1, spawnM), v, pos);
@@ -131,8 +131,8 @@ Molecule* Reactor::randMolecule()
 
 void Reactor::moveWall(int step)
 {
-    TL.x += step;
-    wallTL.x += step;
+    tl.x += step;
+    walltl.x += step;
 }
 
 void Reactor::increaseTemp(double step)
@@ -162,19 +162,19 @@ void Reactor::addRandomMols(int nMols)
 void Reactor::addButton(Vector color)
 {
     // int nButton = buttons.size();
-    // buttons.push_back(new Button(TL.x + (buttonSize + buttonGap) * nButton, TL.y + buttonSize + 10,
-    //                              TL.x + (buttonSize) * (nButton + 1) + buttonGap * nButton, TL.y + 10, color));
+    // buttons.push_back(new Button(tl.x + (buttonSize + buttonGap) * nButton, tl.y + buttonSize + 10,
+    //                              tl.x + (buttonSize) * (nButton + 1) + buttonGap * nButton, tl.y + 10, color));
 
     //
 }
 
-Reactor::Reactor(IntVec TL, IntVec BR) : Widget(TL, BR)
+Reactor::Reactor(IntVec tl, IntVec br) : Widget(tl, br)
 {
     #define BUTTON_ACTION(function)\
     QObject::connect(buttons[buttons.size() - 1], &Button::pressed, this, [this]{ function; });
 
-    wallTL = TL + IntVec(wallDist, wallDist, 0);
-    wallBR = BR - IntVec(wallDist, wallDist, 0);
+    walltl = tl + IntVec(wallDist, wallDist, 0);
+    wallbr = br - IntVec(wallDist, wallDist, 0);
 
     mols = std::vector<Molecule*>();
     mols.reserve(nReserve);
@@ -207,37 +207,37 @@ Reactor::~Reactor()
         delete mol;
 }
 
-void Reactor::resize(IntVec newTL, IntVec newBR)
+void Reactor::resize(IntVec newtl, IntVec newbr)
 {
-    Widget::resize(newTL, newBR);
-    wallTL = TL + IntVec(wallDist, wallDist, 0);
-    wallBR = BR - IntVec(wallDist, wallDist, 0);
+    Widget::resize(newtl, newbr);
+    walltl = tl + IntVec(wallDist, wallDist, 0);
+    wallbr = br - IntVec(wallDist, wallDist, 0);
 }
 
 void Reactor::checkWallCollision(Molecule* mol)
 {
     Vector newPos = mol->pos + mol->v * dt;
 
-    if (newPos.x > wallBR.x)
+    if (newPos.x > wallbr.x)
     {
         // rgtImpulse += mol->mass * mol->v.x;
-        mol->pos = Vector(2 * wallBR.x - newPos.x, newPos.y, 0);
+        mol->pos = Vector(2 * wallbr.x - newPos.x, newPos.y, 0);
         mol->v.x *= -1;
     }
-    else if (newPos.x < wallTL.x)
+    else if (newPos.x < walltl.x)
     {
-        mol->pos = Vector(2 * wallTL.x - newPos.x, newPos.y, 0);
+        mol->pos = Vector(2 * walltl.x - newPos.x, newPos.y, 0);
         mol->v.x *= -1;
         mol->v.x += lftTemp / mol->mass;
     }
-    else if (newPos.y < wallTL.y)
+    else if (newPos.y < walltl.y)
     {
-        mol->pos = Vector(newPos.x, 2 * wallTL.y - newPos.y, 0);
+        mol->pos = Vector(newPos.x, 2 * walltl.y - newPos.y, 0);
         mol->v.y *= -1;
     }
-    else if (newPos.y > wallBR.y)
+    else if (newPos.y > wallbr.y)
     {
-        mol->pos = Vector(newPos.x, 2 * wallBR.y - newPos.y, 0);
+        mol->pos = Vector(newPos.x, 2 * wallbr.y - newPos.y, 0);
         mol->v.y *= -1;
     }
     else
@@ -322,7 +322,7 @@ void Reactor::paint()
 {
     drawWidgetRect(1);
     setColor({255, 255, 255});
-    drawRect(wallTL, wallBR, 0);
+    drawRect(walltl, wallbr, 0);
 
     for (std::vector<Molecule*>::iterator molIter = mols.begin(); molIter != mols.end(); molIter++)
     {

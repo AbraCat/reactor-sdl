@@ -4,12 +4,12 @@
 #include <iostream>
 #include <cassert>
 
-Widget::Widget(IntVec TL, IntVec BR, Widget* parent)
+Widget::Widget(IntVec tl, IntVec br, Widget* parent)
 {
-    this->TL = TL;
-    this->BR = BR;
-    width = BR.x - TL.x;
-    height = BR.y - TL.y;
+    this->tl = tl;
+    this->br = br;
+    width = br.x - tl.x;
+    height = br.y - tl.y;
 
     this->parent = parent;
     border_visible = 0;
@@ -28,12 +28,12 @@ void Widget::paint()
     if (fill_rect)
     {
         setColor(fill_rect_color);
-        drawRect(TL, BR, 1);
+        drawRect(tl, br, 1);
     }
     if (border_visible)
     {
         setColor({255, 255, 255});
-        drawRect(TL, BR, 0);
+        drawRect(tl, br, 0);
     }
 }
 
@@ -50,22 +50,29 @@ void Widget::setFillRect(bool fill, Vector color)
 
 bool Widget::inRect(IntVec point)
 {
-    return point.x > TL.x && point.x < BR.x && point.y > TL.y && point.y < BR.y;
+    return point.x > tl.x && point.x < br.x && point.y > tl.y && point.y < br.y;
 }
 
-void Widget::resize(IntVec newTL, IntVec newBR)
+void Widget::resize(IntVec newtl, IntVec newbr)
 {
-    this->TL = newTL;
-    this->BR = newBR;
+    this->tl = newtl;
+    this->br = newbr;
 
-    width = BR.x - TL.x;
-    height = BR.y - TL.y;
+    width = br.x - tl.x;
+    height = br.y - tl.y;
+}
+
+void Widget::movePos(IntVec newtl)
+{
+    IntVec change = newtl - tl;
+    tl = newtl;
+    br += change;
 }
 
 void Widget::drawWidgetRect(bool fill, Vector color)
 {
     setColor(color);
-    drawRect(TL, BR, fill);
+    drawRect(tl, br, fill);
 }
 
 void Widget::put()
@@ -95,7 +102,7 @@ bool Widget::mouseReleaseEvent(MouseEvent* e) { return 0; }
 bool Widget::onIdle(IdleEvent* e) { return 0; }
 
 
-WContainer::WContainer(IntVec TL, IntVec BR, int nChildren, bool vertical) : Widget(TL, BR)
+WContainer::WContainer(IntVec tl, IntVec br, int nChildren, bool vertical) : Widget(tl, br)
 {
     this->vertical = vertical;
     this->nChildren = nChildren;
@@ -119,10 +126,10 @@ void WContainer::addWidget(Widget* w)
 
     int nChild = children.size();
 
-    if (vertical) w->resize(IntVec(TL.x + padding, TL.y + padding * (nChild + 1) + childHeight * nChild), 
-        IntVec(BR.x - padding, TL.y + (padding + childHeight) * (nChild + 1)));
-    else w->resize(IntVec(TL.x + padding * (nChild + 1) + childWidth * nChild, TL.y + padding), 
-        IntVec(TL.x + (padding + childWidth) * (nChild + 1), BR.y - padding));
+    if (vertical) w->resize(IntVec(tl.x + padding, tl.y + padding * (nChild + 1) + childHeight * nChild), 
+        IntVec(br.x - padding, tl.y + (padding + childHeight) * (nChild + 1)));
+    else w->resize(IntVec(tl.x + padding * (nChild + 1) + childWidth * nChild, tl.y + padding), 
+        IntVec(tl.x + (padding + childWidth) * (nChild + 1), br.y - padding));
 
     addChild(w);
 }

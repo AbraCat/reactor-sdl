@@ -10,8 +10,8 @@ const double arrowCoeff = 0.1;
 
 
 
-BasePlane::BasePlane(IntVec TL, IntVec BR, IntVec centre,
-    double xScale, double cutStepX, double yScale, double cutStepY) : Widget(TL, BR),
+BasePlane::BasePlane(IntVec tl, IntVec br, IntVec centre,
+    double xScale, double cutStepX, double yScale, double cutStepY) : Widget(tl, br),
     xScale(xScale), yScale(yScale), cutStepX(cutStepX), cutStepY(cutStepY), centre(centre)
 {
     setBorderVisible(1);
@@ -29,13 +29,13 @@ void BasePlane::drawCuts()
 {
     setColor({255, 255, 255});
 
-    for (int x = centre.x; x < BR.x; x += xScale * cutStepX)
+    for (int x = centre.x; x < br.x; x += xScale * cutStepX)
         drawLine({x, centre.y - cutsLength}, {x, centre.y + cutsLength});
-    for (int x = centre.x; x > TL.x; x -= xScale * cutStepX)
+    for (int x = centre.x; x > tl.x; x -= xScale * cutStepX)
         drawLine({x, centre.y - cutsLength}, {x, centre.y + cutsLength});
-    for (int y = centre.y; y < BR.y; y += yScale * cutStepY)
+    for (int y = centre.y; y < br.y; y += yScale * cutStepY)
         drawLine({centre.x - cutsLength, y}, {centre.x + cutsLength, y});
-    for (int y = centre.y; y > TL.y; y -= yScale * cutStepY)
+    for (int y = centre.y; y > tl.y; y -= yScale * cutStepY)
         drawLine({centre.x - cutsLength, y}, {centre.x + cutsLength, y});
 }
 
@@ -46,8 +46,8 @@ void BasePlane::paint()
     if (axisVisible)
     {
         setColor({255, 255, 255});
-        drawLine({TL.x, centre.y}, {BR.x, centre.y});
-        drawLine({centre.x, TL.y}, {centre.x, BR.y});
+        drawLine({tl.x, centre.y}, {br.x, centre.y});
+        drawLine({centre.x, tl.y}, {centre.x, br.y});
 
         drawCuts();
     }
@@ -70,9 +70,9 @@ Vector BasePlane::objectToPlaneCoord(IntVec coord)
 }
 
 
-Plane::Plane(IntVec TL, IntVec BR, IntVec centre,
+Plane::Plane(IntVec tl, IntVec br, IntVec centre,
     double xScale, double cutStepX, double yScale, double cutStepY) :
-    BasePlane(TL, BR, centre, xScale, cutStepX, yScale, cutStepY)
+    BasePlane(tl, br, centre, xScale, cutStepX, yScale, cutStepY)
 {
     //
 }
@@ -134,8 +134,8 @@ void Plane::drawVector(FixedVector v, Vector color)
 
 
 Graph::Graph(int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
-    IntVec TL, IntVec BR) : 
-    BasePlane(TL, BR, IntVec(TL.x * 0.8 + BR.x * 0.2, TL.y * 0.2 + BR.y * 0.8, 0), 
+    IntVec tl, IntVec br) : 
+    BasePlane(tl, br, IntVec(tl.x * 0.8 + br.x * 0.2, tl.y * 0.2 + br.y * 0.8, 0), 
     1, 10, yScale, cutStepY)
 {
     this->nGraphs = nGraphs;
@@ -168,8 +168,8 @@ void Graph::paint()
     BasePlane::paint();
 
     setColor({255, 255, 255});
-    drawLine({TL.x, centre.y}, {BR.x, centre.y});
-    drawLine({centre.x, TL.y}, {centre.x, BR.y});
+    drawLine({tl.x, centre.y}, {br.x, centre.y});
+    drawLine({centre.x, tl.y}, {centre.x, br.y});
 
     drawCuts();
     drawGraphs();
@@ -188,8 +188,8 @@ void Graph::addPoint(std::vector<double> point)
 
 
 
-Clock::Clock(IntVec TL, IntVec BR, double scale, double angleStep, double arrowLen) :
-    Plane(TL, BR, (TL + BR) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
+Clock::Clock(IntVec tl, IntVec br, double scale, double angleStep, double arrowLen) :
+    Plane(tl, br, (tl + br) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
 {
     setAxisVisible(0);
     setBorderVisible(0);

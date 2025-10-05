@@ -15,7 +15,7 @@ class IdleEvent;
 class Widget
 {
 public:
-    Widget(IntVec TL, IntVec BR, Widget* parent = nullptr);
+    Widget(IntVec tl, IntVec br, Widget* parent = nullptr);
     ~Widget();
 
     void setBorderVisible(bool visible);
@@ -23,7 +23,8 @@ public:
 
     void drawWidgetRect(bool fill, Vector color = Vector(0, 0, 0));
     bool inRect(IntVec point);
-    virtual void resize(IntVec newTL, IntVec newBR);
+    virtual void resize(IntVec newtl, IntVec newbr);
+    virtual void movePos(IntVec newtl);
 
     void put();
     virtual void paint();
@@ -35,7 +36,7 @@ public:
     virtual bool mousePressEvent(MouseEvent* e);
     virtual bool mouseReleaseEvent(MouseEvent* e);
 protected:
-    IntVec TL, BR;
+    IntVec tl, br;
     int width, height;
 
     Vector fill_rect_color;
@@ -48,7 +49,7 @@ protected:
 class WContainer : public Widget
 {
 public:
-    WContainer(IntVec TL, IntVec BR, int nChildren, bool vertical);
+    WContainer(IntVec tl, IntVec br, int nChildren, bool vertical);
     virtual void paint() override;
 
     void addWidget(Widget* widget);

@@ -10,7 +10,7 @@
 class BasePlane : public Widget
 {
 public:
-    BasePlane(IntVec TL, IntVec BR, IntVec centre,
+    BasePlane(IntVec tl, IntVec br, IntVec centre,
         double xScale, double cutStepX, double yScale, double cutStepY);
 
     void setAxisVisible(bool axisVisible);
@@ -29,7 +29,7 @@ protected:
 class Plane : public BasePlane
 {
 public:
-    Plane(IntVec TL, IntVec BR, IntVec centre,
+    Plane(IntVec tl, IntVec br, IntVec centre,
         double xScale, double cutStepX, double yScale, double cutStepY);
 
     void drawVector(FixedVector v, Vector color);
@@ -47,7 +47,7 @@ class Graph : public BasePlane
 {
 public:
     Graph(int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
-        IntVec TL, IntVec BR);
+        IntVec tl, IntVec br);
 
     void drawGraphs();
     virtual void paint() override;
@@ -63,7 +63,7 @@ private:
 class Clock : public Plane
 {
 public:
-    Clock(IntVec TL, IntVec BR, double scale, double angleStep, double arrowLen);
+    Clock(IntVec tl, IntVec br, double scale, double angleStep, double arrowLen);
     virtual void paint() override;
     virtual bool onIdle(IdleEvent* e) override;
     

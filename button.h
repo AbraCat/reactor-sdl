@@ -10,7 +10,7 @@
 class Button : public Widget
 {
 public:
-    Button(IntVec TL, IntVec BR, Vector color, std::string text);
+    Button(IntVec tl, IntVec br, Vector color, std::string text);
     virtual void paint() override;
 
     virtual bool mousePressEvent(MouseEvent* e) override;

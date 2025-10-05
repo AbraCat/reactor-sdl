@@ -1,15 +1,4 @@
-/*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely.
-*/
-#define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
@@ -26,8 +15,18 @@ static Desktop* desktop;
 /*
 TODO:
 
-texture manager (texture is an array of pixel colors)
+text rendering
+relative coordinates
+draggable widgets
+
+scroll bar {
+up/down buttons
+thumb
+mouse wheel }
+
+texture manager
 only redraw widgets if they change
+texture rescaling
 */
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -44,12 +43,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_CONTINUE;
 }
 
-/* This function runs when a new event (mouse input, keypresses, etc) occurs. */
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     if (event->type == SDL_EVENT_KEY_DOWN ||
         event->type == SDL_EVENT_QUIT) {
-        return SDL_APP_SUCCESS;  /* end the program, reporting success to the OS. */
+        return SDL_APP_SUCCESS;
     }
 
     if (event->button.button == SDL_BUTTON_LEFT)
@@ -69,18 +67,17 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     return SDL_APP_CONTINUE;
 }
 
-/* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     desktop->handleEvent(new IdleEvent());
-    desktop->put();
 
+    desktop->put();
     SDL_RenderPresent(renderer);
+
     SDL_Delay(1000.0 / 60);
     return SDL_APP_CONTINUE;
 }
 
-/* This function runs once at shutdown. */
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     delete desktop;

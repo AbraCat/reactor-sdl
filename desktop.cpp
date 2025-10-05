@@ -1,14 +1,15 @@
 #include "desktop.h"
 #include "plane.h"
 #include "reactor.h"
+#include "scroll.h"
 
-IntVec stdTL(0, 0, 0), stdBR(1000, 1800, 0);
+IntVec stdtl(0, 0, 0), stdbr(1000, 1800, 0);
 int nButtons = 6, wallStep = 10, nAddMols = 10;
 double tempStep = 1;
 
 const int r_size = 600, b_pad = 200, c_size = 200;
 
-Desktop::Desktop() : Widget(stdTL, stdBR)
+Desktop::Desktop() : Widget(stdtl, stdbr)
 {
     reactor = new Reactor({b_pad, 0}, {b_pad + r_size, r_size, 0});
     addChild(reactor);
@@ -41,6 +42,9 @@ Desktop::Desktop() : Widget(stdTL, stdBR)
     button_container->addWidget(addMolButton);
     button_container->addWidget(removeMolButton);
     addChild(button_container);
+
+    ScrollBar* scroll_bar = new ScrollBar({0, 700}, {50, 900});
+    addChild(scroll_bar);
 }
 
 Desktop::~Desktop()

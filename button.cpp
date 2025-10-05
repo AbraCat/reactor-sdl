@@ -5,7 +5,7 @@
 
 const double unpressColorCoeff = 0.7;
 
-Button::Button(IntVec TL, IntVec BR, Vector color, std::string text) : Widget(TL, BR)
+Button::Button(IntVec tl, IntVec br, Vector color, std::string text) : Widget(tl, br)
 {
     this->press_color = color;
     this->unpress_color = color * unpressColorCoeff;
@@ -20,7 +20,7 @@ void Button::paint()
     else drawWidgetRect(1, unpress_color);
 
     setColor({255, 255, 255});
-    putText(text, TL, BR);
+    putText(text, tl, br);
 }
 
 bool Button::mousePressEvent(MouseEvent* e)
