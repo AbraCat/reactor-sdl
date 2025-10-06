@@ -15,31 +15,24 @@ static Desktop* desktop;
 /*
 TODO:
 
-text rendering       -
-relative coordinates +
-draggable widgets    +
-
-scroll bar:
-up/down buttons +
-thumb           +
-mouse wheel     -
-
-texture manager                     -
-only redraw widgets if they change  -
-texture rescaling                   -
+text rendering                         -
+scroll bar mouse wheel                 -
+rescale reactor                        -
+only draw texture parts in widget rect -
 */
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);
 
-    if (!SDL_CreateWindowAndRenderer("Hello World", 800, 600, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     setRenderer(renderer);
 
     desktop = new Desktop();
+    desktop->drawRec();
     return SDL_APP_CONTINUE;
 }
 
@@ -79,10 +72,10 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     desktop->handleEvent(new IdleEvent());
 
-    desktop->put();
+    desktop->t->paintRec();
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(1000.0 / 60);
+    SDL_Delay(1000.0 / 30);
     return SDL_APP_CONTINUE;
 }
 

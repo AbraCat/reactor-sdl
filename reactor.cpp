@@ -111,15 +111,19 @@ void SquareMol::collide(std::vector<Molecule*>& mols, Vector collidePos, Molecul
 
 void RoundMol::draw()
 {
-    setColor({0, 0, 255});
-    drawCircle(reactor->getAbsTL() + (IntVec)pos, r, 1);
+    // setColor({0, 0, 255});
+    // drawCircle(reactor->getAbsTL() + (IntVec)pos, r, 1);
+
+    reactor->t->addCircle(pos, {0, 0, 255}, r, 1);
 }
 
 void SquareMol::draw()
 {
-    setColor({255, 0, 0});
-    drawRect(reactor->getAbsTL() + (IntVec)pos - IntVec(r, r), 
-             reactor->getAbsTL() + (IntVec)pos + IntVec(r, r), 1);
+    // setColor({255, 0, 0});
+    // drawRect(reactor->getAbsTL() + (IntVec)pos - IntVec(r, r), 
+    //          reactor->getAbsTL() + (IntVec)pos + IntVec(r, r), 1);
+
+    reactor->t->addRect({pos - Vector(r, r), pos + Vector(r, r)}, {255, 0, 0}, 1);
 }
 
 Molecule* Reactor::randMolecule()
@@ -292,6 +296,7 @@ void clearInvalidMols(std::vector<Molecule*>& mols)
 bool Reactor::onIdle(IdleEvent* e)
 {
     advance();
+    paint();
     return 0;
 }
 
@@ -324,9 +329,10 @@ void Reactor::advance()
 
 void Reactor::paint()
 {
-    drawWidgetRect(1);
-    setColor({255, 255, 255});
-    drawRect(absTL + walltl, absTL + wallbr, 0);
+    Widget::paint();
+    // setColor({255, 255, 255});
+    // drawRect(absTL + walltl, absTL + wallbr, 0);
+    t->addRect({walltl, wallbr}, {255, 255, 255}, 0);
 
     for (std::vector<Molecule*>::iterator molIter = mols.begin(); molIter != mols.end(); molIter++)
     {

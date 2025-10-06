@@ -7,51 +7,30 @@
 #include "myvector.h"
 #include "widget.h"
 
-class BasePlane : public Widget
+class CoordWidget : public Widget
 {
 public:
-    BasePlane(Widget* parent, IntVec tl, IntVec br, IntVec centre,
+    CoordWidget(Widget* parent, IntVec tl, IntVec br, IntVec centre,
         double xScale, double cutStepX, double yScale, double cutStepY);
 
     void setAxisVisible(bool axisVisible);
     void drawCuts();
     virtual void paint() override;
 
-    IntVec planeToObjectCoord(Vector coord);
-    Vector objectToPlaneCoord(IntVec coord);
-
 protected:
+    Vector planeTL, planeBR;
+
     bool axisVisible;
-    IntVec centre;
-    double xScale, yScale, cutStepX, cutStepY;
+    double cutStepX, cutStepY;
 };
 
-class Plane : public BasePlane
-{
-public:
-    Plane(Widget* parent, IntVec tl, IntVec br, IntVec centre,
-        double xScale, double cutStepX, double yScale, double cutStepY);
-
-    void drawVector(FixedVector v, Vector color);
-    virtual void paint() override;
-
-    void addPoint(Vector point, Vector color);
-    void addVector(FixedVector vec, Vector color);
-
-protected:
-    std::vector<FixedVector> vectors;
-    std::vector<Vector> points, pointColors, vectorColors;
-};
-
-class Graph : public BasePlane
+class Graph : public CoordWidget
 {
 public:
     Graph(Widget* parent, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
         IntVec tl, IntVec br);
 
-    void drawGraphs();
     virtual void paint() override;
-
     void addPoint(std::vector<double> point);
 
 private:
@@ -60,7 +39,7 @@ private:
     std::vector<Vector> colors;
 };
 
-class Clock : public Plane
+class Clock : public CoordWidget
 {
 public:
     Clock(Widget* parent, IntVec tl, IntVec br, double scale, double angleStep, double arrowLen);
@@ -70,7 +49,7 @@ public:
 private:
     int nCuts;
     double arrowLen, angleStep;
-    FixedVector* arrow;
+    FixedVec arrow;
 };
 
 #endif // PLANEITEM_H

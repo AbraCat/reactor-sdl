@@ -4,7 +4,7 @@
 #include <cstdio>
 
 
-
+extern const Vector whiteV = {255, 255, 255}, blackV = {0, 0, 0};
 
 Rect::Rect(IntVec tl, IntVec br) : tl(tl), br(br)
 {
@@ -131,10 +131,10 @@ IntVec limitVector(IntVec v, int lower, int upper)
 
 
 
-Vector fixedToFree(FixedVector v) { return v.p2 - v.p1; }
-FixedVector freeToFixed(Vector v, Vector start) { return {start, start + v}; }
+Vector fixedToFree(FixedVec v) { return v.p2 - v.p1; }
+FixedVec freeToFixed(Vector v, Vector start) { return {start, start + v}; }
 
-FixedVector rotateV(FixedVector v, double angle)
+FixedVec rotateV(FixedVec v, double angle)
 {
     Vector pAdjust = v.p2 - v.p1;
 

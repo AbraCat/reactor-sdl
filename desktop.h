@@ -21,7 +21,7 @@ private:
     Graph *energy_graph, *cnt_graph;
     Clock* clock;
 
-    WContainer *button_container;
+    WContainer *button_cont;
 };
 
 #endif // MY_APP_H

@@ -60,7 +60,7 @@ void drawCircle(IntVec centre, int r, bool fill)
 
     double angleStep = 0.01;
     int nSteps = 3.1415 * 2 / angleStep;
-    FixedVector v{Vector(centre.x, centre.y), Vector(centre.x, centre.y) + Vector(r, 0)};
+    FixedVec v{Vector(centre.x, centre.y), Vector(centre.x, centre.y) + Vector(r, 0)};
 
     while (nSteps--)
     {

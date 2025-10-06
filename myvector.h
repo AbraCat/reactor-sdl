@@ -6,6 +6,7 @@ class IntVec;
 class Rect;
 
 
+extern const Vector whiteV, blackV;
 
 
 class Vector
@@ -19,7 +20,7 @@ public:
     double x, y, z;
 };
 
-class FixedVector
+class FixedVec
 {
 public:
     Vector p1, p2;
@@ -90,9 +91,9 @@ public:
 
 
 
-Vector fixedToFree(FixedVector v);
-FixedVector freeToFixed(Vector v, Vector start);
-FixedVector rotateV(FixedVector v, double angle);
+Vector fixedToFree(FixedVec v);
+FixedVec freeToFixed(Vector v, Vector start);
+FixedVec rotateV(FixedVec v, double angle);
 
 void print(Vector v);
 

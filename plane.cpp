@@ -6,125 +6,52 @@
 const int stdNPoints = 100;
 const int axisWidth = 3, cutsWidth = 1, borderWidth = 1, cutsLength = 5, pointSize = 3;
 
-const double arrowCoeff = 0.1;
 
 
-
-BasePlane::BasePlane(Widget* parent, IntVec tl, IntVec br, IntVec centre,
-    double xScale, double cutStepX, double yScale, double cutStepY) : Widget(tl, br, parent),
-    xScale(xScale), yScale(yScale), cutStepX(cutStepX), cutStepY(cutStepY), centre(centre)
+CoordWidget::CoordWidget(Widget* parent, IntVec tl, IntVec br, IntVec centre,
+    double xScale, double cutStepX, double yScale, double cutStepY) : 
+    Widget(tl, br, parent), cutStepX(cutStepX), cutStepY(cutStepY)
 {
-    setBorderVisible(1);
-    setFillRect(1);
+    t->transform(centre, xScale, yScale);
 
+    const int planeRectSize = 200;
+
+    planeTL = Vector(-planeRectSize / xScale, -planeRectSize / yScale);
+    planeBR = Vector(planeRectSize / xScale, planeRectSize / yScale);
+
+    setWidgetBorderVisible(1);
+    setFillRect(0);
     axisVisible = 1;
 }
 
-void BasePlane::setAxisVisible(bool axisVisible)
+void CoordWidget::setAxisVisible(bool axisVisible)
 {
     this->axisVisible = axisVisible;
 }
 
-void BasePlane::drawCuts()
+void CoordWidget::drawCuts()
 {
-    setColor({255, 255, 255});
-
-    for (int x = centre.x; x < br.x; x += xScale * cutStepX)
-        drawLine({x, centre.y - cutsLength}, {x, centre.y + cutsLength});
-    for (int x = centre.x; x > tl.x; x -= xScale * cutStepX)
-        drawLine({x, centre.y - cutsLength}, {x, centre.y + cutsLength});
-    for (int y = centre.y; y < br.y; y += yScale * cutStepY)
-        drawLine({centre.x - cutsLength, y}, {centre.x + cutsLength, y});
-    for (int y = centre.y; y > tl.y; y -= yScale * cutStepY)
-        drawLine({centre.x - cutsLength, y}, {centre.x + cutsLength, y});
+    for (int x = 0; x < planeBR.x; x += cutStepX)
+        t->addLine({{x, -cutsLength / t->yScale}, {x, cutsLength / t->yScale}}, {255, 255, 255});
+    for (int x = 0; x > planeTL.x; x -= cutStepX)
+        t->addLine({{x, -cutsLength / t->yScale}, {x, cutsLength / t->yScale}}, {255, 255, 255});
+    for (int y = 0; y < planeBR.y; y += cutStepY)
+        t->addLine({{-cutsLength / t->xScale, y}, {cutsLength / t->xScale, y}}, {255, 255, 255});
+    for (int y = 0; y > planeTL.y; y -= cutStepY)
+        t->addLine({{-cutsLength / t->xScale, y}, {cutsLength / t->xScale, y}}, {255, 255, 255});
 }
 
-void BasePlane::paint()
+void CoordWidget::paint()
 {
     Widget::paint();
 
     if (axisVisible)
     {
-        setColor({255, 255, 255});
-        drawLine({tl.x, centre.y}, {br.x, centre.y});
-        drawLine({centre.x, tl.y}, {centre.x, br.y});
+        t->addLine({{planeTL.x, 0}, {planeBR.x, 0}}, whiteV);
+        t->addLine({{0, planeTL.y}, {0, planeBR.y}}, whiteV);
 
         drawCuts();
     }
-}
-
-IntVec BasePlane::planeToObjectCoord(Vector coord)
-{
-    IntVec objectCoord;
-    objectCoord.x = coord.x * xScale + centre.x;
-    objectCoord.y = coord.y * yScale + centre.y;
-    return objectCoord;
-}
-
-Vector BasePlane::objectToPlaneCoord(IntVec coord)
-{
-    Vector planeCoord;
-    planeCoord.x = (coord.x - centre.x) * 1.0 / xScale;
-    planeCoord.y = (coord.y - centre.y) * 1.0 / yScale;
-    return planeCoord;
-}
-
-
-Plane::Plane(Widget* parent, IntVec tl, IntVec br, IntVec centre,
-    double xScale, double cutStepX, double yScale, double cutStepY) :
-    BasePlane(parent, tl, br, centre, xScale, cutStepX, yScale, cutStepY)
-{
-    //
-}
-
-void Plane::paint()
-{
-    BasePlane::paint();
-
-    for (int nPoint = 0; nPoint < points.size(); ++nPoint)
-    {
-        Vector point = points[nPoint], color = pointColors[nPoint];
-        IntVec planePoint = planeToObjectCoord(point);
-
-        setColor(color);
-        drawPoint(planePoint);
-    }
-
-    for (int nVec = 0; nVec < vectors.size(); ++nVec)
-    {
-        FixedVector vec = vectors[nVec];
-        Vector color = vectorColors[nVec];
-
-        setColor(color);
-        drawVector(vec, color);
-    }
-}
-
-void Plane::addPoint(Vector point, Vector color)
-{
-    points.push_back(point);
-    pointColors.push_back(color);
-}
-
-void Plane::addVector(FixedVector vec, Vector color)
-{
-    vectors.push_back(vec);
-    vectorColors.push_back(color);
-}
-
-void Plane::drawVector(FixedVector v, Vector color)
-{
-    setColor(color);
-    IntVec p1 = planeToObjectCoord(v.p1), p2 = planeToObjectCoord(v.p2);
-    drawLine({p1.x, p1.y}, {p2.x, p2.y});
-
-    Vector vec = fixedToFree(v);
-    Vector ort1 = {vec.y, -vec.x}, ort2 = {-vec.y, vec.x};
-    Vector e1 = (ort1 - vec) * arrowCoeff, e2 = (ort2 - vec) * arrowCoeff;
-    IntVec e1Int = planeToObjectCoord(v.p2 + e1), e2Int = planeToObjectCoord(v.p2 + e2);
-
-    setColor(color);
-    fillConvexPolygon({p2, e2Int, e1Int});
 }
 
 
@@ -134,45 +61,28 @@ void Plane::drawVector(FixedVector v, Vector color)
 
 
 Graph::Graph(Widget* parent, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
-    IntVec tl, IntVec br) : 
-    BasePlane(parent, tl, br, IntVec(tl.x * 0.8 + br.x * 0.2, tl.y * 0.2 + br.y * 0.8, 0), 
-    1, 10, yScale, cutStepY)
+    IntVec tl, IntVec br) : nPoints(stdNPoints),
+    CoordWidget(parent, tl, br, IntVec(tl.x * 0.8 + br.x * 0.2, tl.y * 0.2 + br.y * 0.8, 0), 
+    (br.x - tl.x) * 1.0 / (stdNPoints + 1), 10, yScale, cutStepY)
 {
     this->nGraphs = nGraphs;
     this->nPoints = stdNPoints;
     this->colors = colors;
-    this->xScale = width * 1.0 / (nPoints + 1);
 
     this->points = std::vector<std::vector<double>>(nGraphs, std::vector<double>(nPoints, 0));
 }
 
-void Graph::drawGraphs()
-{
-    for (int nGraph = 0; nGraph < nGraphs; ++nGraph)
-    {
-        setColor(colors[nGraph]);
-        for (int i = 0; i < nPoints; ++i)
-        {
-            IntVec objectPoint = planeToObjectCoord(Vector(i, -points[nGraph][i], 0));
-            if (inRect(objectPoint))
-            {
-                setColor(colors[nGraph]);
-                drawPoint(objectPoint);
-            }
-        }
-    }
-}
-
 void Graph::paint()
 {
-    BasePlane::paint();
+    CoordWidget::paint();
 
-    setColor({255, 255, 255});
-    drawLine({tl.x, centre.y}, {br.x, centre.y});
-    drawLine({centre.x, tl.y}, {centre.x, br.y});
-
-    drawCuts();
-    drawGraphs();
+    for (int nGraph = 0; nGraph < nGraphs; ++nGraph)
+    {
+        for (int i = 0; i < nPoints; ++i)
+        {
+            t->addPoint(Vector(i, -points[nGraph][i]), colors[nGraph]);
+        }
+    }
 }
 
 void Graph::addPoint(std::vector<double> point)
@@ -182,6 +92,8 @@ void Graph::addPoint(std::vector<double> point)
         points[nGraph].push_back(point[nGraph]);
         points[nGraph].erase(points[nGraph].begin());
     }
+    
+    paint();
 }
 
 
@@ -189,38 +101,37 @@ void Graph::addPoint(std::vector<double> point)
 
 
 Clock::Clock(Widget* parent, IntVec tl, IntVec br, double scale, double angleStep, double arrowLen) :
-    Plane(parent, tl, br, (tl + br) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
+    CoordWidget(parent, tl, br, (tl + br) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
 {
     setAxisVisible(0);
-    setBorderVisible(0);
+    setTextureBorderVisible(0);
     
     nCuts = 12;
-    vectors.push_back({{0, 0, 0}, {arrowLen, 0, 0}});
-    vectorColors.push_back({255, 255, 255});
+    arrow =  {{0, 0, 0}, {arrowLen, 0, 0}};
 }
 
 void Clock::paint()
 {
-    Plane::paint();
+    CoordWidget::paint();
 
-    int pixelArrowLen = arrowLen * xScale;
-    setColor({255, 255, 255});
-    drawCircle(centre, pixelArrowLen, 0);
-
-    setColor({255, 255, 255});
+    t->addCircle({}, whiteV, arrowLen, 0);
+    
     for (double angle = 0; angle < 3.1415 * 2; angle += 2 * 3.1415 / nCuts)
     {
-        IntVec v1 = centre + IntVec((pixelArrowLen - cutsLength) * std::cos(angle), 
-            (pixelArrowLen - cutsLength) * std::sin(angle));
-        IntVec v2 = centre + IntVec((pixelArrowLen + cutsLength) * std::cos(angle), 
-            (pixelArrowLen + cutsLength) * std::sin(angle));
+        Vector v1 = Vector((arrowLen - cutsLength / t->xScale) * std::cos(angle), 
+            (arrowLen - cutsLength / t->xScale) * std::sin(angle));
+        Vector v2 = Vector((arrowLen + cutsLength / t->xScale) * std::cos(angle), 
+            (arrowLen + cutsLength / t->xScale) * std::sin(angle));
             
-        drawLine({v1.x, v1.y}, {v2.x, v2.y});
+        t->addLine({v1, v2}, whiteV);
     }
+
+    addVector(t, arrow, whiteV);
 }
 
 bool Clock::onIdle(IdleEvent* e)
 {
-    vectors[0] = rotateV(vectors[0], angleStep);
+    arrow = rotateV(arrow, angleStep);
+    paint();
     return 0;
 }

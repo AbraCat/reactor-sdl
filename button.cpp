@@ -16,11 +16,12 @@ Button::Button(Widget* parent, IntVec tl, IntVec br, Vector color, std::string t
 
 void Button::paint()
 {
+    Widget::paint();
     if (is_pressed) drawWidgetRect(1, press_color);
     else drawWidgetRect(1, unpress_color);
 
-    setColor({255, 255, 255});
-    putText(text, absTL, absTL + wh);
+    // setColor({255, 255, 255});
+    // putText(text, absTL, absTL + wh);
 }
 
 bool Button::mousePressEvent(MouseEvent* e)
@@ -31,6 +32,7 @@ bool Button::mousePressEvent(MouseEvent* e)
     if (is_pressed) return 0;
 
     is_pressed = 1;
+    paint();
     action();
     return 1;
 }
@@ -40,6 +42,7 @@ bool Button::mouseReleaseEvent(MouseEvent* e)
     Widget::mouseReleaseEvent(e);
 
     is_pressed = 0;
+    paint();
     return 0;
 }
 

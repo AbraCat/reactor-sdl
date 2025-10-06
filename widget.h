@@ -7,10 +7,91 @@
 
 #include "myvector.h"
 
+class Texture;
 class Widget;
 class Event;
 class MouseEvent;
 class IdleEvent;
+
+
+
+
+
+class CoordSystem
+{
+public:
+    CoordSystem(IntVec centre, double xScale, double yScale);
+
+    IntVec tranformToBaseCoord(Vector coord);
+    Vector baseToTransformCoord(IntVec coord);
+
+// protected:
+    IntVec centre;
+    double xScale, yScale;
+};
+
+
+
+struct ColPoint
+{
+    Vector p, col;
+};
+
+struct ColFixedVec
+{
+    FixedVec vec;
+    Vector col;
+    bool fill;
+};
+
+struct ColCircle
+{
+    Vector centre, col;
+    double r;
+    bool fill;
+};
+
+struct ColPolygon
+{
+    std::vector<Vector> ps;
+    Vector col;
+    bool fill;
+};
+
+void addVector(Texture* t, FixedVec v, Vector color);
+
+class Texture : public CoordSystem
+{
+public:
+    Texture(Widget* w);
+    void paint();
+    void paintRec();
+    void clear();
+
+    void transform(IntVec centre, double xScale, double yScale);
+    void move(IntVec change);
+    void rescale(double scale_change);
+
+    void addPoint(Vector p, Vector color);
+    void addLine(FixedVec line, Vector color);
+
+    void addRect(FixedVec rect, Vector color, bool fill);
+    void addCircle(Vector centre, Vector col, double r, bool fill);
+    void addPolygon(std::vector<Vector> points, Vector color, bool fill);
+
+// protected:
+    Widget* w;
+
+    // point line rect(2) circle(2) polygon(2)
+    std::vector<ColPoint> points;
+    std::vector<ColFixedVec> lines, rects;
+    std::vector<ColCircle> circles;
+    std::vector<ColPolygon> polygons;
+};
+
+
+
+
 
 /*
 coordinate systems:
@@ -25,7 +106,8 @@ public:
     Widget(IntVec tl, IntVec br, Widget* parent = nullptr);
     ~Widget();
 
-    void setBorderVisible(bool visible);
+    void setWidgetBorderVisible(bool visible);
+    void setTextureBorderVisible(bool visible);
     void setFillRect(bool fill, Vector color = Vector(0, 0, 0));
     IntVec getAbsTL();
     // void propagateAbsChange();
@@ -36,10 +118,11 @@ public:
     virtual void resize(IntVec newtl, IntVec newbr);
     virtual void movePos(IntVec newtl);
 
-    void put();
+    void drawRec();
     virtual void paint();
 
     void addChild(Widget* widget);
+    virtual void addWidget(Widget* child);
     bool handleEvent(Event* e);
 
     virtual bool onIdle(IdleEvent* e);
@@ -49,7 +132,9 @@ public:
 
     void setDraggable(IntVec dragTL = IntVec(), IntVec dragBR = IntVec());
 
-protected:
+// protected:
+    Texture *t;
+
     IntVec tl, br, wh, absTL;
     int width, height;
 
@@ -57,7 +142,7 @@ protected:
     IntVec dragTL, dragBR, dragMouse; // relative to parent
 
     Vector fill_rect_color;
-    bool border_visible, fill_rect;
+    bool w_border_visible, t_border_visible, fill_rect;
 
     Widget *parent;
     std::vector<Widget*> children;
@@ -66,10 +151,10 @@ protected:
 class WContainer : public Widget
 {
 public:
-    WContainer(IntVec tl, IntVec br, int nChildren, bool vertical);
+    WContainer(Widget* parent, IntVec tl, IntVec br, int nChildren, bool vertical);
     virtual void paint() override;
 
-    void addWidget(Widget* widget);
+    virtual void addWidget(Widget* widget) override;
 
 private:
     bool vertical;

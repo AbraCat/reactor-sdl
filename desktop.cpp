@@ -11,40 +11,30 @@ const int r_size = 600, b_pad = 200, c_size = 200;
 
 Desktop::Desktop() : Widget(stdtl, stdbr)
 {
+    setFillRect(1);
+
     reactor = new Reactor({b_pad, 0}, {b_pad + r_size, r_size}, this);
     // reactor->setDraggable();
 
-    // energy_graph = new Graph(1, {{255, 255, 255}}, 0.05, 1e3, 
-    //     {b_pad + r_size, 0}, {b_pad + r_size * 3 / 2, r_size / 2, 0});
-    // cnt_graph = new Graph(2, {{0, 0, 255}, {255, 0, 0}}, 1.5, 10, 
-    //     {b_pad + r_size, r_size / 2}, {b_pad + r_size * 3 / 2, r_size, 0});
-    // addChild(energy_graph);
-    // addChild(cnt_graph);
-
-    // clock = new Clock({b_pad + r_size * 3 / 2, 0}, {b_pad + r_size * 3 / 2 + c_size, c_size}, 
-    //     c_size * 2 / 5, 3.14 / 60, 1);
-    // addChild(clock);
-
-    // MoveWallButton* lftButton = new MoveWallButton(reactor, Vector(0, 0, 255), -wallStep, "Move left");
-    // MoveWallButton* rgtButton = new MoveWallButton(reactor, Vector(255, 0, 255), wallStep, "Move right");
-    // TemperatureButton* tempUpButton = new TemperatureButton(reactor, Vector(255, 0, 0), 
-    //     tempStep, "Temp up");
-    // TemperatureButton* tempDownButton = new TemperatureButton(reactor, Vector(255, 127, 0), 
-    //     -tempStep, "Temp down");
-    // AddMolButton* addMolButton = new AddMolButton(reactor, Vector(0, 255, 0), nAddMols, "Add mols");
-    // AddMolButton* removeMolButton = new AddMolButton(reactor, Vector(255, 255), -nAddMols, "Remove mols");
-
-    // button_container = new WContainer({0, 0}, {b_pad, r_size}, nButtons, 1);
-    // button_container->addWidget(lftButton);
-    // button_container->addWidget(rgtButton);
-    // button_container->addWidget(tempUpButton);
-    // button_container->addWidget(tempDownButton);
-    // button_container->addWidget(addMolButton);
-    // button_container->addWidget(removeMolButton);
-    // addChild(button_container);
+    button_cont = new WContainer(this, {50, 50}, {b_pad, r_size}, nButtons, 1);
+    MoveWallButton* lftButton = new MoveWallButton(button_cont, reactor, Vector(0, 0, 255), -wallStep, "Move left");
+    MoveWallButton* rgtButton = new MoveWallButton(button_cont, reactor, Vector(255, 0, 255), wallStep, "Move right");
+    TemperatureButton* tempUpButton = new TemperatureButton(button_cont, reactor, Vector(255, 0, 0), 
+        tempStep, "Temp up");
+    TemperatureButton* tempDownButton = new TemperatureButton(button_cont, reactor, Vector(255, 127, 0), 
+        -tempStep, "Temp down");
+    AddMolButton* addMolButton = new AddMolButton(button_cont, reactor, Vector(0, 255, 0), nAddMols, "Add mols");
+    AddMolButton* removeMolButton = new AddMolButton(button_cont, reactor, Vector(255, 255), -nAddMols, "Remove mols");
 
     ScrollBar* scroll_bar = new ScrollBar(this, {0, 700}, {50, 900});
-    // addChild(scroll_bar);
+
+    energy_graph = new Graph(this, 1, {{255, 255, 255}}, 0.05, 1e3, 
+        {b_pad + r_size, 0}, {b_pad + r_size * 3 / 2, r_size / 2, 0});
+    cnt_graph = new Graph(this, 2, {{0, 0, 255}, {255, 0, 0}}, 1.5, 10, 
+        {b_pad + r_size, r_size / 2}, {b_pad + r_size * 3 / 2, r_size, 0});
+
+    clock = new Clock(this, {b_pad + r_size * 3 / 2, 0}, {b_pad + r_size * 3 / 2 + c_size, c_size}, 
+        c_size * 2 / 5, 3.14 / 60, 1);
 }
 
 Desktop::~Desktop()
@@ -54,13 +44,13 @@ Desktop::~Desktop()
 
 void Desktop::paint()
 {
-    drawWidgetRect(1);
+    Widget::paint();
 }
 
 bool Desktop::onIdle(IdleEvent* e)
 {
-    // energy_graph->addPoint({reactor->energy()});
-    // cnt_graph->addPoint(reactor->molCnt());
+    energy_graph->addPoint({reactor->energy()});
+    cnt_graph->addPoint(reactor->molCnt());
 
     return 0;
 }

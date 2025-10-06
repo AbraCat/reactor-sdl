@@ -13,7 +13,7 @@ ScrollBar::ScrollBar(Widget* parent, IntVec tl, IntVec br) : Widget(tl, br, pare
     thumb->setDraggable({0, width}, {width, height - width});
 
     frac_pos = 0;
-    setBorderVisible(1);
+    setTextureBorderVisible(1);
 }
 
 void ScrollBar::moveThumb(double frac)
@@ -46,7 +46,7 @@ void ScrollBar::thumbMoved(IntVec newThumbTL)
 
 void ScrollBar::action(double frac)
 {
-    printf("action %lf\n", frac);
+    // printf("action %lf\n", frac);
 }
 
 
