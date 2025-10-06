@@ -32,11 +32,34 @@ Vector CoordSystem::baseToTransformCoord(IntVec coord)
     return planeCoord;
 }
 
+void CoordSystem::transform(IntVec centre, double xScale, double yScale)
+{
+    this->centre = centre;
+    this->xScale = xScale;
+    this->yScale = yScale;
+}
+
+void CoordSystem::move(IntVec newPos) { transform(newPos, xScale, yScale); }
+void CoordSystem::rescale(double new_scale) { transform(centre, new_scale, new_scale); }
+void CoordSystem::rescale(double new_scale, IntVec point)
+{
+    IntVec change = point - centre;
+    move(point);
+
+    double scale_change = new_scale / xScale;
+    rescale(new_scale);
+    move((Vector)point + change * (-scale_change));
+}
 
 
 Texture::Texture(Widget* w) : CoordSystem(w->getAbsTL(), 1, 1)
 {
     this->w = w;
+}
+
+void Texture::rescaleCentre(double new_scale)
+{
+    rescale(new_scale, (Vector)w->absTL + w->wh * 0.5);
 }
 
 void Texture::paint()
@@ -49,20 +72,26 @@ void Texture::paint()
         drawRect(w->absTL, w->absTL + w->wh, 0);
     }
 
-    for (ColFixedVec l: rects)
+    for (ColFixedVec rect: rects)
     {
-        IntVec absP1 = tranformToBaseCoord(l.vec.p1), absP2 = tranformToBaseCoord(l.vec.p2);
+        if (rect.fill == 0) assert("should pass as 4 lines" && 0);
+
+        IntVec absP1 = tranformToBaseCoord(rect.vec.p1), absP2 = tranformToBaseCoord(rect.vec.p2);
         if (always_draw || w->inAbsRect(absP1) && w->inAbsRect(absP2))
         {
-            setColor(l.col);
-            drawRect(absP1, absP2, l.fill);
+            Rect ans;
+            if (rectIntersection({absP1, absP2}, {w->absTL, w->absTL + w->wh}, &ans))
+            {
+                setColor(rect.col);
+                drawRect(ans.tl, ans.br, rect.fill);
+            }
         }
     }
 
     for (ColPoint p : points)
     {
         IntVec absP = tranformToBaseCoord(p.p);
-        if (always_draw || w->inAbsRect(absP))
+        if (w->inAbsRect(absP))
         {
             setColor(p.col);
             drawPoint(absP);
@@ -72,17 +101,19 @@ void Texture::paint()
     for (ColFixedVec l: lines)
     {
         IntVec absP1 = tranformToBaseCoord(l.vec.p1), absP2 = tranformToBaseCoord(l.vec.p2);
-        if (always_draw || w->inAbsRect(absP1) && w->inAbsRect(absP2))
+        IntVec ans1, ans2;
+
+        if (clipIntLine(absP1, absP2, w->absTL, w->absTL + w->wh, &ans1, &ans2))
         {
             setColor(l.col);
-            drawLine(absP1, absP2);
+            drawLine(ans1, ans2);
         }
     }
 
     for (ColCircle c: circles)
     {
         IntVec absC = tranformToBaseCoord(c.centre);
-        if (always_draw || w->inAbsRect(absC))
+        if (w->inAbsRect(absC))
         {
             setColor(c.col);
             drawCircle(absC, c.r * xScale, c.fill);
@@ -118,20 +149,21 @@ void Texture::clear()
     polygons.clear();
 }
 
-void Texture::transform(IntVec centre, double xScale, double yScale)
-{
-    this->centre = centre;
-    this->xScale = xScale;
-    this->yScale = yScale;
-}
-
-void Texture::move(IntVec change) { transform(centre + change, xScale, yScale); }
-void Texture::rescale(double scale_change) { transform(centre, xScale * scale_change, yScale * scale_change); }
-
 void Texture::addPoint(Vector p, Vector color) { points.push_back({p, color}); }
 
 void Texture::addLine(FixedVec line, Vector color) { lines.push_back({line, color, 0}); }
-void Texture::addRect(FixedVec rect, Vector color, bool fill) { rects.push_back({rect, color, fill}); }
+void Texture::addRect(FixedVec rect, Vector color, bool fill)
+{
+    if (fill) rects.push_back({rect, color, fill});
+    else
+    {
+        Vector bl(rect.p1.x, rect.p2.y), tr(rect.p2.x, rect.p1.y);
+        addLine({rect.p1, bl}, color);
+        addLine({rect.p1, tr}, color);
+        addLine({rect.p2, bl}, color);
+        addLine({rect.p2, tr}, color);
+    }
+}
 
 void Texture::addCircle(Vector centre, Vector col, double r, bool fill) { circles.push_back({centre, col, r, fill}); }
 void Texture::addPolygon(std::vector<Vector> points, Vector color, bool fill)

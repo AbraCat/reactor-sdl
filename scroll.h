@@ -46,4 +46,28 @@ private:
     ScrollBar *bar;
 };
 
+
+
+class MoveScrollBar : public ScrollBar
+{
+public:
+    MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, IntVec movement);
+    virtual void action(double frac) override;
+
+private:
+    Widget *w;
+    IntVec minPos, maxPos;
+};
+
+class ScaleScrollBar : public ScrollBar
+{
+public:
+    ScaleScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, double change);
+    virtual void action(double frac) override;
+
+private:
+    Widget *w;
+    double min_scale, max_scale;
+};
+
 #endif // SCROLL_BAR_H

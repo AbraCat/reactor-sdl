@@ -25,6 +25,11 @@ public:
     IntVec tranformToBaseCoord(Vector coord);
     Vector baseToTransformCoord(IntVec coord);
 
+    void transform(IntVec centre, double xScale, double yScale);
+    void move(IntVec newPos);
+    void rescale(double new_scale);
+    void rescale(double new_scale, IntVec point);
+
 // protected:
     IntVec centre;
     double xScale, yScale;
@@ -68,9 +73,7 @@ public:
     void paintRec();
     void clear();
 
-    void transform(IntVec centre, double xScale, double yScale);
-    void move(IntVec change);
-    void rescale(double scale_change);
+    void rescaleCentre(double new_scale);
 
     void addPoint(Vector p, Vector color);
     void addLine(FixedVec line, Vector color);

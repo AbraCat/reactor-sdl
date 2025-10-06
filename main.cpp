@@ -15,10 +15,10 @@ static Desktop* desktop;
 /*
 TODO:
 
-text rendering                         -
-scroll bar mouse wheel                 -
 rescale reactor                        -
 only draw texture parts in widget rect -
+text rendering                         -
+scroll bar mouse wheel                 -
 */
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])

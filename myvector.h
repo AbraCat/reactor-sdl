@@ -8,6 +8,9 @@ class Rect;
 
 extern const Vector whiteV, blackV;
 
+bool inIntRect(IntVec p, IntVec tl, IntVec br);
+bool clipIntLine(IntVec p1, IntVec p2, IntVec tl, IntVec br, IntVec* ans1, IntVec* ans2);
+bool rectIntersection(Rect r1, Rect r2, Rect* ans);
 
 class Vector
 {
@@ -83,6 +86,7 @@ IntVec limitVector(IntVec v, int lower, int upper);
 class Rect
 {
 public:
+    Rect();
     Rect(IntVec tl, IntVec br);
     
     IntVec tl, br;

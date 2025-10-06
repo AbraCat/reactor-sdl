@@ -3,8 +3,74 @@
 #include <cmath>
 #include <cstdio>
 
-
 extern const Vector whiteV = {255, 255, 255}, blackV = {0, 0, 0};
+
+
+bool inIntRect(IntVec p, IntVec tl, IntVec br)
+{
+    return (tl.x <= p.x && p.x <= br.x && tl.y <= p.y && p.y <= br.y);
+}
+
+bool rectIntersection(Rect r1, Rect r2, Rect* ans)
+{
+    Rect answer;
+    answer.tl.x = std::max(r1.tl.x, r2.tl.x);
+    answer.tl.y = std::max(r1.tl.y, r2.tl.y);
+    answer.br.x = std::min(r1.br.x, r2.br.x);
+    answer.br.y = std::min(r1.br.y, r2.br.y);
+
+    if (answer.tl.x >= answer.br.x || answer .tl.y >= answer.br.y) return 0;
+    *ans = answer;
+    return 1;
+}
+
+bool clipIntLine(IntVec p1, IntVec p2, IntVec tl, IntVec br, IntVec* ans1, IntVec* ans2)
+{
+    if (inIntRect(p1, tl, br) && inIntRect(p2, tl, br))
+    {
+        *ans1 = p1;
+        *ans2 = p2;
+        return 1;
+    }
+    
+    if (p1.x < tl.x && p1.y < tl.y || p1.x < tl.x && p1.y > br.y ||
+        p1.x > br.x && p1.y < tl.y || p1.x > br.x && p1.y > br.y ||
+        p2.x < tl.x && p2.y < tl.y || p2.x < tl.x && p2.y > br.y ||
+        p2.x > br.x && p2.y < tl.y || p2.x > br.x && p2.y > br.y)
+            return 0;
+    
+    if (p1.x < tl.x) {
+        if (p2.x < tl.x) return 0;
+        p1.x = tl.x;
+    }
+    if (p1.y < tl.y) {
+        if (p2.y < tl.y) return 0;
+        p1.y = tl.y;
+    }
+    if (p1.x > br.x) {
+        if (p2.x > br.x) return 0;
+        p1.x = br.x;
+    }
+    if (p1.y > br.y) {
+        if (p2.y > br.y) return 0;
+        p1.y = br.y;
+    }
+
+    if (p2.x < tl.x) p2.x = tl.x;
+    if (p2.y < tl.y) p2.y = tl.y;
+    if (p2.x > br.x) p2.x = br.x;
+    if (p2.y > br.y) p2.y = br.y;
+    
+    
+    *ans1 = p1;
+    *ans2 = p2;
+    return 1;
+}
+
+
+
+
+Rect::Rect() {};
 
 Rect::Rect(IntVec tl, IntVec br) : tl(tl), br(br)
 {
