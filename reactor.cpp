@@ -111,18 +111,11 @@ void SquareMol::collide(std::vector<Molecule*>& mols, Vector collidePos, Molecul
 
 void RoundMol::draw()
 {
-    // setColor({0, 0, 255});
-    // drawCircle(reactor->getAbsTL() + (IntVec)pos, r, 1);
-
     reactor->t->addCircle(pos, {0, 0, 255}, r, 1);
 }
 
 void SquareMol::draw()
 {
-    // setColor({255, 0, 0});
-    // drawRect(reactor->getAbsTL() + (IntVec)pos - IntVec(r, r), 
-    //          reactor->getAbsTL() + (IntVec)pos + IntVec(r, r), 1);
-
     reactor->t->addRect({pos - Vector(r, r), pos + Vector(r, r)}, {255, 0, 0}, 1);
 }
 
@@ -166,45 +159,17 @@ void Reactor::addRandomMols(int nMols)
     }
 }
 
-void Reactor::addButton(Vector color)
+Reactor::Reactor(Vector tl, Vector br, Widget* parent) : Widget(tl, br, parent)
 {
-    // int nButton = buttons.size();
-    // buttons.push_back(new Button(tl.x + (buttonSize + buttonGap) * nButton, tl.y + buttonSize + 10,
-    //                              tl.x + (buttonSize) * (nButton + 1) + buttonGap * nButton, tl.y + 10, color));
-
-    //
-}
-
-Reactor::Reactor(IntVec tl, IntVec br, Widget* parent) : Widget(tl, br, parent)
-{
-    #define BUTTON_ACTION(function)\
-    QObject::connect(buttons[buttons.size() - 1], &Button::pressed, this, [this]{ function; });
-
     resize(tl, br);
+    setWidgetBorderVisible(1);
 
     mols = std::vector<Molecule*>();
     mols.reserve(nReserve);
     for (int nMol = 0; nMol < nSpawn; ++nMol)
         mols.push_back(randMolecule());
 
-    // buttons = std::vector<Button*>();
-    // addButton(Vector(0, 0, 1));
-    // BUTTON_ACTION(moveWall(10))
-    // addButton(Vector(0.6, 0, 1));
-    // BUTTON_ACTION(moveWall(-10))
-
-    // addButton(Vector(1, 0, 0));
-    // BUTTON_ACTION(increaseTemp(1))
-    // addButton(Vector(1, 0.6, 0));
-    // BUTTON_ACTION(increaseTemp(-1))
-
-    // addButton(Vector(0, 1, 0));
-    // BUTTON_ACTION(addRandomMols(10))
-    // addButton(Vector(0, 1, 1));
-    // BUTTON_ACTION(addRandomMols(-10))
-
     this->lftTemp = 1;
-    #undef BUTTON_ACTION
 }
 
 Reactor::~Reactor()
@@ -213,12 +178,12 @@ Reactor::~Reactor()
         delete mol;
 }
 
-void Reactor::resize(IntVec newtl, IntVec newbr)
+void Reactor::resize(Vector newtl, Vector newbr)
 {
     Widget::resize(newtl, newbr);
     
-    walltl = IntVec(wallDist, wallDist, 0);
-    wallbr = IntVec(width, height) - IntVec(wallDist, wallDist, 0);
+    walltl = Vector(wallDist, wallDist, 0);
+    wallbr = Vector(width, height) - Vector(wallDist, wallDist, 0);
 }
 
 void Reactor::checkWallCollision(Molecule* mol)
@@ -330,8 +295,6 @@ void Reactor::advance()
 void Reactor::paint()
 {
     Widget::paint();
-    // setColor({255, 255, 255});
-    // drawRect(absTL + walltl, absTL + wallbr, 0);
     t->addRect({walltl, wallbr}, {255, 255, 255}, 0);
 
     for (std::vector<Molecule*>::iterator molIter = mols.begin(); molIter != mols.end(); molIter++)

@@ -10,13 +10,13 @@ class ScrollButton;
 class ScrollBar : public Widget
 {
 public:
-    ScrollBar(Widget* parent, IntVec tl, IntVec br);
+    ScrollBar(Widget* parent, Vector tl, Vector br);
 
-    double posToFrac(IntVec thumbTL);
-    IntVec fracToPos(double frac);
+    double posToFrac(Vector thumbTL);
+    Vector fracToPos(double frac);
 
     void moveThumb(double frac);
-    void thumbMoved(IntVec newThumbTL);
+    void thumbMoved(Vector newThumbTL);
     virtual void action(double frac);
 
 private:
@@ -28,7 +28,7 @@ private:
 class ScrollButton : public Button
 {
 public:
-    ScrollButton(IntVec tl, IntVec br, ScrollBar* bar, bool up, Vector color = {127, 127, 127});
+    ScrollButton(Vector tl, Vector br, ScrollBar* bar, bool up, Vector color = {127, 127, 127});
     virtual void action() override;
 
 private:
@@ -39,9 +39,9 @@ private:
 class ScrollThumb : public Button
 {
 public:
-    ScrollThumb(IntVec tl, IntVec br, ScrollBar* bar, Vector color = {63, 63, 63});
+    ScrollThumb(Vector tl, Vector br, ScrollBar* bar, Vector color = {63, 63, 63});
     virtual void action() override;
-    virtual void movePos(IntVec newTL) override;
+    virtual void movePos(Vector newTL) override;
 
 private:
     ScrollBar *bar;
@@ -52,8 +52,8 @@ private:
 class MoveScrollBar : public ScrollBar
 {
 public:
-    MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, double amplitude, bool x_axis);
-    
+    MoveScrollBar(Widget* parent, Vector tl, Vector br, Widget* w, double amplitude, bool x_axis);
+
     virtual void action(double frac) override;
     int fracToMovement(double frac);
 
@@ -61,13 +61,13 @@ private:
     Widget *w;
     bool x_axis;
     double init_scale_x, amplitude;
-    IntVec init_centre;
+    Vector init_centre;
 };
 
 class ScaleScrollBar : public ScrollBar
 {
 public:
-    ScaleScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, double scale_amplitude);
+    ScaleScrollBar(Widget* parent, Vector tl, Vector br, Widget* w, double scale_amplitude);
     virtual void action(double frac) override;
 
     double fracToScale(double frac, bool x);

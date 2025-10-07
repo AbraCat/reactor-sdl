@@ -2,15 +2,15 @@
 #define MYVECTOR_H
 
 class Vector;
-class IntVec;
-class Rect;
-
+class Vector;
+class FixedVec;
+ 
 
 extern const Vector whiteV, blackV;
 
-bool inIntRect(IntVec p, IntVec tl, IntVec br);
-bool clipIntLine(IntVec p1, IntVec p2, IntVec tl, IntVec br, IntVec* ans1, IntVec* ans2);
-bool rectIntersection(Rect r1, Rect r2, Rect* ans);
+bool inIntRect(Vector p, Vector tl, Vector br);
+bool clipLine(FixedVec line, FixedVec rect, FixedVec* ans);
+bool rectIntersection(FixedVec r1, FixedVec r2, FixedVec* ans);
 
 class Vector
 {
@@ -18,7 +18,6 @@ public:
     Vector();
     Vector(double x, double y);
     Vector(double x, double y, double z);
-    Vector(IntVec v);
 
     double x, y, z;
 };
@@ -51,49 +50,6 @@ double dist(Vector p, Vector a, Vector n);
 Vector limitVector(Vector v, double lower, double upper);
 
 double arg(Vector v);
-
-
-
-
-class IntVec
-{
-public:
-    IntVec();
-    IntVec(int x, int y);
-    IntVec(int x, int y, int z);
-    IntVec(Vector v);
-
-    int x, y, z;
-};
-
-IntVec operator+(IntVec v1, IntVec v2);
-IntVec operator-(IntVec v1, IntVec v2);
-IntVec operator*(IntVec v1, IntVec v2);
-
-IntVec& operator+=(IntVec& v1, IntVec v2);
-IntVec& operator-=(IntVec& v1, IntVec v2);
-
-int operator^(IntVec a, IntVec b);
-
-IntVec proj(IntVec a, IntVec n);
-IntVec ortog(IntVec a, IntVec n);
-int dist(IntVec p, IntVec a, IntVec n);
-IntVec limitVector(IntVec v, int lower, int upper);
-
-
-
-
-class Rect
-{
-public:
-    Rect();
-    Rect(IntVec tl, IntVec br);
-    
-    IntVec tl, br;
-};
-
-
-
 
 Vector fixedToFree(FixedVec v);
 FixedVec freeToFixed(Vector v, Vector start);

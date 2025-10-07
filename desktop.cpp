@@ -3,10 +3,10 @@
 #include "reactor.h"
 #include "scroll.h"
 
-const IntVec stdtl(0, 0, 0), stdbr(1800, 1000, 0);
+const Vector stdtl(0, 0, 0), stdbr(1800, 1000, 0);
 const double tempStep = 1, scale_reactor_amplitude = 2;
 const int nButtons = 6, wallStep = 10, nAddMols = 10, r_size = 600, b_pad = 200, c_size = 200, 
-    scroll_w = 100, scroll_len = 400, move_reactor_amplitude = 50;
+    scroll_w = 100, scroll_len = 400, move_reactor_amplitude = 200;
 
 Desktop::Desktop() : Widget(stdtl, stdbr)
 {

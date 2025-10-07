@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-ScrollBar::ScrollBar(Widget* parent, IntVec tl, IntVec br) : Widget(tl, br, parent)
+ScrollBar::ScrollBar(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent)
 {
     assert(height > width * 3);
     setTextureBorderVisible(1);
@@ -18,13 +18,13 @@ ScrollBar::ScrollBar(Widget* parent, IntVec tl, IntVec br) : Widget(tl, br, pare
     moveThumb(0.5);
 }
 
-double ScrollBar::posToFrac(IntVec thumbTL)
+double ScrollBar::posToFrac(Vector thumbTL)
 {
     int range = height - width * 3;
     return (thumbTL.y - width) * 1.0 / range;
 }
 
-IntVec ScrollBar::fracToPos(double frac)
+Vector ScrollBar::fracToPos(double frac)
 {
     int range = height - width * 3;
     return {0, frac * range + width};
@@ -39,7 +39,7 @@ void ScrollBar::moveThumb(double frac)
     thumb->movePos(fracToPos(frac_pos));
 }
 
-void ScrollBar::thumbMoved(IntVec newThumbTL)
+void ScrollBar::thumbMoved(Vector newThumbTL)
 {
     frac_pos = posToFrac(newThumbTL);
     action(frac_pos);
@@ -52,7 +52,7 @@ void ScrollBar::action(double frac)
 
 
 
-ScrollButton::ScrollButton(IntVec tl, IntVec br, ScrollBar* bar, bool up, Vector color) : 
+ScrollButton::ScrollButton(Vector tl, Vector br, ScrollBar* bar, bool up, Vector color) : 
     Button(bar, tl, br, color, ""), up(up), bar(bar)
 {
     //
@@ -67,13 +67,13 @@ void ScrollButton::action()
 
 
 
-ScrollThumb::ScrollThumb(IntVec tl, IntVec br, ScrollBar* bar, Vector color) :
+ScrollThumb::ScrollThumb(Vector tl, Vector br, ScrollBar* bar, Vector color) :
     Button(bar, tl, br, color, ""), bar(bar)
 {
     //
 }
 
-void ScrollThumb::movePos(IntVec newTL)
+void ScrollThumb::movePos(Vector newTL)
 {
     Widget::movePos(newTL);
     bar->thumbMoved(newTL);
@@ -86,7 +86,7 @@ void ScrollThumb::action()
 
 
 
-MoveScrollBar::MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, 
+MoveScrollBar::MoveScrollBar(Widget* parent, Vector tl, Vector br, Widget* w, 
     double amplitude, bool x_axis) : ScrollBar(parent, tl, br)
 {
     this->w = w;
@@ -100,7 +100,7 @@ MoveScrollBar::MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w,
 int MoveScrollBar::fracToMovement(double frac)
 {
     double scale_change = w->t->xScale / init_scale_x;
-    IntVec scaled_init_centre = w->wh * 0.5 + ((Vector)init_centre - w->wh * 0.5) * scale_change;
+    Vector scaled_init_centre = w->wh * 0.5 + ((Vector)init_centre - w->wh * 0.5) * scale_change;
 
     int mid_pos = (x_axis ? scaled_init_centre.x : scaled_init_centre.y);
     int min_pos = mid_pos - amplitude * scale_change;
@@ -112,7 +112,7 @@ int MoveScrollBar::fracToMovement(double frac)
 void MoveScrollBar::action(double frac)
 {
     int movement = fracToMovement(frac);
-    IntVec move_vec;
+    Vector move_vec;
 
     if (x_axis)
     {
@@ -128,7 +128,7 @@ void MoveScrollBar::action(double frac)
     w->t->move(move_vec);
 }
 
-ScaleScrollBar::ScaleScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, double scale_amplitude) :
+ScaleScrollBar::ScaleScrollBar(Widget* parent, Vector tl, Vector br, Widget* w, double scale_amplitude) :
     ScrollBar(parent, tl, br), w(w)
 {
     this->scale_amplitude = scale_amplitude;

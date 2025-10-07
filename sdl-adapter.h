@@ -10,13 +10,13 @@
 void setRenderer(SDL_Renderer* renderer);
 void setColor(Vector color);
 
-void drawPoint(IntVec p);
-void drawLine(IntVec p1, IntVec p2);
-void drawRect(IntVec tl, IntVec br, bool fill);
+void drawPoint(Vector p);
+void drawLine(Vector p1, Vector p2);
+void drawRect(Vector tl, Vector br, bool fill);
 
-void drawCircle(IntVec centre, int r, bool fill);
-void fillConvexPolygon(std::vector<IntVec> points);
+void drawCircle(Vector centre, int r, bool fill);
+void fillConvexPolygon(std::vector<Vector> points);
 
-void putText(std::string text, IntVec tl, IntVec br);
+void putText(std::string text, Vector tl, Vector br);
 
 #endif // MY_SDL_ADAPTER_H

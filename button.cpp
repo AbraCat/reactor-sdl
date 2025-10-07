@@ -5,7 +5,7 @@
 
 const double unpressColorCoeff = 0.7;
 
-Button::Button(Widget* parent, IntVec tl, IntVec br, Vector color, std::string text) : Widget(tl, br, parent)
+Button::Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text) : Widget(tl, br, parent)
 {
     setTextureBorderVisible(1);
     
@@ -29,7 +29,7 @@ bool Button::mousePressEvent(MouseEvent* e)
 {
     Widget::mousePressEvent(e);
 
-    if (!inAbsRect(IntVec(e->x, e->y))) return 0;
+    if (!inAbsRect(Vector(e->x, e->y))) return 0;
     if (is_pressed) return 0;
 
     is_pressed = 1;
@@ -56,7 +56,7 @@ void Button::unpress()
 
 
 MoveWallButton::MoveWallButton(Widget* parent, Reactor* reactor, Vector color, int step, std::string text)
-    : Button(parent, IntVec(), IntVec(), color, text)
+    : Button(parent, Vector(), Vector(), color, text)
 {
     this->reactor = reactor;
     this->step = step;
@@ -68,7 +68,7 @@ void MoveWallButton::action()
 }
 
 TemperatureButton::TemperatureButton(Widget* parent, Reactor* reactor, Vector color, double step, std::string text)
-    : Button(parent, IntVec(), IntVec(), color, text)
+    : Button(parent, Vector(), Vector(), color, text)
 {
     this->reactor = reactor;
     this->step = step;
@@ -80,7 +80,7 @@ void TemperatureButton::action()
 }
 
 AddMolButton::AddMolButton(Widget* parent, Reactor* reactor, Vector color, int nAddMols, std::string text)
-    : Button(parent, IntVec(), IntVec(), color, text)
+    : Button(parent, Vector(), Vector(), color, text)
 {
     this->reactor = reactor;
     this->nAddMols = nAddMols;

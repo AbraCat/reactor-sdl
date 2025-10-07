@@ -12,7 +12,13 @@ static SDL_Renderer *renderer = NULL;
 
 static Desktop* desktop;
 
-const double fps = 30;
+const double fps = 60;
+
+/*
+TODO:
+
+propagate texture transformation
+*/
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {

@@ -63,10 +63,10 @@ public:
 class Reactor : public Widget
 {
 public:
-    Reactor(IntVec tl, IntVec br, Widget* parent);
+    Reactor(Vector tl, Vector br, Widget* parent);
     ~Reactor();
     virtual void paint() override;
-    virtual void resize(IntVec newtl, IntVec newbr) override;
+    virtual void resize(Vector newtl, Vector newbr) override;
 
     virtual bool onIdle(IdleEvent* e) override;
 
@@ -81,11 +81,10 @@ public:
     void moveWall(int step);
     void increaseTemp(double step);
     void addRandomMols(int nMols);
-
-    void addButton(Vector color);
+    
     void advance();
 
-    IntVec walltl, wallbr;
+    Vector walltl, wallbr;
     std::vector<Molecule*> mols;
 
     double lftTemp, rgtImpulse;

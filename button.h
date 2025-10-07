@@ -10,7 +10,7 @@
 class Button : public Widget
 {
 public:
-    Button(Widget* parent, IntVec tl, IntVec br, Vector color, std::string text);
+    Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text);
     virtual void paint() override;
 
     virtual bool mousePressEvent(MouseEvent* e) override;

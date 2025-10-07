@@ -19,20 +19,20 @@ class IdleEvent;
 class CoordSystem
 {
 public:
-    CoordSystem(IntVec centre, double xScale, double yScale);
+    CoordSystem(Vector centre, double xScale, double yScale);
 
-    IntVec tranformToBaseCoord(Vector coord);
-    Vector baseToTransformCoord(IntVec coord);
+    Vector tranformToBaseCoord(Vector coord);
+    Vector baseToTransformCoord(Vector coord);
 
-    void transform(IntVec centre, double xScale, double yScale);
-    void move(IntVec newPos);
+    void transform(Vector centre, double xScale, double yScale);
+    void move(Vector newPos);
     void rescale(double new_scale_x, double new_scale_y);
-    void rescale(double new_scale_x, double new_scale_y, IntVec point);
+    void rescale(double new_scale_x, double new_scale_y, Vector point);
 
-    virtual IntVec getAbsCentre();
+    virtual Vector getAbsCentre();
 
 // protected:
-    IntVec centre;
+    Vector centre;
     double xScale, yScale;
 };
 
@@ -72,7 +72,7 @@ public:
     void paintRec();
     void clear();
 
-    virtual IntVec getAbsCentre() override;
+    virtual Vector getAbsCentre() override;
     void rescaleCentre(double new_scale_x, double new_scale_y);
 
     void addText(std::string text);
@@ -114,24 +114,24 @@ everything else - this (if not said otherwise)
 class Widget
 {
 public:
-    Widget(IntVec tl, IntVec br, Widget* parent = nullptr);
+    Widget(Vector tl, Vector br, Widget* parent = nullptr);
     ~Widget();
     virtual void addWidget(Widget* child);
 
     void setWidgetBorderVisible(bool visible);
     void setTextureBorderVisible(bool visible);
     void setFillRect(bool fill, Vector color = Vector(0, 0, 0));
-    void setDraggable(IntVec dragTL = IntVec(), IntVec dragBR = IntVec());
+    void setDraggable(Vector dragTL = Vector(), Vector dragBR = Vector());
 
-    IntVec getAbsTL();
-    // void propagateAbsChange();
+    Vector getAbsTL();
+    void propagateAbsPos();
 
     void drawWidgetRect(bool fill, Vector color = Vector(0, 0, 0));
-    bool inRect(IntVec point);
-    bool inAbsRect(IntVec point);
+    bool inRect(Vector point);
+    bool inAbsRect(Vector point);
 
-    virtual void resize(IntVec newtl, IntVec newbr);
-    virtual void movePos(IntVec newtl);
+    virtual void resize(Vector newtl, Vector newbr);
+    virtual void movePos(Vector newtl);
 
     void drawRec();
     virtual void paint();
@@ -144,11 +144,11 @@ public:
 // protected:
     Texture *t;
 
-    IntVec tl, br, wh, absTL;
+    Vector tl, br, wh, absTL;
     int width, height;
 
     bool draggable, dragged;
-    IntVec dragTL, dragBR, dragMouse; // relative to parent
+    Vector dragTL, dragBR, dragMouse; // relative to parent
 
     Vector fill_rect_color;
     bool w_border_visible, t_border_visible, fill_rect;
@@ -160,7 +160,7 @@ public:
 class WContainer : public Widget
 {
 public:
-    WContainer(Widget* parent, IntVec tl, IntVec br, int nChildren, bool vertical);
+    WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical);
     virtual void paint() override;
 
     virtual void addWidget(Widget* widget) override;

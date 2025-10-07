@@ -8,7 +8,7 @@ const int axisWidth = 3, cutsWidth = 1, borderWidth = 1, cutsLength = 5, pointSi
 
 
 
-CoordWidget::CoordWidget(Widget* parent, IntVec tl, IntVec br, IntVec centre,
+CoordWidget::CoordWidget(Widget* parent, Vector tl, Vector br, Vector centre,
     double xScale, double cutStepX, double yScale, double cutStepY) : 
     Widget(tl, br, parent), cutStepX(cutStepX), cutStepY(cutStepY)
 {
@@ -60,8 +60,8 @@ void CoordWidget::paint()
 
 
 Graph::Graph(Widget* parent, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
-    IntVec tl, IntVec br) : nPoints(stdNPoints),
-    CoordWidget(parent, tl, br, IntVec((br.x - tl.x) * 0.2, (br.y - tl.y) * 0.8), 
+    Vector tl, Vector br) : nPoints(stdNPoints),
+    CoordWidget(parent, tl, br, Vector((br.x - tl.x) * 0.2, (br.y - tl.y) * 0.8), 
     (br.x - tl.x) * 1.0 / (stdNPoints + 1), 10, yScale, cutStepY)
 {
     this->nGraphs = nGraphs;
@@ -99,7 +99,7 @@ void Graph::addPoint(std::vector<double> point)
 
 
 
-Clock::Clock(Widget* parent, IntVec tl, IntVec br, double scale, double angleStep, double arrowLen) :
+Clock::Clock(Widget* parent, Vector tl, Vector br, double scale, double angleStep, double arrowLen) :
     CoordWidget(parent, tl, br, (br - tl) / 2, scale, 1, scale, 1), arrowLen(arrowLen), angleStep(angleStep)
 {
     setAxisVisible(0);

@@ -15,3 +15,5 @@ add_executable(hello WIN32 main.cpp sdl-adapter.cpp plane.cpp widget.cpp myvecto
 
 # Link to the actual SDL3 library.
 target_link_libraries(hello PRIVATE SDL3::SDL3)
+
+target_compile_options(hello PRIVATE -Wno-narrowing)
