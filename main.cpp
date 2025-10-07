@@ -12,14 +12,7 @@ static SDL_Renderer *renderer = NULL;
 
 static Desktop* desktop;
 
-/*
-TODO:
-
-rescale reactor                        -
-only draw texture parts in widget rect -
-text rendering                         -
-scroll bar mouse wheel                 -
-*/
+const double fps = 30;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -75,7 +68,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     desktop->t->paintRec();
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(1000.0 / 30);
+    SDL_Delay(1000.0 / fps);
     return SDL_APP_CONTINUE;
 }
 

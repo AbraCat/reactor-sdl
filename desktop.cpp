@@ -3,11 +3,10 @@
 #include "reactor.h"
 #include "scroll.h"
 
-IntVec stdtl(0, 0, 0), stdbr(1800, 1000, 0);
-int nButtons = 6, wallStep = 10, nAddMols = 10;
-double tempStep = 1;
-
-const int r_size = 600, b_pad = 200, c_size = 200, scroll_w = 100, scroll_len = 400;
+const IntVec stdtl(0, 0, 0), stdbr(1800, 1000, 0);
+const double tempStep = 1, scale_reactor_amplitude = 2;
+const int nButtons = 6, wallStep = 10, nAddMols = 10, r_size = 600, b_pad = 200, c_size = 200, 
+    scroll_w = 100, scroll_len = 400, move_reactor_amplitude = 50;
 
 Desktop::Desktop() : Widget(stdtl, stdbr)
 {
@@ -32,8 +31,8 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
 
     WContainer* scroll_cont = new WContainer(this, {b_pad + r_size * 3 / 2, c_size}, 
         {b_pad + r_size * 3 / 2 + c_size,  c_size + scroll_len}, 3, 0);
-    new MoveScrollBar(scroll_cont, {}, {}, reactor, {50, 0});
-    new MoveScrollBar(scroll_cont, {}, {}, reactor, {0, 50});
+    new MoveScrollBar(scroll_cont, {}, {}, reactor, {50, 0}, 1);
+    new MoveScrollBar(scroll_cont, {}, {}, reactor, {0, 50}, 0);
     new ScaleScrollBar(scroll_cont, {}, {}, reactor, 2);
 }
 

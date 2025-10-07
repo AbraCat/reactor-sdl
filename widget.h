@@ -4,6 +4,7 @@
 #include <SDL3/SDL.h>
 
 #include <vector>
+#include <string>
 
 #include "myvector.h"
 
@@ -12,8 +13,6 @@ class Widget;
 class Event;
 class MouseEvent;
 class IdleEvent;
-
-
 
 
 
@@ -27,8 +26,10 @@ public:
 
     void transform(IntVec centre, double xScale, double yScale);
     void move(IntVec newPos);
-    void rescale(double new_scale);
-    void rescale(double new_scale, IntVec point);
+    void rescale(double new_scale_x, double new_scale_y);
+    void rescale(double new_scale_x, double new_scale_y, IntVec point);
+
+    virtual IntVec getAbsCentre();
 
 // protected:
     IntVec centre;
@@ -63,8 +64,6 @@ struct ColPolygon
     bool fill;
 };
 
-void addVector(Texture* t, FixedVec v, Vector color);
-
 class Texture : public CoordSystem
 {
 public:
@@ -73,19 +72,28 @@ public:
     void paintRec();
     void clear();
 
-    void rescaleCentre(double new_scale);
+    virtual IntVec getAbsCentre() override;
+    void rescaleCentre(double new_scale_x, double new_scale_y);
 
+    void addText(std::string text);
     void addPoint(Vector p, Vector color);
     void addLine(FixedVec line, Vector color);
 
     void addRect(FixedVec rect, Vector color, bool fill);
     void addCircle(Vector centre, Vector col, double r, bool fill);
     void addPolygon(std::vector<Vector> points, Vector color, bool fill);
+    void addVector(FixedVec v, Vector color);
+
+    void paintPoint(ColPoint p);
+    void paintLine(ColFixedVec line);
+    void paintRect(ColFixedVec rect);
+    void paintCircle(ColCircle cirlce);
+    void paintPolygon(ColPolygon polygon);
 
 // protected:
     Widget* w;
 
-    // point line rect(2) circle(2) polygon(2)
+    std::string text;
     std::vector<ColPoint> points;
     std::vector<ColFixedVec> lines, rects;
     std::vector<ColCircle> circles;
@@ -108,33 +116,31 @@ class Widget
 public:
     Widget(IntVec tl, IntVec br, Widget* parent = nullptr);
     ~Widget();
+    virtual void addWidget(Widget* child);
 
     void setWidgetBorderVisible(bool visible);
     void setTextureBorderVisible(bool visible);
     void setFillRect(bool fill, Vector color = Vector(0, 0, 0));
+    void setDraggable(IntVec dragTL = IntVec(), IntVec dragBR = IntVec());
+
     IntVec getAbsTL();
     // void propagateAbsChange();
 
     void drawWidgetRect(bool fill, Vector color = Vector(0, 0, 0));
     bool inRect(IntVec point);
     bool inAbsRect(IntVec point);
+
     virtual void resize(IntVec newtl, IntVec newbr);
     virtual void movePos(IntVec newtl);
 
     void drawRec();
     virtual void paint();
 
-    void addChild(Widget* widget);
-    virtual void addWidget(Widget* child);
     bool handleEvent(Event* e);
-
     virtual bool onIdle(IdleEvent* e);
     virtual bool mousePressEvent(MouseEvent* e);
     virtual bool mouseMoveEvent(MouseEvent* e);
     virtual bool mouseReleaseEvent(MouseEvent* e);
-
-    void setDraggable(IntVec dragTL = IntVec(), IntVec dragBR = IntVec());
-
 // protected:
     Texture *t;
 

@@ -7,6 +7,8 @@ const double unpressColorCoeff = 0.7;
 
 Button::Button(Widget* parent, IntVec tl, IntVec br, Vector color, std::string text) : Widget(tl, br, parent)
 {
+    setTextureBorderVisible(1);
+    
     this->press_color = color;
     this->unpress_color = color * unpressColorCoeff;
     this->is_pressed = 0;
@@ -19,9 +21,8 @@ void Button::paint()
     Widget::paint();
     if (is_pressed) drawWidgetRect(1, press_color);
     else drawWidgetRect(1, unpress_color);
-
-    // setColor({255, 255, 255});
-    // putText(text, absTL, absTL + wh);
+    
+    t->addText(text);
 }
 
 bool Button::mousePressEvent(MouseEvent* e)
