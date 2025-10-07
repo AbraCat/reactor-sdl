@@ -31,8 +31,8 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
 
     WContainer* scroll_cont = new WContainer(this, {b_pad + r_size * 3 / 2, c_size}, 
         {b_pad + r_size * 3 / 2 + c_size,  c_size + scroll_len}, 3, 0);
-    new MoveScrollBar(scroll_cont, {}, {}, reactor, {50, 0}, 1);
-    new MoveScrollBar(scroll_cont, {}, {}, reactor, {0, 50}, 0);
+    new MoveScrollBar(scroll_cont, {}, {}, reactor, move_reactor_amplitude, 1);
+    new MoveScrollBar(scroll_cont, {}, {}, reactor, move_reactor_amplitude, 0);
     new ScaleScrollBar(scroll_cont, {}, {}, reactor, 2);
 }
 

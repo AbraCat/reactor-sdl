@@ -52,17 +52,16 @@ private:
 class MoveScrollBar : public ScrollBar
 {
 public:
-    MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, IntVec amplitude, bool x_axis);
+    MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, double amplitude, bool x_axis);
+    
     virtual void action(double frac) override;
-
-    IntVec fracToMovement(double frac);
-    double movementToFrac(IntVec movement);
+    int fracToMovement(double frac);
 
 private:
     Widget *w;
     bool x_axis;
-    double init_scale_x;
-    IntVec init_centre, amplitude;
+    double init_scale_x, amplitude;
+    IntVec init_centre;
 };
 
 class ScaleScrollBar : public ScrollBar

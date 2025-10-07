@@ -87,7 +87,7 @@ void ScrollThumb::action()
 
 
 MoveScrollBar::MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, 
-    IntVec amplitude, bool x_axis) : ScrollBar(parent, tl, br)
+    double amplitude, bool x_axis) : ScrollBar(parent, tl, br)
 {
     this->w = w;
     this->x_axis = x_axis;
@@ -97,29 +97,35 @@ MoveScrollBar::MoveScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w,
     this->init_scale_x = w->t->xScale;
 }
 
-IntVec MoveScrollBar::fracToMovement(double frac)
+int MoveScrollBar::fracToMovement(double frac)
 {
     double scale_change = w->t->xScale / init_scale_x;
     IntVec scaled_init_centre = w->wh * 0.5 + ((Vector)init_centre - w->wh * 0.5) * scale_change;
-    
-    IntVec min_pos = (Vector)scaled_init_centre - amplitude * scale_change;
-    IntVec max_pos = (Vector)scaled_init_centre + amplitude * scale_change;
+
+    int mid_pos = (x_axis ? scaled_init_centre.x : scaled_init_centre.y);
+    int min_pos = mid_pos - amplitude * scale_change;
+    int max_pos = mid_pos + amplitude * scale_change;
 
     return min_pos * (1 - frac) + max_pos * frac;
 }
 
-double MoveScrollBar::movementToFrac(IntVec movement)
-{
-    return 0;
-}
-
 void MoveScrollBar::action(double frac)
 {
-    IntVec movement = fracToMovement(frac);
-    if (x_axis) movement.y = w->t->centre.y;
-    else movement.x = w->t->centre.x;
+    int movement = fracToMovement(frac);
+    IntVec move_vec;
 
-    w->t->move(movement);
+    if (x_axis)
+    {
+        move_vec.x = movement;
+        move_vec.y = w->t->centre.y;
+    }
+    else
+    {
+        move_vec.x = w->t->centre.x;
+        move_vec.y = movement;
+    }
+
+    w->t->move(move_vec);
 }
 
 ScaleScrollBar::ScaleScrollBar(Widget* parent, IntVec tl, IntVec br, Widget* w, double scale_amplitude) :
