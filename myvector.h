@@ -49,6 +49,7 @@ double operator*(Vector v);
 Vector operator!(Vector v);
 double operator^(Vector a, Vector b);
 
+double angle(Vector a, Vector b);
 Vector proj(Vector a, Vector n);
 Vector ortog(Vector a, Vector n);
 double dist(Vector p, Vector a, Vector n);

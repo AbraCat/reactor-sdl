@@ -142,6 +142,12 @@ double operator^(Vector a, Vector b) { return a.x * b.x + a.y * b.y + a.z * b.z;
 void print(Vector v) { printf("vector %.3lf %.3lf %.3lf\n", v.x, v.y, v.z); }
  
  
+
+double angle(Vector a, Vector b)
+{
+    return (!a) ^ (!b);
+}
+
 Vector proj(Vector a, Vector n)
 {
     double t = (a ^ n) / std::pow(*n, 2);

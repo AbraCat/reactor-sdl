@@ -32,13 +32,13 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
 
     OptScene* scene = new OptScene(this, {0, 0}, {1000, 1000});
     scene->addSphere({0, 0, 0}, {0.6, 0.3, 0.9}, 100);
-    scene->addSource({100, 0, 100}, {0.9, 0.9, 0.3});
+    scene->addSource({0, 0, 150}, {0.9, 0.9, 0.3});
 
-    WContainer* scroll_cont = new WContainer(this, {b_pad + r_size * 3 / 2, c_size}, 
-        {b_pad + r_size * 3 / 2 + c_size,  c_size + scroll_len}, 3, 0);
-    new MoveScrollBar(scroll_cont, {}, {}, scene, move_reactor_amplitude, 1);
-    new MoveScrollBar(scroll_cont, {}, {}, scene, move_reactor_amplitude, 0);
-    new ScaleScrollBar(scroll_cont, {}, {}, scene, 2);
+    // WContainer* scroll_cont = new WContainer(this, {b_pad + r_size * 3 / 2, c_size}, 
+    //     {b_pad + r_size * 3 / 2 + c_size,  c_size + scroll_len}, 3, 0);
+    // new MoveScrollBar(scroll_cont, {}, {}, scene, move_reactor_amplitude, 1);
+    // new MoveScrollBar(scroll_cont, {}, {}, scene, move_reactor_amplitude, 0);
+    // new ScaleScrollBar(scroll_cont, {}, {}, scene, 2);
 }
 
 Desktop::~Desktop()
