@@ -1,13 +1,17 @@
 #include "desktop.h"
-#include "plane.h"
-#include "reactor.h"
 #include "scroll.h"
-#include "optical-scene.h"
+
+#include <cmath>
 
 const Vector stdtl(0, 0, 0), stdbr(1800, 1000, 0);
 const double tempStep = 1, scale_reactor_amplitude = 2;
 const int nButtons = 6, wallStep = 10, nAddMols = 10, r_size = 600, b_pad = 200, c_size = 200, 
     scroll_w = 100, scroll_len = 400, move_reactor_amplitude = 200;
+
+Vector gray = {0.9, 0.9, 0.9}, purple = {0.6, 0.3, 0.9}, yellow = {0.9, 0.9, 0.3}, green = {0.6, 0.9, 0.3},
+    orange = {0.9, 0.6, 0.3}, white = {1, 1, 1};
+
+double h = 1.3, r = 2;
 
 Desktop::Desktop() : Widget(stdtl, stdbr)
 {
@@ -30,9 +34,20 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
     // new AddMolButton(button_cont, reactor, Vector(0, 255, 0), nAddMols, "Add mols");
     // new AddMolButton(button_cont, reactor, Vector(255, 255), -nAddMols, "Remove mols");
 
-    OptScene* scene = new OptScene(this, {0, 0}, {1000, 1000});
-    scene->addSphere({0, 0, 0}, {0.6, 0.3, 0.9}, 100);
-    scene->addSource({0, 0, 150}, {0.9, 0.9, 0.3});
+    scene = new OptScene(this, {0, 0}, {1000, 1000});
+    // scene->t->rescale(3, 3);
+
+    // Vector Isource = yellow;
+    // scene->setIambient(Isource / 3);
+
+    std::vector<Sphere>::iterator sphere1 = scene->addSphere({-0.75, 0, 0}, gray, 1);
+    std::vector<Sphere>::iterator sphere2 = scene->addSphere({1, 0, 0}, purple, 0.5);
+    std::vector<Sphere>::iterator sphere3 = scene->addSphere({0, 2, 0}, gray, 0.5);
+
+    std::vector<Source>::iterator source1 = scene->addSource({r, 0, h}, orange);
+    std::vector<Source>::iterator source2 = scene->addSource({0, -2, h}, green);
+    source = source1;
+    // scene->addSource({0, 0, 2}, {1, 1, 1});
 
     // WContainer* scroll_cont = new WContainer(this, {b_pad + r_size * 3 / 2, c_size}, 
     //     {b_pad + r_size * 3 / 2 + c_size,  c_size + scroll_len}, 3, 0);
@@ -55,6 +70,12 @@ bool Desktop::onIdle(IdleEvent* e)
 {
     // energy_graph->addPoint({reactor->energy()});
     // cnt_graph->addPoint(reactor->molCnt());
+
+    // static double angle = 0;
+    // const double r = 2;
+    // angle += 0.1;
+    // source->pos = {r * std::cos(angle), r * std::sin(angle)};
+    // scene->paint();
 
     return 0;
 }

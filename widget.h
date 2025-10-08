@@ -24,7 +24,7 @@ public:
     Vector tranformToBaseCoord(Vector coord);
     Vector baseToTransformCoord(Vector coord);
 
-    void transform(Vector centre, double xScale, double yScale);
+    virtual void transform(Vector centre, double xScale, double yScale);
     void move(Vector newPos);
     void rescale(double new_scale_x, double new_scale_y);
     void rescale(double new_scale_x, double new_scale_y, Vector point);

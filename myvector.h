@@ -62,5 +62,6 @@ FixedVec freeToFixed(Vector v, Vector start);
 FixedVec rotateV(FixedVec v, double angle);
 
 void print(Vector v);
+void print(FixedVec v);
 
 #endif // MYVECTOR_H

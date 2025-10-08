@@ -5,6 +5,7 @@
 #include "plane.h"
 #include "reactor.h"
 #include "button.h"
+#include "optical-scene.h"
 
 class Desktop : public Widget
 {
@@ -17,11 +18,12 @@ public:
 
 private:
     Reactor *reactor;
-
     Graph *energy_graph, *cnt_graph;
     Clock* clock;
-
     WContainer *button_cont;
+
+    OptScene* scene;
+    SourceIt source;
 };
 
 #endif // MY_APP_H

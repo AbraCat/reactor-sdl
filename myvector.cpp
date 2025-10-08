@@ -22,9 +22,9 @@ void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* n
 
     if (isZero(d))
     {
-        *nRoots = 1;
-        *x1 = -b / (2 * a);
-        *x2 = 0;
+        if (nRoots != nullptr) *nRoots = 1;
+        if (x1 != nullptr) *x1 = -b / (2 * a);
+        if (x2 != nullptr) *x2 = 0;
         return;
     }
 
@@ -35,9 +35,9 @@ void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* n
         return;
     }
 
-    *nRoots = 2;
-    *x1 = (-b - std::sqrt(d)) / (2 * a);
-    *x2 = (-b + std::sqrt(d)) / (2 * a);
+    if (nRoots != nullptr) *nRoots = 2;
+    if (x1 != nullptr) *x1 = (-b - std::sqrt(d)) / (2 * a);
+    if (x2 != nullptr) *x2 = (-b + std::sqrt(d)) / (2 * a);
 }
 
 
@@ -139,7 +139,10 @@ Vector operator/(Vector v, double a) { return {v.x / a, v.y / a, v.z / a}; }
 double operator*(Vector v) { return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
 Vector operator!(Vector v) { return v / (*v); }
 double operator^(Vector a, Vector b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-void print(Vector v) { printf("vector %.3lf %.3lf %.3lf\n", v.x, v.y, v.z); }
+
+void print(Vector v) { printf("Vector %.3lf %.3lf %.3lf\n", v.x, v.y, v.z); }
+void print(FixedVec v) { printf("FixedVec (%.3lf %.3lf %.3lf) (%.3lf %.3lf %.3lf)\n", 
+    v.p1.x, v.p1.y, v.p1.z, v.p2.x, v.p2.y, v.p2.z); }
  
  
 

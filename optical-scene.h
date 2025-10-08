@@ -3,6 +3,13 @@
 
 #include "plane.h"
 
+class Source;
+class Sphere;
+class OptScene;
+
+using SourceIt = std::vector<Source>::iterator;
+using SphereIt = std::vector<Sphere>::iterator;
+
 class Sphere
 {
 public:
@@ -22,7 +29,7 @@ public:
     Vector Isource, pos;
 };
 
-class OptScene : public CoordWidget
+class OptScene : public Widget
 {
 public:
     OptScene(Widget* parent, Vector tl, Vector br);
@@ -32,7 +39,7 @@ public:
     void setBG(Vector bgColor);
     void setIambient(Vector Ia);
 
-    Vector traceRay(FixedVec ray);
+    Vector traceRay(FixedVec ray, int depth);
 
     std::vector<Sphere>::iterator addSphere(Vector pos, Vector color, double radius);
     std::vector<Source>::iterator addSource(Vector pos, Vector color);

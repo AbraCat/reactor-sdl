@@ -134,15 +134,18 @@ void Texture::paintRect(ColFixedVec rect)
     if (rect.fill == 0) assert("should pass rect border as 4 lines" && 0);
 
     Vector absP1 = tranformToBaseCoord(rect.vec.p1), absP2 = tranformToBaseCoord(rect.vec.p2);
-    if (w->inAbsRect(absP1) && w->inAbsRect(absP2))
-    {
-        FixedVec ans;
-        if (rectIntersection({absP1, absP2}, {w->absTL, w->absTL + w->wh}, &ans))
-        {
-            setColor(rect.col);
-            drawRect(ans.p1, ans.p2, rect.fill);
-        }
-    }
+    // if (w->inAbsRect(absP1) && w->inAbsRect(absP2))
+    // {
+    //     FixedVec ans;
+    //     if (rectIntersection({absP1, absP2}, {w->absTL, w->absTL + w->wh}, &ans))
+    //     {
+    //         setColor(rect.col);
+    //         drawRect(ans.p1, ans.p2, rect.fill);
+    //     }
+    // }
+
+    setColor(rect.col);
+    drawRect(absP1, absP2, rect.fill);
 }
 
 void Texture::paintCircle(ColCircle c)

@@ -3,20 +3,17 @@
 #include <limits>
 #include <cmath>
 
-const double screen_z = 200;
-const int screen_size = 200;
+const double screen_z = 3;
+const int screen_size = 2, max_depth = 2;
 const Vector screen_tl = {-screen_size, -screen_size}, screen_br = {screen_size, screen_size};
 
 bool d = 0;
 
-OptScene::OptScene(Widget* parent, Vector tl, Vector br) : 
-    CoordWidget(parent, tl, br, (br - tl) / 2, 1, 1, 1, 1)
+OptScene::OptScene(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent)
 {
-    setAxisVisible(0);
-
     specularPow = 15;
     shadowSmooth = 3;
-    V = {0, 0, 300};
+    V = {0, 0, 6};
     bgColor = {0, 0, 0};
 
     spheres = std::vector<Sphere>();
@@ -27,28 +24,22 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br) :
 
 void OptScene::paint()
 {
-    for (int x = screen_tl.x; x <= screen_br.x; ++x)
+    for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
     {
-        for (int y = screen_tl.y; y <= screen_br.y; ++y)
+        double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / width; 
+        for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
         {
-            if (x == 0 && y == 0) d = 1;
+            double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / height; 
 
             FixedVec ray = {V, Vector(x, y, screen_z) - V};
-            // if (d)
-            // {
-            //     print(ray.p1);
-            //     print(ray.p2);
-            // }
-            Vector color = traceRay(ray);
-            // if (d) print(color);
-            t->addRect({{x, y}, {x + 1, y + 1}}, color * 255, 1);
+            Vector color = traceRay(ray, 0);
 
-            d = 0;
+            t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
         }
     }
 }
 
-void intersectSphere(Sphere s, FixedVec ray, int* n_roots, double* t1, double* t2)
+bool intersectSphere(Sphere s, FixedVec ray, double* t)
 {
     /*
     p = p1 - c
@@ -57,78 +48,89 @@ void intersectSphere(Sphere s, FixedVec ray, int* n_roots, double* t1, double* t
     (p.x + t * p2.x) ^ 2 + (p.y + t * p2.y) ^ 2 = r ^ 2
     t^2(p2.x^2 + p2.y^2) + 2t * (p.x * p2.x + p.y * p2.y) + p.x^2 + p.y^2 - r^2 = 0
     */
-    if (d)
-    {
-        // printf("aaa\n");
-    }
+
     Vector p = ray.p1 - s.centre, p2 = ray.p2;
     double r = s.radius;
+    double t1 = 0, t2 = 0;
+    int n_roots = -1;
     solveQuadratic(p2.x * p2.x + p2.y * p2.y + p2.z * p2.z, 2 * (p.x * p2.x + p.y * p2.y + p.z * p2.z),
-        p.x * p.x + p.y * p.y + p.z * p.z - r * r, t1, t2, n_roots);
+        p.x * p.x + p.y * p.y + p.z * p.z - r * r, &t1, &t2, &n_roots);
+
+    const double eps = 1e-3;
+    if (n_roots >= 1 && t1 > eps)
+    {
+        if (t != nullptr) *t = t1;
+        return 1;
+    }
+    return 0;
 }
 
 FixedVec getReflectedRay(Sphere s, Vector p, FixedVec ray)
 {
     Vector n = p - s.centre;
-    Vector r_proj_n  = proj(ray.p2, n);
-    // x - p2 = 2n
-    return {p, n * 2 + ray.p2};
+    Vector r_proj_n = proj(ray.p2, n);
+
+    // 2 * r_proj_n = p2 - x
+    return {p, ray.p2 - r_proj_n * 2};
 }
 
 Vector getDiffuseColor(Sphere s, Source l, Vector p)
 {
-    Vector L = l.pos - p, p_rel = p - s.centre;
-    // double cosA = angle(L, p - s.centre);
-    double cosA = (!L) ^ (!p_rel);
-    if (d)
-    {
-        print(p);
-        print(l.pos);
-        print(s.centre);
-        print(L);
-        print(p_rel);
-        printf("%lf\n", cosA);
-    }
+    Vector L = l.pos - p;
+    double cosA = angle(L, p - s.centre);
     return s.Imaterial * l.Isource * cosA;
 }
 
-Vector OptScene::traceRay(FixedVec ray)
+Vector OptScene::traceRay(FixedVec ray, int depth)
 {
-    // ray: p1 + t * p2
+    if (depth >= max_depth) return {0, 0, 0};
+
     Sphere *s = nullptr;
     double t = std::numeric_limits<double>::infinity();
     for (std::vector<Sphere>::iterator s1 = spheres.begin(); s1 != spheres.end(); ++s1)
     {
-        int n_roots = 0;
-        double t1 = 0, t2 = 0;
-        intersectSphere(*s1, ray, &n_roots, &t1, &t2);
-        // if (d) printf("%d %lf %lf\n", n_roots, t1, t2);
-
-        if (n_roots >= 1 && t1 > 0 && t1 < t)
+        double t1 = 0;
+        if (intersectSphere(*s1, ray, &t1))
         {
-            t = t1;
-            s = &*s1;
+            if (t1 < t)
+            {
+                t = t1;
+                s = &*s1;
+            }
         }
     }
-    if (s == nullptr) return {0, 0, 0};
-
-    Vector color = {0, 0, 0}, p = ray.p1 + ray.p2 * t;
-    // if (d)
-    // {
-    //     print(p);
-    //     print(s->centre);
-    //     printf("%lf\n", s->radius);
-    // }
-    for (Source l: sources)
+    if (s == nullptr)
     {
-        // check for shadow
-
-        // if no shadow:
-        // reflection, refraction
-        color += getDiffuseColor(*s, l, p);
-        // if (d) print(color);
+        // if (ray.p2.z < 0)
+            // return {63, 63, 63};
+        // else
+            return {0, 0, 0};
     }
 
+    Vector p = ray.p1 + ray.p2 * t;
+    Vector reflect_color = s->Imaterial * traceRay(getReflectedRay(*s, p, ray), depth + 1);
+
+    Vector diffuse_color = {0, 0, 0};
+    for (Source l: sources)
+    {
+        FixedVec shadow_ray = {p, l.pos - p};
+        if (d) print(shadow_ray);
+
+        bool shadow = 0;
+        for (std::vector<Sphere>::iterator s1 = spheres.begin(); s1 != spheres.end(); ++s1)
+        {
+            if (&*s1 == s) continue;
+            if (intersectSphere(*s1, shadow_ray, nullptr))
+            {
+                shadow = 1;
+                break;
+            }
+        }
+
+        if (!shadow) diffuse_color += getDiffuseColor(*s, l, p);
+    }
+
+    Vector color = diffuse_color + reflect_color;
     return limitVector(color, 0, 1);
 }
 
