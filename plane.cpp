@@ -14,7 +14,6 @@ CoordWidget::CoordWidget(Widget* parent, Vector tl, Vector br, Vector centre,
 {
     t->transform(centre, xScale, yScale);
 
-
     planeTL = Vector(-planeRectSize / xScale, -planeRectSize / yScale);
     planeBR = Vector(planeRectSize / xScale, planeRectSize / yScale);
 

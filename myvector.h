@@ -8,6 +8,11 @@ class FixedVec;
 
 extern const Vector whiteV, blackV;
 
+bool isZero(double a);
+int randInt(int lft, int rgt);
+double randDouble(double lft, double rgt);
+void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* nRoots);
+
 bool inIntRect(Vector p, Vector tl, Vector br);
 bool clipLine(FixedVec line, FixedVec rect, FixedVec* ans);
 bool rectIntersection(FixedVec r1, FixedVec r2, FixedVec* ans);

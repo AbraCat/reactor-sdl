@@ -6,6 +6,42 @@
 extern const Vector whiteV = {255, 255, 255}, blackV = {0, 0, 0};
 
 
+
+bool isZero(double a)
+{
+    const double eps = 1e-3;
+    return a > -eps && a < eps;
+}
+
+int randInt(int lft, int rgt) { return rand() % (rgt - lft + 1) + lft;}
+double randDouble(double lft, double rgt) { return rand() / (RAND_MAX / (rgt - lft)) + lft; }
+
+void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* nRoots)
+{
+    double d = b * b - 4 * a * c;
+
+    if (isZero(d))
+    {
+        *nRoots = 1;
+        *x1 = -b / (2 * a);
+        *x2 = 0;
+        return;
+    }
+
+    if (d < 0)
+    {
+        *nRoots = 0;
+        *x1 = *x2 = 0;
+        return;
+    }
+
+    *nRoots = 2;
+    *x1 = (-b - std::sqrt(d)) / (2 * a);
+    *x2 = (-b + std::sqrt(d)) / (2 * a);
+}
+
+
+
 bool inIntRect(Vector p, Vector tl, Vector br)
 {
     return (tl.x <= p.x && p.x <= br.x && tl.y <= p.y && p.y <= br.y);
