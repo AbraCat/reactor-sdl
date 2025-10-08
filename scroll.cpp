@@ -30,9 +30,9 @@ Vector ScrollBar::fracToPos(double frac)
     return {0, frac * range + width};
 }
 
-void ScrollBar::moveThumb(double frac)
+void ScrollBar::moveThumb(double frac_change)
 {
-    frac_pos += frac;
+    frac_pos += frac_change;
     if (frac_pos < 0) frac_pos = 0;
     if (frac_pos > 1) frac_pos = 1;
 
@@ -45,7 +45,7 @@ void ScrollBar::thumbMoved(Vector newThumbTL)
     action(frac_pos);
 }
 
-void ScrollBar::action(double frac)
+void ScrollBar::action(double frac_pos)
 {
     //
 }

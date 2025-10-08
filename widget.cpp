@@ -406,7 +406,7 @@ WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool
     setTextureBorderVisible(1);
     this->vertical = vertical;
     this->nChildren = nChildren;
-    this->padding = 10;
+    this->padding = 0;
 
     if (vertical)
     {

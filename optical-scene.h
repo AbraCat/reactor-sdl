@@ -1,0 +1,7 @@
+#ifndef OPTICAL_SCENE_H
+#define OPTICAL_SCENE_H
+
+
+
+
+#endif // OPTICAL_SCENE_H

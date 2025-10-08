@@ -15,9 +15,9 @@ public:
     double posToFrac(Vector thumbTL);
     Vector fracToPos(double frac);
 
-    void moveThumb(double frac);
+    void moveThumb(double frac_change);
     void thumbMoved(Vector newThumbTL);
-    virtual void action(double frac);
+    virtual void action(double frac_pos);
 
 private:
     double frac_pos;
