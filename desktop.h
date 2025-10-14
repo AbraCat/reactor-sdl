@@ -23,7 +23,6 @@ private:
     WContainer *button_cont;
 
     OptScene* scene;
-    SourceIt source;
 };
 
 #endif // MY_APP_H
