@@ -6,12 +6,15 @@
 class Ray;
 class Material;
 class Surface;
-class Sphere;
+class Source;
 class PlaneSurface;
 class SphereSurface;
 class OptScene;
 
-bool intersectSphere(Sphere* s, Ray ray, double* t, bool* in);
+using SurfaceIt = std::vector<Surface*>::iterator;
+using SourceIt = std::vector<Source*>::iterator;
+
+Vector getDiffuseColor(Surface* s, Source* l, Vector p);
 
 class Ray
 {
@@ -25,9 +28,10 @@ public:
 class Material
 {
 public:
-    Material(double diffuse_c, double reflect_c, double refract_c, Vector color);
+    Material(double diffuse_c, double reflect_c, double refract_c, double refract_k, Vector color);
 
     double reflect_c, refract_c, diffuse_c;
+    double refract_k;
     Vector color;
 };
 
@@ -36,7 +40,6 @@ class Surface
 public:
     Surface(Material m);
     Surface(Vector color);
-    void setSource(bool is_source);
 
     virtual bool intersect(Ray ray, double* t, bool* in) = 0;
     virtual Vector normal(Vector p) = 0; // should face outside
@@ -46,16 +49,15 @@ public:
     Ray reflect_diffuse(Ray r, Vector p);
 
     Material m;
-    bool is_source;
 };
 
-class Sphere
+class Source
 {
 public:
-    Sphere(Vector pos, double r);
+    Source(Vector color, Vector pos);
+    virtual Vector getRandPoint();
 
-    double radius;
-    Vector pos;
+    Vector color, pos;
 };
 
 class PlaneSurface : public Surface
@@ -69,13 +71,16 @@ public:
     double y_pos;
 };
 
-class SphereSurface : public Sphere, public Surface
+class SphereSurface : public Surface
 {
 public:
     SphereSurface(Vector pos, double r, Vector color);
     
     virtual bool intersect(Ray ray, double* t, bool* in) override;
     virtual Vector normal(Vector p) override;
+
+    double r;
+    Vector pos;
 };
 
 class OptScene : public Widget
@@ -89,13 +94,13 @@ public:
     Vector traceRay(Ray ray, int depth);
 
     std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r);
-    std::vector<SphereSurface*>::iterator addSource(Vector pos, Vector color, double r);
+    std::vector<Source*>::iterator addSource(Vector pos, Vector color, double r);
 
 private:
     Vector V;
 
     std::vector<Surface*> spheres;
-    std::vector<SphereSurface*> sources;
+    std::vector<Source*> sources;
 };
 
 #endif // OPTICAL_SCENE_H

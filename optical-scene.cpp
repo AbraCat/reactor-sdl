@@ -4,7 +4,7 @@
 #include <cmath>
 
 const double screen_z = 3, intersect_eps = 0.01;
-const int screen_size = 2, max_depth = 2, n_diffuse_rays = 20;
+const int screen_size = 2, max_depth = 2, n_diffuse_rays = 20, n_shadow_rays = 5;
 const Vector screen_tl = {-screen_size, -screen_size}, screen_br = {screen_size, screen_size};
 const Vector sky_col = {0, 0.5, 1};
 
@@ -23,25 +23,22 @@ Ray::Ray(Vector p, Vector a) : p(p), a(a)
 
 Vector Ray::eval(double t) { return p + a * t; }
 
-Material::Material(double diffuse_c, double reflect_c, double refract_c, Vector color) :
-    reflect_c(reflect_c), refract_c(refract_c), diffuse_c(diffuse_c), color(color)
+Material::Material(double diffuse_c, double reflect_c, double refract_c, 
+    double refract_k, Vector color) :
+    reflect_c(reflect_c), refract_c(refract_c), diffuse_c(diffuse_c),
+    refract_k(refract_k), color(color)
 {
     //
 }
 
-Surface::Surface(Material m) : m(m), is_source(0)
+Surface::Surface(Material m) : m(m)
 {
     //
 }
 
-Surface::Surface(Vector color) : m(0.5, 0.5, 0, color), is_source(0)
+Surface::Surface(Vector color) : m(0.5, 0.5, 0, 0, color)
 {
     //
-}
-
-void Surface::setSource(bool is_source)
-{
-    this->is_source = is_source;
 }
 
 Ray Surface::reflect(Ray r, Vector p)
@@ -71,9 +68,14 @@ Ray Surface::reflect_diffuse(Ray r, Vector p)
     return Ray(p, norm + random_vec);
 }
 
-Sphere::Sphere(Vector pos, double r) : radius(r), pos(pos)
+Source::Source(Vector color, Vector pos) : color(color), pos(pos)
 {
     //
+}
+
+Vector Source::getRandPoint()
+{
+    return pos;
 }
 
 PlaneSurface::PlaneSurface(double y_pos, Vector color) : Surface(color), y_pos(y_pos)
@@ -101,22 +103,13 @@ Vector PlaneSurface::normal(Vector p)
 }
 
 
-SphereSurface::SphereSurface(Vector pos, double r, Vector color) : Sphere(pos, r), Surface(color)
+SphereSurface::SphereSurface(Vector pos, double r, Vector color) : 
+    Surface(color), r(r), pos(pos)
 {
     //
 }
     
 bool SphereSurface::intersect(Ray ray, double* t_ptr, bool* in)
-{
-    return intersectSphere(this, ray, t_ptr, in);
-}
-
-Vector SphereSurface::normal(Vector p)
-{
-    return !(p - pos);
-}
-
-bool intersectSphere(Sphere* s, Ray ray, double* t, bool* in)
 {
     /*
     p = p1 - c
@@ -126,8 +119,7 @@ bool intersectSphere(Sphere* s, Ray ray, double* t, bool* in)
     t^2(p2.x^2 + p2.y^2) + 2t * (p.x * p2.x + p.y * p2.y) + p.x^2 + p.y^2 - r^2 = 0
     */
 
-    Vector p = ray.p - s->pos, p2 = ray.a;
-    double r = s->radius;
+    Vector p = ray.p - pos, p2 = ray.a;
 
     double t1 = 0, t2 = 0;
     int n_roots = -1;
@@ -137,24 +129,29 @@ bool intersectSphere(Sphere* s, Ray ray, double* t, bool* in)
 
     if (n_roots >= 1 && t1 > intersect_eps)
     {
-        if (t != nullptr) *t = t1;
+        if (t_ptr != nullptr) *t_ptr = t1;
         if (in != nullptr) *in = 1;
         return 1;
     }
     if (n_roots == 2 && t2 > intersect_eps)
     {
-        if (t != nullptr) *t = t2;
+        if (t_ptr != nullptr) *t_ptr = t2;
         if (in != nullptr) *in = 0;
         return 1;
     }
     return 0;
 }
 
-Vector getDiffuseColor(Surface* s, SphereSurface* l, Vector p)
+Vector SphereSurface::normal(Vector p)
+{
+    return !(p - pos);
+}
+
+Vector getDiffuseColor(Surface* s, Source* l, Vector p)
 {
     Vector L = l->pos - p;
     double cosA = angle(L, s->normal(p));
-    return s->m.color * l->m.color * cosA;
+    return s->m.color * l->color * cosA;
 }
 
 
@@ -163,7 +160,7 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent
     V = {0, 0, 6};
 
     spheres = std::vector<Surface*>();
-    sources = std::vector<SphereSurface*>();
+    sources = std::vector<Source*>();
     spheres.reserve(10);
     sources.reserve(10);
 
@@ -240,7 +237,7 @@ Vector OptScene::traceRay(Ray ray, int depth)
     Vector reflect_color = s->m.color * traceRay(reflect_ray, depth + 1);
 
     Vector diffuse_color = {0, 0, 0};
-    for (SphereSurface* l: sources)
+    for (Source* l: sources)
     {
         Ray shadow_ray(p, l->pos - p);
 
@@ -272,10 +269,9 @@ std::vector<Surface*>::iterator OptScene::addSphere(Vector pos, Vector color, do
     return spheres.end() - 1;
 }
 
-std::vector<SphereSurface*>::iterator OptScene::addSource(Vector pos, Vector color, double r)
+std::vector<Source*>::iterator OptScene::addSource(Vector pos, Vector color, double r)
 {
-    SphereSurface* new_sorce = new SphereSurface(pos, r, color);
-    new_sorce->setSource(1);
+    Source* new_sorce = new Source(color, pos);
     sources.push_back(new_sorce);
     return sources.end() - 1;
 }
