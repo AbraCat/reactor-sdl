@@ -6,7 +6,7 @@ class Vector;
 class FixedVec;
  
 
-extern const Vector whiteV, blackV, gray_col, purple_col, yellow_col, green_col, orange_col, white_col, red_col;
+extern const Vector whiteV, blackV, red_v, gray_col, purple_col, yellow_col, green_col, orange_col, white_col, red_col;
 
 bool isZero(double a);
 int randInt(int lft, int rgt);

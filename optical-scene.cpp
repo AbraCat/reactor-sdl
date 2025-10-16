@@ -2,11 +2,12 @@
 
 #include <limits>
 #include <cmath>
+#include <cassert>
 
-const double screen_z = 3, intersect_eps = 0.01;
-const int screen_size = 2, max_depth = 2, n_diffuse_rays = 20, n_shadow_rays = 5;
+const double screen_z = 8, intersect_eps = 0.01;
+const int screen_size = 2, max_depth = 2, n_diffuse_rays = 20, n_shadow_rays = 10;
 const Vector screen_tl = {-screen_size, -screen_size}, screen_br = {screen_size, screen_size};
-const Vector sky_col = {0, 0.5, 1};
+const Vector sky_col = {0, 0.5, 1}, stdV = {0, 0, 12};
 
 bool d = 0;
 
@@ -28,7 +29,7 @@ Material::Material(double diffuse_c, double reflect_c, double refract_c,
     reflect_c(reflect_c), refract_c(refract_c), diffuse_c(diffuse_c),
     refract_k(refract_k), color(color)
 {
-    //
+    assert(diffuse_c + reflect_c + refract_c <= 1);
 }
 
 Surface::Surface(Material m) : m(m)
@@ -78,6 +79,24 @@ Vector Source::getRandPoint()
     return pos;
 }
 
+SphereSource::SphereSource(Vector color, Vector pos, double r) : Source(color, pos), r(r)
+{
+    //
+}
+
+Vector SphereSource::getRandPoint()
+{
+    Vector tl = pos - Vector(r, r, r), br = pos + Vector(r, r, r);
+
+    Vector rand_p;
+    do
+    {
+        rand_p = Vector(randDouble(tl.x, br.x), randDouble(tl.y, br.y), randDouble(tl.z, br.z));
+    } while (*(rand_p - pos) > r);
+
+    return rand_p;
+}
+
 PlaneSurface::PlaneSurface(double y_pos, Vector color) : Surface(color), y_pos(y_pos)
 {
     //
@@ -92,14 +111,14 @@ bool PlaneSurface::intersect(Ray ray, double* t_ptr, bool* in)
     double t = (y_pos - ray.p.y) / ray.a.y;
     if (t < intersect_eps) return 0;
 
-    if (in != nullptr) *in = (ray.a.y < 0);
+    if (in != nullptr) *in = (ray.a.y > 0);
     if (t_ptr != nullptr) *t_ptr = t;
     return 1;
 }
 
 Vector PlaneSurface::normal(Vector p)
 {
-    return Vector(0, 1, 0);
+    return Vector(0, -1, 0);
 }
 
 
@@ -147,24 +166,24 @@ Vector SphereSurface::normal(Vector p)
     return !(p - pos);
 }
 
-Vector getDiffuseColor(Surface* s, Source* l, Vector p)
+Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 {
-    Vector L = l->pos - p;
-    double cosA = angle(L, s->normal(p));
+    Vector L = p_light - p_surface;
+    double cosA = angle(L, s->normal(p_surface));
     return s->m.color * l->color * cosA;
 }
 
 
 OptScene::OptScene(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent)
 {
-    V = {0, 0, 6};
+    V = stdV;
 
     spheres = std::vector<Surface*>();
     sources = std::vector<Source*>();
     spheres.reserve(10);
     sources.reserve(10);
 
-    // spheres.push_back(new PlaneSurface(1, gray_col));
+    spheres.push_back(new PlaneSurface(3, gray_col));
     // addSource({0, 0, 0}, red_col, 0.5);
     // addSphere({-2, 0, 0}, gray_col, 1);
 }
@@ -176,19 +195,22 @@ void OptScene::paint()
         double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / width; 
         for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
         {
+            // if (pixel_x == 651 && pixel_y == 745) d = 1;
+
             double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / height; 
 
             Ray ray(V, Vector(x, y, screen_z) - V);
             Vector color = traceRay(ray, 0);
-
             t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
+
+            // if (d) d = 0;
         }
     }
 }
 
 Vector OptScene::traceRay(Ray ray, int depth)
 {
-    if (depth >= max_depth) return {0, 0, 0};
+    if (depth >= max_depth) return blackV;
 
     Surface *s = nullptr;
     double t = std::numeric_limits<double>::infinity();
@@ -204,60 +226,45 @@ Vector OptScene::traceRay(Ray ray, int depth)
             s = *s1;
         }
     }
-    // for (std::vector<SphereSurface*>::iterator s1 = sources.begin(); s1 != sources.end(); ++s1)
-    // {
-    //     double cur_t = 0;
-    //     bool cur_in = 0;
-    //     if ((*s1)->intersect(ray, &cur_t, &cur_in) && cur_t < t)
-    //     {
-    //         t = cur_t;
-    //         in = cur_in;
-    //         s = *s1;
-    //     }
-    // }
-
-    if (s == nullptr) return blackV; //sky_col;
-    // if (s->is_source) return s->m.color;
+    if (s == nullptr) return blackV;
 
     Vector p = ray.eval(t);
-
-    // Vector diffuse_color(0, 0, 0);
-    // for (int i = 0; i < n_diffuse_rays; ++i) {
-    //     Ray diffuse_ray = s->reflect_diffuse(ray, p);
-    //     diffuse_color += traceRay(diffuse_ray, depth + 1);
-    // }
-    // diffuse_color = (diffuse_color / n_diffuse_rays) * s->m.color;
-
-    // Ray diffuse_ray = s->reflect_diffuse(ray, p);
-    // Vector diffuse_color = s->m.color * traceRay(diffuse_ray, depth + 1);
-
-    // Vector color = diffuse_color;
 
     Ray reflect_ray = s->reflect(ray, p);
     Vector reflect_color = s->m.color * traceRay(reflect_ray, depth + 1);
 
-    Vector diffuse_color = {0, 0, 0};
+    Vector diffuse_color = blackV;
     for (Source* l: sources)
     {
-        Ray shadow_ray(p, l->pos - p);
-
-        bool shadow = 0;
-        for (std::vector<Surface*>::iterator s1 = spheres.begin(); s1 != spheres.end(); ++s1)
+        Vector source_diffuse_col = blackV;
+        for (int n_ray = 0; n_ray < n_shadow_rays; ++n_ray)
         {
-            if (*s1 == s) continue;
-            if ((*s1)->intersect(shadow_ray, nullptr, nullptr))
-            {
-                shadow = 1;
-                break;
-            }
-        }
+            Vector p_light = l->getRandPoint();
+            Ray shadow_ray(p, p_light - p);
 
-        if (!shadow)
-            diffuse_color += getDiffuseColor(s, l, p);
+            bool shadow = 0;
+            double intersect_t = 0;
+            for (std::vector<Surface*>::iterator s1 = spheres.begin(); s1 != spheres.end(); ++s1)
+            {
+                if (*s1 == s) continue;
+                if ((*s1)->intersect(shadow_ray, &intersect_t, nullptr) && intersect_t < 1)
+                {
+                    shadow = 1;
+                    break;
+                }
+            }
+
+            if (!shadow)
+                source_diffuse_col += getDiffuseColor(s, l, p, p_light);
+        }
+        diffuse_color += source_diffuse_col / n_shadow_rays;
     }
 
-    Vector color = diffuse_color * s->m.diffuse_c + reflect_color * s->m.reflect_c;
+    Vector refract_col = blackV;
 
+    Vector color = diffuse_color * s->m.diffuse_c + 
+                   reflect_color * s->m.reflect_c + 
+                   refract_col * s->m.refract_c;
     return limitVector(color, 0, 1);
 }
 
@@ -271,7 +278,7 @@ std::vector<Surface*>::iterator OptScene::addSphere(Vector pos, Vector color, do
 
 std::vector<Source*>::iterator OptScene::addSource(Vector pos, Vector color, double r)
 {
-    Source* new_sorce = new Source(color, pos);
+    Source* new_sorce = new SphereSource(color, pos, r);
     sources.push_back(new_sorce);
     return sources.end() - 1;
 }

@@ -14,7 +14,7 @@ class OptScene;
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
 
-Vector getDiffuseColor(Surface* s, Source* l, Vector p);
+Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
 
 class Ray
 {
@@ -58,6 +58,15 @@ public:
     virtual Vector getRandPoint();
 
     Vector color, pos;
+};
+
+class SphereSource : public Source
+{
+public:
+    SphereSource(Vector color, Vector pos, double r);
+    virtual Vector getRandPoint() override;
+
+    double r;
 };
 
 class PlaneSurface : public Surface
