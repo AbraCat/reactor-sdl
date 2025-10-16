@@ -6,7 +6,8 @@ class Vector;
 class FixedVec;
  
 
-extern const Vector whiteV, blackV, red_v, gray_col, purple_col, yellow_col, green_col, orange_col, white_col, red_col;
+extern const Vector whiteV, blackV, red_v, gray_col, purple_col, yellow_col, green_col, 
+    orange_col, white_col, red_col, blue_col;
 
 bool isZero(double a);
 int randInt(int lft, int rgt);
@@ -49,7 +50,9 @@ double operator*(Vector v);
 Vector operator!(Vector v);
 double operator^(Vector a, Vector b);
 
+double sin_angle(Vector a, Vector b);
 double angle(Vector a, Vector b);
+
 Vector proj(Vector a, Vector n);
 Vector ortog(Vector a, Vector n);
 double dist(Vector p, Vector a, Vector n);

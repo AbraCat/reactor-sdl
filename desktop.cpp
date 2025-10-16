@@ -8,7 +8,7 @@ const double tempStep = 1, scale_reactor_amplitude = 2;
 const int nButtons = 6, wallStep = 10, nAddMols = 10, r_size = 600, b_pad = 200, c_size = 200, 
     scroll_w = 100, scroll_len = 400, move_reactor_amplitude = 200;
 
-const double h = 1.3, r = 2, src_size = 0.5;
+const double h = 1.3, r = 2, src_size = 0.3;
 
 Desktop::Desktop() : Widget(stdtl, stdbr)
 {
@@ -33,12 +33,12 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
 
     scene = new OptScene(this, {0, 0}, {1000, 1000});
 
-    scene->addSphere({-0.75, 0, 0}, gray_col, 1);
-    scene->addSphere({1, 0, 0}, purple_col, 0.5);
-    scene->addSphere({0, 2, 0}, gray_col, 0.5);
+    scene->addSphere({-1, 0, 0}, gray_col, 0.5);
+    scene->addSphere({1, -0.5, 0}, purple_col, 0.5);
+    scene->addSphere({0.3, 1, 0}, gray_col, 0.5);
 
-    scene->addSource({r, 0, h}, orange_col, src_size);
-    scene->addSource({0, -2, h}, green_col, src_size);
+    // scene->addSource({r, 0, h}, orange_col, src_size);
+    scene->addSource({0, 0, 5}, yellow_col, src_size);
 
     // scene->addSource({0, 0, 0}, red_col, 1);
 

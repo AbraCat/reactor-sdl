@@ -5,7 +5,7 @@
 
 extern const Vector whiteV = {255, 255, 255}, blackV = {0, 0, 0}, red_v = {255, 0, 0}, gray_col = {0.9, 0.9, 0.9}, 
     purple_col = {0.6, 0.3, 0.9}, yellow_col = {0.9, 0.9, 0.3}, green_col = {0.6, 0.9, 0.3},
-    orange_col = {0.9, 0.6, 0.3}, white_col = {1, 1, 1}, red_col(1, 0, 0);
+    orange_col = {0.9, 0.6, 0.3}, white_col = {1, 1, 1}, red_col(1, 0, 0), blue_col(0, 0, 1);
 
 
 bool isZero(double a)
@@ -145,7 +145,13 @@ void print(Vector v) { printf("Vector %.3lf %.3lf %.3lf\n", v.x, v.y, v.z); }
 void print(FixedVec v) { printf("FixedVec (%.3lf %.3lf %.3lf) (%.3lf %.3lf %.3lf)\n", 
     v.p1.x, v.p1.y, v.p1.z, v.p2.x, v.p2.y, v.p2.z); }
  
- 
+
+    
+double sin_angle(Vector a, Vector b)
+{
+    double cos_a = angle(a, b);
+    return std::sqrt(1 - cos_a * cos_a);
+}
 
 double angle(Vector a, Vector b)
 {

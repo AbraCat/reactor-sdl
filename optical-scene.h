@@ -14,6 +14,8 @@ class OptScene;
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
 
+extern const Material water;
+
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
 
 class Ray
@@ -41,11 +43,12 @@ public:
     Surface(Material m);
     Surface(Vector color);
 
-    virtual bool intersect(Ray ray, double* t, bool* in) = 0;
+    virtual bool intersect(Ray ray, double* t) = 0;
     virtual Vector normal(Vector p) = 0; // should face outside
+    bool rayGoesIn(Ray r, Vector intersection_p);
     
     Ray reflect(Ray r, Vector p);
-    Ray refract(Ray r, Vector p);
+    Ray refract(Ray r, Vector p, bool* success);
     Ray reflect_diffuse(Ray r, Vector p);
 
     Material m;
@@ -73,8 +76,9 @@ class PlaneSurface : public Surface
 {
 public:
     PlaneSurface(double y_pos, Vector color);
+    PlaneSurface(double y_pos, Material m);
 
-    virtual bool intersect(Ray ray, double* t, bool* in) override;
+    virtual bool intersect(Ray ray, double* t) override;
     virtual Vector normal(Vector p) override;
 
     double y_pos;
@@ -84,8 +88,9 @@ class SphereSurface : public Surface
 {
 public:
     SphereSurface(Vector pos, double r, Vector color);
+    SphereSurface(Vector pos, double r, Material m);
     
-    virtual bool intersect(Ray ray, double* t, bool* in) override;
+    virtual bool intersect(Ray ray, double* t) override;
     virtual Vector normal(Vector p) override;
 
     double r;
