@@ -4,14 +4,24 @@
 #include <cmath>
 #include <cassert>
 
-const double screen_z = 8, intersect_eps = 0.01;
-const int screen_size = 2, max_depth = 5, n_diffuse_rays = 20, n_shadow_rays = 3;
-const Vector screen_tl = {-screen_size, -screen_size}, screen_br = {screen_size, screen_size};
-const Vector sky_col = {0, 0.5, 1}, stdV = {0, 0, 12};
+#include <thread>
 
-const Material water(0, 0, 1, 1.05, white_col);
+const double screen_z = 6, intersect_eps = 0.01, ratio = 1800.0 / 1000.0;
+const int screen_size = 2, max_depth = 5, n_diffuse_rays = 20, n_shadow_rays = 1, n_threads = 4;
+const Vector screen_tl = {-screen_size * ratio, -screen_size}, screen_br = {screen_size * ratio, screen_size};
+const Vector sky_col = {0, 0.4, 0.8}, stdV = {0, 0, 12};
+
+// 1: 9.74
+// 2: 13.02
+// 4: 14.5
+
+const Material water(0.4, 0, 1, 1.06, white_col);
 
 bool d = 0;
+
+/*
+trace random ray that hasn't been traced yet (stochastic rendering)
+*/
 
 Vector randUnitVector()
 {
@@ -31,7 +41,7 @@ Material::Material(double diffuse_c, double reflect_c, double refract_c,
     reflect_c(reflect_c), refract_c(refract_c), diffuse_c(diffuse_c),
     refract_k(refract_k), color(color)
 {
-    assert(diffuse_c + reflect_c + refract_c <= 1);
+    // assert(diffuse_c + reflect_c + refract_c <= 1);
 }
 
 Surface::Surface(Material m) : m(m)
@@ -39,7 +49,7 @@ Surface::Surface(Material m) : m(m)
     //
 }
 
-Surface::Surface(Vector color) : m(0.5, 0.5, 0, 1.3, color)
+Surface::Surface(Vector color) : m(1, 1, 0, 1.3, color)
 {
     //
 }
@@ -222,44 +232,112 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent
     spheres.reserve(10);
     sources.reserve(10);
 
-    spheres.push_back(new PlaneSurface(3, white_col));
-    // addSource({0, 0, 0}, red_col, 0.5);
-    // addSphere({-2, 0, 0}, gray_col, 1);
-
+    spheres.push_back(new PlaneSurface(2, white_col));
     spheres.push_back(new SphereSurface({0, 0, 2}, 1, water));
-    // scene->addSphere({0, 0, 3}, gray_col, 1);
 }
 
-void OptScene::paint()
+void OptScene::calculateThread(int thread_num, VecMtx2* colors)
 {
     for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
     {
         double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / width; 
-        for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
+        for (int pixel_y = thread_num; pixel_y <= height; pixel_y += n_threads)
         {
-            if (pixel_x == 500 && pixel_y == 775) d = 1;
-
             double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / height; 
 
             Ray ray(V, Vector(x, y, screen_z) - V);
             Vector color = traceRay(ray, 0);
 
-            if (!d) t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
-            if (d) t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, red_v, 1);
-
-            // if (d) print(color);
-
-            if (d) d = 0;
+            (*colors)[pixel_x][pixel_y] = color;
         }
     }
 }
 
-Vector OptScene::traceRay(Ray ray, int depth)
+void OptScene::paint()
 {
-    if (depth >= max_depth) return blackV;
+    std::clock_t start = std::clock();
 
+    std::vector<std::thread> threads;
+    VecMtx2 colors(width + 1, VecMtx1(height + 1));
+
+    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+    {
+        threads.push_back(std::move(std::thread(&OptScene::calculateThread, this, thread_num, &colors)));
+    }
+
+    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+        threads[thread_num].join();
+
+    for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
+    {
+        for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
+        {
+            Vector color = colors[pixel_x][pixel_y];
+            t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
+        }
+    }
+
+    printf("%lf\n", 1.0 * (std::clock() - start));
+}
+
+Vector OptScene::traceDiffuse(Surface* s, Vector p)
+{
+    Vector diffuse_color = blackV;
+
+    for (Source* l: sources)
+    {
+        Vector source_diffuse_col = blackV;
+
+        for (int n_ray = 0; n_ray < n_shadow_rays; ++n_ray)
+            source_diffuse_col += castShadowRay(s, l, p);
+
+        diffuse_color += source_diffuse_col / n_shadow_rays;
+    }
+
+    return diffuse_color;
+}
+
+Vector OptScene::castShadowRay(Surface* s, Source* l, Vector p)
+{
+    Vector p_light = l->getRandPoint();
+    Ray shadow_ray(p, p_light - p);
+
+    double intersect_t = 0, intensity = 1;
+    for (std::vector<Surface*>::iterator s1_it = spheres.begin(); s1_it != spheres.end(); ++s1_it)
+    {
+        Surface* s1 = *s1_it;
+        if (s1 == s) continue;
+        if (s1->intersect(shadow_ray, &intersect_t) && intersect_t < 1)
+        {
+            intensity *= s1->m.refract_c;
+            if (intensity == 0) break;
+        }
+    }
+
+    if (intensity != 0)
+        return getDiffuseColor(s, l, p, p_light) * intensity;
+    return blackV;
+}
+
+Vector OptScene::traceRefract(Surface* s, Ray ray, Vector p, int depth)
+{
+    bool refracted = 0;
+    Ray refract_ray = s->refract(ray, p, &refracted);
+
+    if (refracted)
+        return traceRay(refract_ray, depth + 1);
+    else
+    {
+        Ray reflect_ray = s->reflect(ray, p);
+        return traceRay(reflect_ray, depth + 1);
+    }
+}
+
+Surface* OptScene::getIntersectedSurface(Ray ray, double *t_ptr)
+{
     Surface *s = nullptr;
     double t = std::numeric_limits<double>::infinity();
+
     for (std::vector<Surface*>::iterator s1 = spheres.begin(); s1 != spheres.end(); ++s1)
     {
         double cur_t = 0;
@@ -269,76 +347,35 @@ Vector OptScene::traceRay(Ray ray, int depth)
             s = *s1;
         }
     }
-    if (s == nullptr) return blackV;
 
-    // if (d)
-    // {
-    //     print(ray.p);
-    //     print(ray.a);
-    //     printf("%p\n", s);
-    // }
+    *t_ptr = t;
+    return s;
+}
 
+Vector OptScene::traceRay(Ray ray, int depth)
+{
+    if (depth >= max_depth) return blackV;
+
+    double t = 0;
+    Surface* s = getIntersectedSurface(ray, &t);
+    if (s == nullptr) return sky_col;
     Vector p = ray.eval(t);
 
-    Vector reflect_color = blackV;
+    Vector reflect_col = blackV;
     if (s->m.reflect_c != 0)
     {
         Ray reflect_ray = s->reflect(ray, p);
-        reflect_color = traceRay(reflect_ray, depth + 1);
+        reflect_col = traceRay(reflect_ray, depth + 1);
     }
 
-    Vector diffuse_color = blackV;
-    if (s->m.diffuse_c != 0)
-    {
-        for (Source* l: sources)
-        {
-            Vector source_diffuse_col = blackV;
-            for (int n_ray = 0; n_ray < n_shadow_rays; ++n_ray)
-            {
-                Vector p_light = l->getRandPoint();
-                Ray shadow_ray(p, p_light - p);
-
-                double intersect_t = 0, intensity = 1;
-                for (std::vector<Surface*>::iterator s1_it = spheres.begin(); s1_it != spheres.end(); ++s1_it)
-                {
-                    Surface* s1 = *s1_it;
-                    if (s1 == s) continue;
-                    if (s1->intersect(shadow_ray, &intersect_t) && intersect_t < 1)
-                    {
-                        intensity *= s1->m.refract_c;
-                        if (intensity == 0) break;
-                    }
-                }
-
-                if (intensity != 0)
-                    source_diffuse_col += getDiffuseColor(s, l, p, p_light) * intensity;
-            }
-            diffuse_color += source_diffuse_col / n_shadow_rays;
-        }
-    }
+    Vector diffuse_col = blackV;
+    if (s->m.diffuse_c != 0) diffuse_col = traceDiffuse(s, p);
 
     Vector refract_col = blackV;
-    if (s->m.refract_c != 0)
-    {
-        bool refracted = 0;
-        Ray refract_ray = s->refract(ray, p, &refracted);
-        if (d)
-        {
-            // std::cout << refracted << '\n';
-            // print(refract_ray.p);
-            // print(refract_ray.a);
-        }
-        if (refracted)
-            refract_col = traceRay(refract_ray, depth + 1);
-        else
-        {
-            Ray reflect_ray = s->reflect(ray, p);
-            refract_col = traceRay(reflect_ray, depth + 1);
-        }
-    }
+    if (s->m.refract_c != 0) refract_col = traceRefract(s, ray, p, depth);
 
-    Vector color = diffuse_color * s->m.diffuse_c + 
-                   reflect_color * s->m.reflect_c + 
+    Vector color = diffuse_col * s->m.diffuse_c + 
+                   reflect_col * s->m.reflect_c + 
                    refract_col * s->m.refract_c;
     return limitVector(s->m.color * color, 0, 1);
 }

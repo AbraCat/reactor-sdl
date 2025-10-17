@@ -31,14 +31,15 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
     // new AddMolButton(button_cont, reactor, Vector(0, 255, 0), nAddMols, "Add mols");
     // new AddMolButton(button_cont, reactor, Vector(255, 255), -nAddMols, "Remove mols");
 
-    scene = new OptScene(this, {0, 0}, {1000, 1000});
+    scene = new OptScene(this, {0, 0}, {1800, 1000});
 
     scene->addSphere({-1, 0, 0}, gray_col, 0.5);
     scene->addSphere({1, -0.5, 0}, purple_col, 0.5);
     scene->addSphere({0.3, 1, 0}, gray_col, 0.5);
+    scene->addSphere({0, 0, -12}, gray_col, 5);
 
-    // scene->addSource({r, 0, h}, orange_col, src_size);
-    scene->addSource({0, 0, 5}, yellow_col, src_size);
+    // scene->addSource({2, 0, 2}, green_col, src_size);
+    scene->addSource({0, 0, 4}, yellow_col * 0.5, src_size);
 
     // scene->addSource({0, 0, 0}, red_col, 1);
 

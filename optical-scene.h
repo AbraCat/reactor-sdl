@@ -14,6 +14,10 @@ class OptScene;
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
 
+using VecMtx1 = std::vector<Vector>;
+using VecMtx2 = std::vector<std::vector<Vector>>;
+using VecMtx3 = std::vector<VecMtx2>;
+
 extern const Material water;
 
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
@@ -106,6 +110,12 @@ public:
     void setV(Vector V);
 
     Vector traceRay(Ray ray, int depth);
+    Surface* getIntersectedSurface(Ray ray, double *t_ptr);
+    Vector castShadowRay(Surface* s, Source* l, Vector p);
+    Vector traceDiffuse(Surface* s, Vector p);
+    Vector traceRefract(Surface* s, Ray ray, Vector p, int depth);
+
+    void calculateThread(int thread_num, VecMtx2* colors);
 
     std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r);
     std::vector<Source*>::iterator addSource(Vector pos, Vector color, double r);
