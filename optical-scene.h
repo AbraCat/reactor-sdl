@@ -115,12 +115,12 @@ public:
     Vector traceDiffuse(Surface* s, Vector p);
     Vector traceRefract(Surface* s, Ray ray, Vector p, int depth);
 
-    void calculateThread(int thread_num, VecMtx2* colors);
+    void calculateThread(int thread_num, VecMtx1* colors);
 
     std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r);
     std::vector<Source*>::iterator addSource(Vector pos, Vector color, double r);
 
-private:
+// private:
     Vector V;
 
     std::vector<Surface*> spheres;

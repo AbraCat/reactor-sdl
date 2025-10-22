@@ -6,22 +6,129 @@
 
 #include <thread>
 
-const double screen_z = 6, intersect_eps = 0.01, ratio = 1800.0 / 1000.0;
-const int screen_size = 2, max_depth = 5, n_diffuse_rays = 20, n_shadow_rays = 1, n_threads = 4;
-const Vector screen_tl = {-screen_size * ratio, -screen_size}, screen_br = {screen_size * ratio, screen_size};
-const Vector sky_col = {0, 0.4, 0.8}, stdV = {0, 0, 12};
+const double screen_z = 10, screen_size = 1.65, intersect_eps = 0.01, ratio = 16.0 / 9.0;
+const int max_depth = 20, n_diffuse_rays = 20, n_shadow_rays = 1, n_threads = 4;
+
+const Vector screen_skew = {0, 0.35, 0};
+const Vector screen_tl = Vector(-screen_size * ratio, -screen_size) + screen_skew,
+    screen_br = Vector(screen_size * ratio, screen_size) + screen_skew;
+const Vector sky_col = {0, 0.5, 0.75}, stdV = {0, 0, 16};
 
 // 1: 9.74
 // 2: 13.02
 // 4: 14.5
 
-const Material water(0.4, 0, 1, 1.06, white_col);
+const Material water(0, 0, 1, 1.06, white_col);
 
 bool d = 0;
 
+struct RenderThreadData
+{
+    OptScene* scene;
+    int thread_num;
+    VecMtx1* colors;
+};
+
 /*
 trace random ray that hasn't been traced yet (stochastic rendering)
+queue of pixels to render
 */
+
+void OptScene::calculateThread(int thread_num, VecMtx1* colors)
+{
+    for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
+    {
+        double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / width; 
+        for (int pixel_y = thread_num; pixel_y <= height; pixel_y += n_threads)
+        {
+            double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / height; 
+
+            Ray ray(V, Vector(x, y, screen_z) - V);
+            Vector color = traceRay(ray, 0);
+
+            (*colors)[pixel_x * height + pixel_y] = color;
+        }
+    }
+}
+
+int calcSDLthread(void *void_data)
+{
+
+    RenderThreadData* data = (RenderThreadData*)void_data;
+    OptScene* s = data->scene;
+    int thread_num = data->thread_num;
+
+    // printf("thread %d\n", thread_num);
+    
+    for (int pixel_x = 0; pixel_x <= s->width; ++pixel_x)
+    {
+        double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / s->width; 
+        for (int pixel_y = thread_num; pixel_y <= s->height; pixel_y += n_threads)
+        {
+            double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / s->height; 
+
+            Ray ray(s->V, Vector(x, y, screen_z) - s->V);
+            Vector color = s->traceRay(ray, 0);
+
+            (*(data->colors))[pixel_x * s->height + pixel_y] = color;
+        }
+    }
+
+    delete data;
+    return 0;
+}
+
+void OptScene::paint()
+{
+    // std::vector<std::thread> threads;
+    // VecMtx1 colors((height + 1) * (width + 1));
+
+    // for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+    // {
+    //     threads.push_back(std::move(std::thread(&OptScene::calculateThread, this, thread_num, &colors)));
+    // }
+
+    // for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+    //     threads[thread_num].join();
+
+    // for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
+    // {
+    //     for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
+    //     {
+    //         Vector color = colors[pixel_x * height + pixel_y];
+    //         t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
+    //     }
+    // }
+
+    std::vector<SDL_Thread*> threads;
+    VecMtx1 colors((height + 1) * (width + 1));
+
+    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+    {
+        RenderThreadData* data = new RenderThreadData();
+        data->scene = this;
+        data->thread_num = thread_num;
+        data->colors = &colors;
+
+        threads.push_back(SDL_CreateThread(calcSDLthread, "name", data));
+    }
+
+    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+    {
+        int status = 0;
+        SDL_WaitThread(threads[thread_num], &status);
+        // assert(status == 0);
+    }
+
+    for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
+    {
+        for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
+        {
+            Vector color = colors[pixel_x * height + pixel_y];
+            t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
+        }
+    }
+}
 
 Vector randUnitVector()
 {
@@ -125,6 +232,8 @@ SphereSource::SphereSource(Vector color, Vector pos, double r) : Source(color, p
 
 Vector SphereSource::getRandPoint()
 {
+    return pos;
+
     Vector tl = pos - Vector(r, r, r), br = pos + Vector(r, r, r);
 
     Vector rand_p;
@@ -233,51 +342,10 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent
     sources.reserve(10);
 
     spheres.push_back(new PlaneSurface(2, white_col));
-    spheres.push_back(new SphereSurface({0, 0, 2}, 1, water));
-}
 
-void OptScene::calculateThread(int thread_num, VecMtx2* colors)
-{
-    for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
-    {
-        double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / width; 
-        for (int pixel_y = thread_num; pixel_y <= height; pixel_y += n_threads)
-        {
-            double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / height; 
-
-            Ray ray(V, Vector(x, y, screen_z) - V);
-            Vector color = traceRay(ray, 0);
-
-            (*colors)[pixel_x][pixel_y] = color;
-        }
-    }
-}
-
-void OptScene::paint()
-{
-    std::clock_t start = std::clock();
-
-    std::vector<std::thread> threads;
-    VecMtx2 colors(width + 1, VecMtx1(height + 1));
-
-    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
-    {
-        threads.push_back(std::move(std::thread(&OptScene::calculateThread, this, thread_num, &colors)));
-    }
-
-    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
-        threads[thread_num].join();
-
-    for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
-    {
-        for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
-        {
-            Vector color = colors[pixel_x][pixel_y];
-            t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
-        }
-    }
-
-    printf("%lf\n", 1.0 * (std::clock() - start));
+    spheres.push_back(new SphereSurface({0, 0, 3}, 1, water));
+    spheres.push_back(new SphereSurface({0.5, 0, 5.5}, 1, water));
+    spheres.push_back(new SphereSurface({-0.5, -0.5, 7}, 0.75, water));
 }
 
 Vector OptScene::traceDiffuse(Surface* s, Vector p)

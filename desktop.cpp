@@ -8,7 +8,7 @@ const double tempStep = 1, scale_reactor_amplitude = 2;
 const int nButtons = 6, wallStep = 10, nAddMols = 10, r_size = 600, b_pad = 200, c_size = 200, 
     scroll_w = 100, scroll_len = 400, move_reactor_amplitude = 200;
 
-const double h = 1.3, r = 2, src_size = 0.3;
+const double h = 1.3, r = 2, src_size = 0.3, ratio = 16.0 / 9.0;
 
 Desktop::Desktop() : Widget(stdtl, stdbr)
 {
@@ -31,15 +31,17 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
     // new AddMolButton(button_cont, reactor, Vector(0, 255, 0), nAddMols, "Add mols");
     // new AddMolButton(button_cont, reactor, Vector(255, 255), -nAddMols, "Remove mols");
 
-    scene = new OptScene(this, {0, 0}, {1800, 1000});
+    scene = new OptScene(this, {0, 0}, {1920, 1080});
 
     scene->addSphere({-1, 0, 0}, gray_col, 0.5);
-    scene->addSphere({1, -0.5, 0}, purple_col, 0.5);
+    scene->addSphere({1, -0.5, 0}, gray_col, 0.5);
     scene->addSphere({0.3, 1, 0}, gray_col, 0.5);
     scene->addSphere({0, 0, -12}, gray_col, 5);
 
+    scene->addSphere({0, 0, -2}, purple_col, 0.3);
+
     // scene->addSource({2, 0, 2}, green_col, src_size);
-    scene->addSource({0, 0, 4}, yellow_col * 0.5, src_size);
+    scene->addSource({0, -1, 4}, green_col * 0.5, src_size);
 
     // scene->addSource({0, 0, 0}, red_col, 1);
 
