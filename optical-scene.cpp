@@ -32,8 +32,9 @@ OptProperty::OptProperty(OptPropEnum prop, std::string name, double val)
 }
 
 void OptProperty::setVal(double val) { this->val = val; }
-
 double OptProperty::getVal() { return val; }
+std::string OptProperty::getName() { return name; }
+void OptProperty::setName(std::string name) { this->name = name; }
 
 OptObject::OptObject(std::string name)
     : properties(std::vector<OptProperty>(OPT_TOTAL, OptProperty(OPT_TOTAL, "", 0))),
@@ -63,10 +64,17 @@ void OptObject::setProperty(OptPropEnum prop, double val)
     properties[prop].setVal(val);
 }
 
-double OptObject::getProperty(OptPropEnum prop)
+double OptObject::getPropertyVal(OptPropEnum prop)
 {
     return properties[prop].getVal();
 }
+
+void OptObject::setPropertyName(OptPropEnum prop, std::string name)
+{
+    properties[prop].setName(name);
+}
+
+std::string OptObject::getPropertyName(OptPropEnum prop) { return properties[prop].getName(); }
 
 void OptObject::updateProperties()
 {
@@ -85,7 +93,7 @@ void OptObject::setOptColor(Vector color)
 Vector OptObject::getOptColor()
 {
     return color;
-    return Vector(getProperty(OPT_COLOR_R), getProperty(OPT_COLOR_G), getProperty(OPT_COLOR_B));
+    return Vector(getPropertyVal(OPT_COLOR_R), getPropertyVal(OPT_COLOR_G), getPropertyVal(OPT_COLOR_B));
 }
 
 void OptObject::setOptPos(Vector pos)
@@ -96,24 +104,55 @@ void OptObject::setOptPos(Vector pos)
     setProperty(OPT_POS_Z, pos.z);
 }
 
+void OptObject::move(Vector change) { setOptPos(getOptPos() + change); } // update scene
 
 
-OptObjectButton::OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj)
-    : Button(parent, tl, br, gray_v, obj->name), obj(obj)
+
+OptPropWidget::OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop)
+    : Widget(tl, br, parent), obj(obj), prop(prop)
+{
+    std::string prop_name = obj->getPropertyName(prop);
+    double val = obj->getPropertyVal(prop);
+    name_field = new TextField(this, {0, 0}, {width / 2, height}, prop_name);
+    val_field = new TextField(this, {width / 2, 0}, {width, height}, std::to_string(val));
+}
+
+
+
+OptObjectButton::OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, WContainer* prop_cont)
+    : Button(parent, tl, br, gray_v, obj->name), obj(obj), prop_cont(prop_cont)
 {
     //
 }
 
 void OptObjectButton::action()
 {
-    printf("Button for object %s\n", obj->name.c_str());
+    prop_cont->clearChildren();
+
+    for (int n_prop = 0; n_prop < OPT_TOTAL; ++n_prop)
+        new OptPropWidget(prop_cont, {}, {}, obj, (OptPropEnum)n_prop);
+
+    prop_cont->drawRec();
+}
+
+
+MoveObjectButton::MoveObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj,
+    Vector change, std::string text)
+    : Button(parent, tl, br, gray_v, text), obj(obj), change(change)
+{
+    //
+}
+
+void MoveObjectButton::action()
+{
+    // obj->
 }
 
 
 Vector OptObject::getOptPos()
 {
     return pos;
-    return Vector(getProperty(OPT_POS_X), getProperty(OPT_POS_Y), getProperty(OPT_POS_Z));
+    return Vector(getPropertyVal(OPT_POS_X), getPropertyVal(OPT_POS_Y), getPropertyVal(OPT_POS_Z));
 }
 
 void OptScene::calculateThread(int thread_num, VecMtx1* colors)
@@ -207,7 +246,8 @@ void OptScene::paint()
         for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
         {
             Vector color = colors[pixel_x * height + pixel_y];
-            t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
+            // t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
+            t->addPoint({pixel_x, pixel_y}, color * 255);
         }
     }
 }
@@ -233,7 +273,7 @@ Material::Material(double diffuse_c, double reflect_c, double refract_c,
     // assert(diffuse_c + reflect_c + refract_c <= 1);
 }
 
-Surface::Surface(Material m) : OptObject("surface"), m(m)
+Surface::Surface(Material m, std::string name) : OptObject(name), m(m)
 {
     setProperty(OPT_DIFFUSE_PORTION, m.diffuse_c);
     setProperty(OPT_SPECULAR_PORTION, m.reflect_c);
@@ -242,7 +282,7 @@ Surface::Surface(Material m) : OptObject("surface"), m(m)
     setOptColor(m.color);
 }
 
-Surface::Surface(Vector color) : Surface(Material(1, 1, 0, 1.3, color))
+Surface::Surface(Vector color, std::string name) : Surface(Material(1, 1, 0, 1.3, color), name)
 {
     //
 }
@@ -267,10 +307,10 @@ void Surface::updateProperties()
     */
 
     m.color = getOptColor();
-    m.diffuse_c = getProperty(OPT_DIFFUSE_PORTION);
-    m.reflect_c = getProperty(OPT_SPECULAR_PORTION);
-    m.refract_c = getProperty(OPT_DEFRACT_PORTION);
-    m.refract_k = getProperty(OPT_DEFRACT_COEFF);
+    m.diffuse_c = getPropertyVal(OPT_DIFFUSE_PORTION);
+    m.reflect_c = getPropertyVal(OPT_SPECULAR_PORTION);
+    m.refract_c = getPropertyVal(OPT_DEFRACT_PORTION);
+    m.refract_k = getPropertyVal(OPT_DEFRACT_COEFF);
 }
 
 bool Surface::rayGoesIn(Ray r, Vector intersection_p)
@@ -327,23 +367,26 @@ Ray Surface::reflect_diffuse(Ray r, Vector p)
     return Ray(p, norm + random_vec);
 }
 
-Source::Source(Vector color, Vector pos) : color(color), pos(pos)
+Source::Source(Vector color, Vector pos, std::string name) : OptObject(name)
 {
-    //
+    setOptColor(color);
+    setOptPos(pos);
 }
 
 Vector Source::getRandPoint()
 {
-    return pos;
+    return getOptPos();
 }
 
-SphereSource::SphereSource(Vector color, Vector pos, double r) : Source(color, pos), r(r)
+SphereSource::SphereSource(Vector color, Vector pos, double r, std::string name)
+    : Source(color, pos, name), r(r)
 {
     //
 }
 
 Vector SphereSource::getRandPoint()
 {
+    Vector pos = getOptPos();
     return pos;
 
     Vector tl = pos - Vector(r, r, r), br = pos + Vector(r, r, r);
@@ -357,12 +400,12 @@ Vector SphereSource::getRandPoint()
     return rand_p;
 }
 
-PlaneSurface::PlaneSurface(double y_pos, Vector color) : Surface(color), y_pos(y_pos)
+PlaneSurface::PlaneSurface(double y_pos, Vector color, std::string name) : Surface(color, name), y_pos(y_pos)
 {
     //
 }
 
-PlaneSurface::PlaneSurface(double y_pos, Material m) : Surface(m), y_pos(y_pos)
+PlaneSurface::PlaneSurface(double y_pos, Material m, std::string name) : Surface(m, name), y_pos(y_pos)
 {
     //
 }
@@ -387,14 +430,14 @@ Vector PlaneSurface::normal(Vector p)
 }
 
 
-SphereSurface::SphereSurface(Vector pos, double r, Vector color) : 
-    Surface(color), r(r), pos(pos)
+SphereSurface::SphereSurface(Vector pos, double r, Vector color, std::string name) : 
+    Surface(color, name), r(r), pos(pos)
 {
     //
 }
 
-SphereSurface::SphereSurface(Vector pos, double r, Material m) :
-    Surface(m), r(r), pos(pos)
+SphereSurface::SphereSurface(Vector pos, double r, Material m, std::string name) :
+    Surface(m, name), r(r), pos(pos)
 {
 
 }
@@ -440,24 +483,42 @@ Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 {
     Vector L = p_light - p_surface;
     double cosA = angle(L, s->normal(p_surface));
-    return l->color * cosA;
+    return l->getOptColor() * cosA;
 }
 
 
-OptScene::OptScene(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent)
+OptScene::OptScene(Widget* parent, Vector tl, Vector br, WContainer* prop_cont) : Widget(tl, br, parent)
 {
     V = stdV;
 
-    spheres = std::vector<Surface*>();
+    surfaces = std::vector<Surface*>();
     sources = std::vector<Source*>();
-    spheres.reserve(10);
+    surfaces.reserve(10);
     sources.reserve(10);
 
-    spheres.push_back(new PlaneSurface(2, white_col));
+    surfaces.push_back(new PlaneSurface(2, white_col, "plane"));
 
-    spheres.push_back(new SphereSurface({0, 0, 3}, 1, water));
-    spheres.push_back(new SphereSurface({0.5, 0, 5.5}, 1, water));
-    spheres.push_back(new SphereSurface({-0.5, -0.5, 7}, 0.75, water));
+    obj_cont = nullptr;
+    this->prop_cont = prop_cont;
+
+    // surfaces.push_back(new SphereSurface({0, 0, 3}, 1, water));
+    // surfaces.push_back(new SphereSurface({0.5, 0, 5.5}, 1, water));
+    // surfaces.push_back(new SphereSurface({-0.5, -0.5, 7}, 0.75, water));
+}
+
+WContainer* OptScene::makeObjectContainer(Widget* parent, Vector tl, Vector br)
+{
+    const int obj_button_h = 100;
+    int n_objects = surfaces.size() + sources.size();
+
+    this->obj_cont = new WContainer(parent, tl, br, n_objects, 1, obj_button_h * n_objects);
+
+    for (OptObject* obj: surfaces)
+        new OptObjectButton(obj_cont, {}, {}, obj, prop_cont);
+    for (OptObject* obj: sources)
+        new OptObjectButton(obj_cont, {}, {}, obj, prop_cont);
+
+    return obj_cont;
 }
 
 Vector OptScene::traceDiffuse(Surface* s, Vector p)
@@ -483,7 +544,7 @@ Vector OptScene::castShadowRay(Surface* s, Source* l, Vector p)
     Ray shadow_ray(p, p_light - p);
 
     double intersect_t = 0, intensity = 1;
-    for (std::vector<Surface*>::iterator s1_it = spheres.begin(); s1_it != spheres.end(); ++s1_it)
+    for (std::vector<Surface*>::iterator s1_it = surfaces.begin(); s1_it != surfaces.end(); ++s1_it)
     {
         Surface* s1 = *s1_it;
         if (s1 == s) continue;
@@ -518,7 +579,7 @@ Surface* OptScene::getIntersectedSurface(Ray ray, double *t_ptr)
     Surface *s = nullptr;
     double t = std::numeric_limits<double>::infinity();
 
-    for (std::vector<Surface*>::iterator s1 = spheres.begin(); s1 != spheres.end(); ++s1)
+    for (std::vector<Surface*>::iterator s1 = surfaces.begin(); s1 != surfaces.end(); ++s1)
     {
         double cur_t = 0;
         if ((*s1)->intersect(ray, &cur_t) && cur_t < t)
@@ -564,13 +625,17 @@ void OptScene::setV(Vector V) {this->V = V;}
 
 std::vector<Surface*>::iterator OptScene::addSphere(Vector pos, Vector color, double r)
 {
-    spheres.push_back(new SphereSurface(pos, r, color));
-    return spheres.end() - 1;
+    std::string name = "sphere " + std::to_string(surfaces.size());
+
+    surfaces.push_back(new SphereSurface(pos, r, color, name));
+    return surfaces.end() - 1;
 }
 
 std::vector<Source*>::iterator OptScene::addSource(Vector pos, Vector color, double r)
 {
-    Source* new_sorce = new SphereSource(color, pos, r);
+    std::string name = "source " + std::to_string(sources.size());
+    Source* new_sorce = new SphereSource(color, pos, r, name);
+
     sources.push_back(new_sorce);
     return sources.end() - 1;
 }

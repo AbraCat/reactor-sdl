@@ -88,7 +88,13 @@ void Texture::paint()
     for (ColPolygon pol: polygons) paintPolygon(pol);
 
     if (text.size() != 0)
+    {
+        // printf("putting text: \n");
+        // print(w->getAbsTL());
+        // print(w->getAbsTL() + w->wh);
+        // print(w->wh);
         putText(text, w->getAbsTL(), w->getAbsTL() + w->wh);
+    }
 }
 
 void Texture::paintRec()
@@ -219,6 +225,10 @@ Widget::Widget(Vector tl, Vector br, Widget* parent)
     width = br.x - tl.x;
     height = br.y - tl.y;
     this->wh = Vector(width, height);
+    // print(wh);
+    // printf("widget\n");
+    // print(tl);
+    // print(br);
 
     w_border_visible = 0;
     t_border_visible = 0;
@@ -344,6 +354,14 @@ void Widget::addWidget(Widget* child)
     children.push_back(child);
 }
 
+void Widget::clearChildren()
+{
+    for (Widget* w: children)
+        delete w;
+
+    children.clear();
+}
+
 bool Widget::handleEvent(Event* e)
 {
     for (Widget* w: children)
@@ -417,8 +435,8 @@ WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool
     this->padding = 0;
 
     // vertical
-    if (list_length == 0) this->list_length = height;
-    else this->list_length = list_length;
+    if (list_length == 0) list_length = height;
+    this->list_length = list_length;
     scroll_frac = 0;
 
     if (vertical)

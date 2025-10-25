@@ -117,6 +117,7 @@ public:
     Widget(Vector tl, Vector br, Widget* parent = nullptr);
     ~Widget();
     virtual void addWidget(Widget* child);
+    void clearChildren();
 
     void setWidgetBorderVisible(bool visible);
     void setTextureBorderVisible(bool visible);
