@@ -123,7 +123,8 @@ public:
     void setFillRect(bool fill, Vector color = Vector(0, 0, 0));
     void setDraggable(Vector dragTL = Vector(), Vector dragBR = Vector());
 
-    Vector getAbsTL();
+    virtual Vector getAbsTL();
+    virtual Vector propagatedAbsTL();
     void propagateAbsPos();
 
     void drawWidgetRect(bool fill, Vector color = Vector(0, 0, 0));
@@ -136,7 +137,7 @@ public:
     void drawRec();
     virtual void paint();
 
-    bool handleEvent(Event* e);
+    virtual bool handleEvent(Event* e);
     virtual bool onIdle(IdleEvent* e);
     virtual bool mousePressEvent(MouseEvent* e);
     virtual bool mouseMoveEvent(MouseEvent* e);
@@ -160,14 +161,19 @@ public:
 class WContainer : public Widget
 {
 public:
-    WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical);
+    WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical, double list_length = 0);
     virtual void paint() override;
 
     virtual void addWidget(Widget* widget) override;
+    virtual Vector propagatedAbsTL() override;
+    virtual bool handleEvent(Event* e) override;
+    void scroll(double frac);
 
 private:
     bool vertical;
     int nChildren, padding, childWidth, childHeight;
+
+    double scroll_frac, list_length;
 };
 
 

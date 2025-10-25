@@ -10,7 +10,7 @@ class ScrollButton;
 class ScrollBar : public Widget
 {
 public:
-    ScrollBar(Widget* parent, Vector tl, Vector br);
+    ScrollBar(Widget* parent, Vector tl, Vector br, double init_frac = 0.5);
 
     double posToFrac(Vector thumbTL);
     Vector fracToPos(double frac);
@@ -76,6 +76,16 @@ public:
 private:
     Widget *w;
     double init_scale_x, init_scale_y, scale_amplitude;
+};
+
+class ListScrollBar : public ScrollBar
+{
+public:
+    ListScrollBar(Widget* parent, Vector tl, Vector br, WContainer* list);
+    virtual void action(double frac) override;
+
+private:
+    WContainer* list;
 };
 
 #endif // SCROLL_BAR_H

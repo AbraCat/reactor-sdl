@@ -2,6 +2,7 @@
 #define OPTICAL_SCENE_H
 
 #include "plane.h"
+#include "button.h"
 
 class Ray;
 class Material;
@@ -22,6 +23,71 @@ extern const Material water;
 
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
 
+enum OptPropEnum
+{
+    OPT_DIFFUSE_PORTION,
+    OPT_SPECULAR_PORTION,
+    OPT_DEFRACT_PORTION,
+    OPT_DEFRACT_COEFF,
+
+    OPT_POS_X,
+    OPT_POS_Y,
+    OPT_POS_Z,
+    OPT_RADIUS,
+
+    OPT_COLOR_R,
+    OPT_COLOR_G,
+    OPT_COLOR_B,
+
+    OPT_TOTAL
+};
+
+class OptProperty
+{
+public:
+    OptProperty(OptPropEnum prop, std::string name, double val);
+    void setVal(double val);
+    double getVal();
+
+private:
+    OptPropEnum prop;
+    std::string name;
+    double val;
+};
+
+class OptObject
+{
+public:
+    OptObject(std::string name);
+
+    void setProperty(OptPropEnum prop, double val);
+    double getProperty(OptPropEnum prop);
+
+    void setOptColor(Vector color);
+    Vector getOptColor();
+    void setOptPos(Vector pos);
+    Vector getOptPos();
+
+    virtual void updateProperties(); // updates fields according to properties vector
+
+// private:
+    std::string name;
+
+private:
+    Vector pos, color;
+    std::vector<OptProperty> properties;
+};
+
+class OptObjectButton : public Button
+{
+public:
+    OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj);
+    virtual void action() override;
+
+private:
+    OptObject* obj;
+};
+
 class Ray
 {
 public:
@@ -41,11 +107,12 @@ public:
     Vector color;
 };
 
-class Surface
+class Surface : public OptObject
 {
 public:
     Surface(Material m);
     Surface(Vector color);
+    virtual void updateProperties() override;
 
     virtual bool intersect(Ray ray, double* t) = 0;
     virtual Vector normal(Vector p) = 0; // should face outside
@@ -108,6 +175,7 @@ public:
     virtual void paint() override;
 
     void setV(Vector V);
+    void moveCamera(Vector change);
 
     Vector traceRay(Ray ray, int depth);
     Surface* getIntersectedSurface(Ray ray, double *t_ptr);
@@ -125,6 +193,17 @@ public:
 
     std::vector<Surface*> spheres;
     std::vector<Source*> sources;
+};
+
+class MoveCameraButton : public Button
+{
+public:
+    MoveCameraButton(Widget* parent, OptScene* scene, Vector change, Vector color, std::string text);
+    virtual void action() override;
+
+private:
+    OptScene* scene;
+    Vector change;
 };
 
 #endif // OPTICAL_SCENE_H

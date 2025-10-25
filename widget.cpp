@@ -256,11 +256,14 @@ void Widget::paint()
     if (t_border_visible) t->addRect({{0, 0}, wh}, {255, 255, 255}, 0);
 }
 
+Vector Widget::propagatedAbsTL() { return absTL; }
+
 void Widget::propagateAbsPos()
 {
     for (Widget *w: children)
     {
-        w->absTL = this->absTL + w->tl;
+        // w->absTL = this->absTL + w->tl;
+        w->absTL = this->propagatedAbsTL() + w->tl;
         w->propagateAbsPos();
     }
 }
@@ -404,16 +407,23 @@ bool Widget::onIdle(IdleEvent* e)
 }
 
 
-WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical) : Widget(tl, br, parent)
+WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical, double list_length)
+    : Widget(tl, br, parent)
 {
-    setTextureBorderVisible(1);
+    // setTextureBorderVisible(1);
+    setWidgetBorderVisible(1);
     this->vertical = vertical;
     this->nChildren = nChildren;
     this->padding = 0;
 
+    // vertical
+    if (list_length == 0) this->list_length = height;
+    else this->list_length = list_length;
+    scroll_frac = 0;
+
     if (vertical)
     {
-        this->childHeight = (height - padding * (nChildren + 1)) / nChildren;
+        this->childHeight = (list_length - padding * (nChildren + 1)) / nChildren;
         this->childWidth = width - 2 * padding;
     }
     else
@@ -436,9 +446,33 @@ void WContainer::addWidget(Widget* w)
         Vector((padding + childWidth) * (nChild + 1), wh.y - padding));
 }
 
+Vector WContainer::propagatedAbsTL()
+{
+    // vertical
+    return Vector(absTL.x, absTL.y - scroll_frac * (list_length - height));
+}
+
 void WContainer::paint()
 {
     Widget::paint();
+}
+
+void WContainer::scroll(double frac)
+{
+    scroll_frac = frac;
+    propagateAbsPos();
+    paint();
+}
+
+bool WContainer::handleEvent(Event* e)
+{
+    MouseEvent* press_evt = dynamic_cast<MouseEvent*>(e);
+    if (press_evt != NULL && press_evt->type == MOUSE_DOWN && !inAbsRect(Vector(press_evt->x, press_evt->y)))
+        return e->dispatch(this);
+
+    for (Widget* w: children)
+        if (w->handleEvent(e)) return 1;
+    return e->dispatch(this);
 }
 
 

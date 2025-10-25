@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-ScrollBar::ScrollBar(Widget* parent, Vector tl, Vector br) : Widget(tl, br, parent)
+ScrollBar::ScrollBar(Widget* parent, Vector tl, Vector br, double init_frac) : Widget(tl, br, parent)
 {
     assert(height > width * 3);
     setTextureBorderVisible(1);
@@ -15,7 +15,7 @@ ScrollBar::ScrollBar(Widget* parent, Vector tl, Vector br) : Widget(tl, br, pare
     thumb->setDraggable({0, width}, {width, height - width});
     frac_pos = 0;
 
-    moveThumb(0.5);
+    moveThumb(init_frac);
 }
 
 double ScrollBar::posToFrac(Vector thumbTL)
@@ -162,3 +162,11 @@ void ScaleScrollBar::action(double frac)
 {
     w->t->rescaleCentre(fracToScale(frac, 1), fracToScale(frac, 0));
 }
+
+ListScrollBar::ListScrollBar(Widget* parent, Vector tl, Vector br, WContainer* list)
+    : ScrollBar(parent, tl, br, 0), list(list)
+{
+    
+}
+
+void ListScrollBar::action(double frac) { list->scroll(frac); }

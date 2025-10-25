@@ -7,16 +7,12 @@
 #include <thread>
 
 const double screen_z = 10, screen_size = 1.65, intersect_eps = 0.01, ratio = 16.0 / 9.0;
-const int max_depth = 20, n_diffuse_rays = 20, n_shadow_rays = 1, n_threads = 4;
+const int max_depth = 1, n_diffuse_rays = 1, n_shadow_rays = 1, n_threads = 1;
 
 const Vector screen_skew = {0, 0.35, 0};
-const Vector screen_tl = Vector(-screen_size * ratio, -screen_size) + screen_skew,
+Vector screen_tl = Vector(-screen_size * ratio, -screen_size) + screen_skew,
     screen_br = Vector(screen_size * ratio, screen_size) + screen_skew;
 const Vector sky_col = {0, 0.5, 0.75}, stdV = {0, 0, 16};
-
-// 1: 9.74
-// 2: 13.02
-// 4: 14.5
 
 const Material water(0, 0, 1, 1.06, white_col);
 
@@ -29,10 +25,96 @@ struct RenderThreadData
     VecMtx1* colors;
 };
 
-/*
-trace random ray that hasn't been traced yet (stochastic rendering)
-queue of pixels to render
-*/
+OptProperty::OptProperty(OptPropEnum prop, std::string name, double val)
+    : prop(prop), name(name), val(val)
+{
+    //
+}
+
+void OptProperty::setVal(double val) { this->val = val; }
+
+double OptProperty::getVal() { return val; }
+
+OptObject::OptObject(std::string name)
+    : properties(std::vector<OptProperty>(OPT_TOTAL, OptProperty(OPT_TOTAL, "", 0))),
+    name(name)
+{
+    #define SET_NAME(name) properties[OPT_ ## name] = OptProperty(OPT_ ## name, #name, 0)
+
+    SET_NAME(DIFFUSE_PORTION);
+    SET_NAME(SPECULAR_PORTION);
+    SET_NAME(DEFRACT_PORTION);
+    SET_NAME(DEFRACT_COEFF);
+
+    SET_NAME(POS_X);
+    SET_NAME(POS_Y);
+    SET_NAME(POS_Z);
+    SET_NAME(RADIUS);
+
+    SET_NAME(COLOR_R);
+    SET_NAME(COLOR_G);
+    SET_NAME(COLOR_B);
+
+    #undef SET_NAME
+}
+
+void OptObject::setProperty(OptPropEnum prop, double val)
+{
+    properties[prop].setVal(val);
+}
+
+double OptObject::getProperty(OptPropEnum prop)
+{
+    return properties[prop].getVal();
+}
+
+void OptObject::updateProperties()
+{
+    color = getOptColor();
+    pos = getOptPos();
+}
+
+void OptObject::setOptColor(Vector color)
+{
+    this->color = color;
+    setProperty(OPT_COLOR_R, color.x);
+    setProperty(OPT_COLOR_G, color.y);
+    setProperty(OPT_COLOR_B, color.z);
+}
+
+Vector OptObject::getOptColor()
+{
+    return color;
+    return Vector(getProperty(OPT_COLOR_R), getProperty(OPT_COLOR_G), getProperty(OPT_COLOR_B));
+}
+
+void OptObject::setOptPos(Vector pos)
+{
+    this->pos = pos;
+    setProperty(OPT_POS_X, pos.x);
+    setProperty(OPT_POS_Y, pos.y);
+    setProperty(OPT_POS_Z, pos.z);
+}
+
+
+
+OptObjectButton::OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj)
+    : Button(parent, tl, br, gray_v, obj->name), obj(obj)
+{
+    //
+}
+
+void OptObjectButton::action()
+{
+    printf("Button for object %s\n", obj->name.c_str());
+}
+
+
+Vector OptObject::getOptPos()
+{
+    return pos;
+    return Vector(getProperty(OPT_POS_X), getProperty(OPT_POS_Y), getProperty(OPT_POS_Z));
+}
 
 void OptScene::calculateThread(int thread_num, VecMtx1* colors)
 {
@@ -151,14 +233,44 @@ Material::Material(double diffuse_c, double reflect_c, double refract_c,
     // assert(diffuse_c + reflect_c + refract_c <= 1);
 }
 
-Surface::Surface(Material m) : m(m)
+Surface::Surface(Material m) : OptObject("surface"), m(m)
+{
+    setProperty(OPT_DIFFUSE_PORTION, m.diffuse_c);
+    setProperty(OPT_SPECULAR_PORTION, m.reflect_c);
+    setProperty(OPT_DEFRACT_PORTION, m.refract_c);
+    setProperty(OPT_DEFRACT_COEFF, m.refract_k);
+    setOptColor(m.color);
+}
+
+Surface::Surface(Vector color) : Surface(Material(1, 1, 0, 1.3, color))
 {
     //
 }
 
-Surface::Surface(Vector color) : m(1, 1, 0, 1.3, color)
+void Surface::updateProperties()
 {
-    //
+    OptObject::updateProperties();
+    /*
+    OPT_DIFFUSE_PORTION,
+    OPT_SPECULAR_PORTION,
+    OPT_DEFRACT_PORTION,
+    OPT_DEFRACT_COEFF,
+
+    OPT_POS_X,
+    OPT_POS_Y,
+    OPT_POS_Z,
+    OPT_RADIUS,
+
+    OPT_COLOR_R,
+    OPT_COLOR_G,
+    OPT_COLOR_B,
+    */
+
+    m.color = getOptColor();
+    m.diffuse_c = getProperty(OPT_DIFFUSE_PORTION);
+    m.reflect_c = getProperty(OPT_SPECULAR_PORTION);
+    m.refract_c = getProperty(OPT_DEFRACT_PORTION);
+    m.refract_k = getProperty(OPT_DEFRACT_COEFF);
 }
 
 bool Surface::rayGoesIn(Ray r, Vector intersection_p)
@@ -461,4 +573,25 @@ std::vector<Source*>::iterator OptScene::addSource(Vector pos, Vector color, dou
     Source* new_sorce = new SphereSource(color, pos, r);
     sources.push_back(new_sorce);
     return sources.end() - 1;
+}
+
+void OptScene::moveCamera(Vector change)
+{
+    V += change;
+    screen_tl += change;
+    screen_br += change;
+    paint();
+}
+
+
+
+MoveCameraButton::MoveCameraButton(Widget* parent, OptScene* scene, Vector change, Vector color, std::string text)
+    : Button(parent, Vector(), Vector(), color, text), scene(scene), change(change)
+{
+    
+}
+
+void MoveCameraButton::action()
+{
+    scene->moveCamera(change);
 }

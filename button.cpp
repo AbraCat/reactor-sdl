@@ -5,24 +5,38 @@
 
 const double unpressColorCoeff = 0.7;
 
-Button::Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text) : Widget(tl, br, parent)
+TextField::TextField(Widget* parent, Vector tl, Vector br, std::string text, Vector color)
+    : Widget(tl, br, parent), color(color), text(text)
 {
     setTextureBorderVisible(1);
+}
+
+void TextField::paint()
+{
+    Widget::paint();
+    drawWidgetRect(1, color);
     
+    t->addText(text);
+}
+
+void TextField::SetFieldColor(Vector color)
+{
+    this->color = color;
+}
+
+void TextField::SetText(std::string text)
+{
+    this->text = text;
+}
+
+Button::Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text)
+    : TextField(parent, tl, br, text, color * unpressColorCoeff)
+{
     this->press_color = color;
     this->unpress_color = color * unpressColorCoeff;
     this->is_pressed = 0;
 
     this->text = text;
-}
-
-void Button::paint()
-{
-    Widget::paint();
-    if (is_pressed) drawWidgetRect(1, press_color);
-    else drawWidgetRect(1, unpress_color);
-    
-    t->addText(text);
 }
 
 bool Button::mousePressEvent(MouseEvent* e)
@@ -33,6 +47,7 @@ bool Button::mousePressEvent(MouseEvent* e)
     if (is_pressed) return 0;
 
     is_pressed = 1;
+    SetFieldColor(press_color);
     paint();
     action();
     return 1;
@@ -43,6 +58,7 @@ bool Button::mouseReleaseEvent(MouseEvent* e)
     Widget::mouseReleaseEvent(e);
 
     is_pressed = 0;
+    SetFieldColor(unpress_color);
     paint();
     return 0;
 }

@@ -7,11 +7,23 @@
 #include <cstdio>
 #include <string>
 
-class Button : public Widget
+class TextField : public Widget
+{
+public:
+    TextField(Widget* parent, Vector tl, Vector br, std::string text, Vector color = blackV);
+    virtual void paint() override;
+    void SetFieldColor(Vector color);
+    void SetText(std::string text);
+
+private:
+    Vector color;
+    std::string text;
+};
+
+class Button : public TextField
 {
 public:
     Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text);
-    virtual void paint() override;
 
     virtual bool mousePressEvent(MouseEvent* e) override;
     virtual bool mouseReleaseEvent(MouseEvent* e) override;

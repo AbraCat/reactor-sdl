@@ -3,7 +3,8 @@
 #include <cmath>
 #include <cstdio>
 
-extern const Vector whiteV = {255, 255, 255}, blackV = {0, 0, 0}, red_v = {255, 0, 0}, gray_col = {0.9, 0.9, 0.9}, 
+extern const Vector whiteV = {255, 255, 255}, blackV = {0, 0, 0}, red_v = {255, 0, 0}, gray_v = {127, 127, 127}, 
+gray_col = {0.9, 0.9, 0.9}, 
     purple_col = {0.6, 0.3, 0.9}, yellow_col = {0.9, 0.9, 0.3}, green_col = {0.6, 0.9, 0.3},
     orange_col = {0.9, 0.6, 0.3}, white_col = {1, 1, 1}, red_col(1, 0, 0), blue_col(0, 0, 1);
 
