@@ -12,7 +12,7 @@ static SDL_Renderer *renderer = NULL;
 
 static Desktop* desktop;
 
-const double fps = 5;
+const double fps = 30;
 
 /*
 TODO:

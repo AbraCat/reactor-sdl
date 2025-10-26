@@ -5,18 +5,16 @@
 #include "button.h"
 
 /*
-проблема медленного рендера                                            -
-partial scene rendering                                                -
-trace random ray that hasn't been traced yet (stochastic rendering)    -
-queue of pixels to render                                              -
+multithreading segfault                                     -
 
-better text rendering                                                  -
+button which can be toggled on/off                          -
+change button texture for selected objects                  -
+прямоугольник вокруг выделенного объекта                    -
+выделение нескольких объектов                               -
 
-выделение нескольких объектов                                          -
-прямоугольник вокруг выделенного/ых объекта/ов                         -
-3 ракурса                                                              -
-
-deleting optical objects                                               -
+better text rendering                                       -
+3 ракурса                                                   -
+deleting optical objects                                    -
 */
 
 class Ray;
@@ -40,7 +38,7 @@ using VecMtx1 = std::vector<Vector>;
 using VecMtx2 = std::vector<std::vector<Vector>>;
 using VecMtx3 = std::vector<VecMtx2>;
 
-extern const Material water, wood, std_material;
+extern const Material glass, plastic, std_material;
 
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
 
@@ -211,7 +209,7 @@ public:
 class PlaneSurface : public Surface
 {
 public:
-    PlaneSurface(double y_pos, Vector color, std::string name, OptScene* scene, Material m = wood);
+    PlaneSurface(double y_pos, Vector color, std::string name, OptScene* scene, Material m = plastic);
 
     virtual bool intersect(Ray ray, double* t) override;
     virtual Vector normal(Vector p) override;
@@ -220,7 +218,7 @@ public:
 class SphereSurface : public Surface
 {
 public:
-    SphereSurface(Vector pos, double r, Vector color, std::string name, OptScene* scene, Material m = wood);
+    SphereSurface(Vector pos, double r, Vector color, std::string name, OptScene* scene, Material m = plastic);
 
     virtual std::vector<OptProperty> getProperties();
     virtual bool setProperty(OptPropEnum prop, double val);
@@ -238,6 +236,7 @@ class OptScene : public Widget
 public:
     OptScene(Widget* parent, Vector tl, Vector br, ObjControlPanel* panel);
     virtual void paint() override;
+    virtual bool onIdle(IdleEvent* evt) override;
 
     void setV(Vector V);
     void moveCamera(Vector change);
@@ -250,7 +249,7 @@ public:
 
     void calculateThread(int thread_num, VecMtx1* colors);
 
-    std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r);
+    std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r, Material m = plastic);
     std::vector<Source*>::iterator addSource(Vector pos, Vector color, double r);
 
     WContainer* makeObjectContainer(Widget* parent, Vector tl, Vector br);
@@ -260,6 +259,8 @@ public:
 
     std::vector<Surface*> surfaces;
     std::vector<Source*> sources;
+
+    std::vector<IntVec> pix_queue;
     
     WContainer* obj_cont;
     ObjControlPanel* panel;

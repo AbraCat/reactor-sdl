@@ -108,6 +108,10 @@ bool clipLine(FixedVec line, FixedVec rect, FixedVec* ans)
 }
 
 
+IntVec::IntVec() { this->x = 0; this->y = 0; }
+IntVec::IntVec(int x, int y) { this->x = x; this->y = y; }
+
+
 
 
 Vector::Vector() { this->x = this->y = this->z = 0; };

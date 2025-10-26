@@ -1,5 +1,7 @@
 #include "optical-scene.h"
 
+#include <algorithm>
+#include <random>
 #include <sstream>
 // #include <thread>
 
@@ -7,11 +9,12 @@
 #include <cmath>
 #include <cassert>
 
-const double intersect_eps = 0.01, ratio = 16.0 / 9.0, screen_size = 4;
-const int max_depth = 1, n_diffuse_rays = 1, n_shadow_rays = 1, n_threads = 1, n_move_buttons = 6;
+const double intersect_eps = 0.01, ratio = 16.0 / 9.0, screen_size = 4, obj_change = 1;
+const int max_depth = 10, n_diffuse_rays = 1, n_shadow_rays = 1, n_move_buttons = 6, obj_button_h = 100,
+    n_threads = 1, pix_per_frame = 5e4;
 
-const Vector sky_col = {0, 0.5, 0.75};
-extern const Material water(0, 0, 1, 1.06), wood(1, 1, 0, 1.3), std_material = wood;
+const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2, -1.15, 4};
+extern const Material glass(0, 0, 1, 1.06), plastic(1, 1, 0, 1.3), std_material = plastic;
 
 bool d = 0;
 
@@ -19,7 +22,7 @@ struct RenderThreadData
 {
     OptScene* scene;
     int thread_num;
-    VecMtx1* colors;
+    std::vector<IntVec>* thread_pix;
 };
 
 OptProperty::OptProperty(OptPropEnum prop, std::string name, double val)
@@ -83,20 +86,18 @@ ObjControlPanel::ObjControlPanel(Widget* parent, Vector tl, Vector br, double pr
 
 void ObjControlPanel::setObject(OptObject* obj)
 {
-    const double change = 1;
-
     prop_cont->clearChildren();
     button_cont->clearChildren();
 
     for (OptProperty prop: obj->getProperties())
         new OptPropWidget(prop_cont, {}, {}, obj, prop);
 
-    new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, -change}, "forward");
-    new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, change}, "back");
-    new MoveObjectButton(button_cont, {}, {}, obj, {-change, 0, 0}, "left");
-    new MoveObjectButton(button_cont, {}, {}, obj, {change, 0, 0}, "right");
-    new MoveObjectButton(button_cont, {}, {}, obj, {0, -change, 0}, "up");
-    new MoveObjectButton(button_cont, {}, {}, obj, {0, change, 0}, "down");
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, -obj_change}, "forward");
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, obj_change}, "back");
+    new MoveObjectButton(button_cont, {}, {}, obj, {-obj_change, 0, 0}, "left");
+    new MoveObjectButton(button_cont, {}, {}, obj, {obj_change, 0, 0}, "right");
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, -obj_change, 0}, "up");
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, obj_change, 0}, "down");
 
     prop_cont->drawRec();
     button_cont->drawRec();
@@ -177,9 +178,9 @@ int calcSDLthread(void *void_data)
     OptScene* s = data->scene;
     int thread_num = data->thread_num;
     
-    for (int pixel_x = 0; pixel_x <= s->width; ++pixel_x)
+    for (int pixel_x = 0; pixel_x < s->width; ++pixel_x)
     {
-        for (int pixel_y = thread_num; pixel_y <= s->height; pixel_y += n_threads)
+        for (int pixel_y = thread_num; pixel_y < s->height; pixel_y += n_threads)
         {
             Vector p = s->screen_tl + s->screen_w * (1.0 * pixel_x / s->width) +
                                       s->screen_h * (1.0 * pixel_y / s->height);
@@ -187,7 +188,7 @@ int calcSDLthread(void *void_data)
             Ray ray(s->V, p - s->V);
             Vector color = s->traceRay(ray, 0);
 
-            (*(data->colors))[pixel_x * s->height + pixel_y] = color;
+            s->pix_texture->setPix(pixel_x, pixel_y, color * 255);
         }
     }
 
@@ -197,60 +198,114 @@ int calcSDLthread(void *void_data)
 
 void OptScene::paint()
 {   
-    OptScene* s = this;
-    for (int pixel_x = 0; pixel_x < s->width; ++pixel_x)
-    {
-        for (int pixel_y = 0; pixel_y < s->height; pixel_y++)
-        {
-            if (pixel_x == width / 2 && pixel_y == height - 5) d = 1;
-            Vector p = s->screen_tl + s->screen_w * (1.0 * pixel_x / s->width) +
-                                      s->screen_h * (1.0 * pixel_y / s->height);
+    // OptScene* s = this;
+    // for (int pixel_x = 0; pixel_x < s->width; ++pixel_x)
+    // {
+    //     for (int pixel_y = 0; pixel_y < s->height; pixel_y++)
+    //     {
+    //         if (pixel_x == width / 2 && pixel_y == height - 5) d = 1;
+    //         Vector p = s->screen_tl + s->screen_w * (1.0 * pixel_x / s->width) +
+    //                                   s->screen_h * (1.0 * pixel_y / s->height);
 
-            // if (d) print(p);
+    //         // if (d) print(p);
 
-            Ray ray(s->V, p - s->V);
-            Vector color = s->traceRay(ray, 0);
+    //         Ray ray(s->V, p - s->V);
+    //         Vector color = s->traceRay(ray, 0);
             
-            // if (d) color = red_col;
-            pix_texture->setPix(pixel_x, pixel_y, color * 255);
-            if (d) d = 0;
-        }
+    //         // if (d) color = red_col;
+    //         pix_texture->setPix(pixel_x, pixel_y, color * 255);
+    //         if (d) d = 0;
+    //     }
+    // }
+    // return;
+
+
+
+    // std::vector<SDL_Thread*> threads;
+
+    // for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+    // {
+    //     RenderThreadData* data = new RenderThreadData();
+    //     data->scene = this;
+    //     data->thread_num = thread_num;
+
+    //     threads.push_back(SDL_CreateThread(calcSDLthread, std::to_string(thread_num).c_str(), data));
+    // }
+
+    // for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+    // {
+    //     int status = 0;
+    //     SDL_WaitThread(threads[thread_num], &status);
+    //     assert(status == 0);
+    // }
+    // return;
+
+
+
+    pix_queue = std::vector<IntVec>(width * height);
+    for (int y = 0; y < height; ++y)
+        for (int x = 0; x < width; ++x)
+            pix_queue[y * width + x] = IntVec(x, y);
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(pix_queue.begin(), pix_queue.end(), g);
+}
+
+int calcIdleThread(void* void_data)
+{
+    RenderThreadData* data = (RenderThreadData*)void_data;
+    OptScene* s = data->scene;
+
+    for (IntVec pix: *(data->thread_pix))
+    {
+        Vector p = s->screen_tl + s->screen_w * (1.0 * pix.x / s->width) +
+                                  s->screen_h * (1.0 * pix.y / s->height);
+
+        Ray ray(s->V, p - s->V);
+        Vector color = s->traceRay(ray, 0);
+
+        s->pix_texture->setPix(pix.x, pix.y, color * 255);
     }
-    return;
 
+    return 0;
+}
 
+bool OptScene::onIdle(IdleEvent* evt)
+{
+    if (pix_queue.size() == 0) return 0;
 
-
+    std::vector<std::vector<IntVec>> thread_pix(n_threads, std::vector<IntVec>());
     std::vector<SDL_Thread*> threads;
-    VecMtx1 colors((height + 1) * (width + 1));
+    RenderThreadData* thread_data = new RenderThreadData[n_threads];
 
     for (int thread_num = 0; thread_num < n_threads; ++thread_num)
     {
-        RenderThreadData* data = new RenderThreadData();
-        data->scene = this;
-        data->thread_num = thread_num;
-        data->colors = &colors;
+        if (pix_queue.size() == 0) break;
 
-        threads.push_back(SDL_CreateThread(calcSDLthread, "name", data));
+        for (int n_pix = 0; n_pix < pix_per_frame; ++n_pix)
+        {
+            thread_pix[thread_num].push_back(pix_queue.back());
+            pix_queue.pop_back();
+            if (pix_queue.size() == 0) break;
+        }
+
+        thread_data[thread_num].scene = this;
+        thread_data[thread_num].thread_num = thread_num;
+        thread_data[thread_num].thread_pix = &thread_pix[thread_num];
+
+        threads.push_back(SDL_CreateThread(calcIdleThread,
+            std::to_string(thread_num).c_str(), &thread_data[thread_num]));
     }
 
     for (int thread_num = 0; thread_num < n_threads; ++thread_num)
     {
         int status = 0;
         SDL_WaitThread(threads[thread_num], &status);
-        // assert(status == 0);
+        assert(status == 0);
     }
 
-    for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
-    {
-        for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
-        {
-            Vector color = colors[pixel_x * height + pixel_y];
-            // t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
-            t->addPoint({pixel_x, pixel_y}, color * 255);
-            // pix_texture->setPix(pixel_x, pixel_y, color * 255);
-        }
-    }
+    return 0;
 }
 
 Vector randUnitVector()
@@ -380,7 +435,7 @@ SphereSource::SphereSource(Vector color, Vector pos, double r, std::string name,
 
 Vector SphereSource::getRandPoint()
 {
-    // return pos;
+    return pos;
 
     Vector tl = pos - Vector(r, r, r), br = pos + Vector(r, r, r);
 
@@ -512,8 +567,8 @@ Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 
 OptScene::OptScene(Widget* parent, Vector tl, Vector br, ObjControlPanel* panel) : Widget(tl, br, parent)
 {
-    V = {0, 0, 16};
-    screen_tl = Vector(-2, -1.5, 10) + Vector(0, 0.35, 0);
+    V = init_V;
+    screen_tl = init_screen_tl;
     screen_w = {screen_size, 0, 0};
     screen_h = {0, screen_size / ratio, 0};
 
@@ -530,15 +585,10 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br, ObjControlPanel* panel)
     setPixelTexture(true);
     pix_texture = dynamic_cast<PixelTexture*>(t);
     assert(pix_texture != nullptr);
-
-    // surfaces.push_back(new SphereSurface({0, 0, 3}, 1, water));
-    // surfaces.push_back(new SphereSurface({0.5, 0, 5.5}, 1, water));
-    // surfaces.push_back(new SphereSurface({-0.5, -0.5, 7}, 0.75, water));
 }
 
 WContainer* OptScene::makeObjectContainer(Widget* parent, Vector tl, Vector br)
 {
-    const int obj_button_h = 200;
     int n_objects = surfaces.size() + sources.size();
 
     this->obj_cont = new WContainer(parent, tl, br, n_objects, 1, obj_button_h * n_objects);
@@ -654,11 +704,11 @@ Vector OptScene::traceRay(Ray ray, int depth)
 
 void OptScene::setV(Vector V) {this->V = V;}
 
-std::vector<Surface*>::iterator OptScene::addSphere(Vector pos, Vector color, double r)
+std::vector<Surface*>::iterator OptScene::addSphere(Vector pos, Vector color, double r, Material m)
 {
     std::string name = "sphere " + std::to_string(surfaces.size());
 
-    surfaces.push_back(new SphereSurface(pos, r, color, name, this));
+    surfaces.push_back(new SphereSurface(pos, r, color, name, this, m));
     return surfaces.end() - 1;
 }
 

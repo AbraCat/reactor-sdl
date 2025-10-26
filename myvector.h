@@ -2,7 +2,6 @@
 #define MYVECTOR_H
 
 class Vector;
-class Vector;
 class FixedVec;
  
 
@@ -17,6 +16,17 @@ void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* n
 bool inIntRect(Vector p, Vector tl, Vector br);
 bool clipLine(FixedVec line, FixedVec rect, FixedVec* ans);
 bool rectIntersection(FixedVec r1, FixedVec r2, FixedVec* ans);
+
+
+class IntVec
+{
+public:
+    IntVec();
+    IntVec(int x, int y);
+    int x, y;
+};
+
+
 
 class Vector
 {
