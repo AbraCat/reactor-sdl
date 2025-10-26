@@ -44,10 +44,15 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
 
 
 
-    WContainer* prop_cont = new WContainer(this, {properties_left, 0},
-        {properties_left + properties_w, scene_h}, OPT_TOTAL, 1);
+    // WContainer* prop_cont = new WContainer(this, {properties_left, 0},
+    //     {properties_left + properties_w, scene_h}, OPT_TOTAL, 1);
+    // WContainer* obj_move_cont = new WContainer(this, {properties_left, scene_h},
+    //     {properties_left + properties_w, scene_h + button_h}, n_camera_buttons, 0);
 
-    scene = new OptScene(this, {0, 0}, {scene_w, scene_h}, prop_cont);
+    ObjControlPanel* panel = new ObjControlPanel(this, {properties_left, 0},
+        {properties_left + properties_w, scene_h + button_h}, scene_h);
+
+    scene = new OptScene(this, {0, 0}, {scene_w, scene_h}, panel);
 
     SurfaceIt it1 = scene->addSphere({-1, 0, 0}, gray_col, 0.5);
     // scene->addSphere({1, -0.5, 0}, gray_col, 0.5);

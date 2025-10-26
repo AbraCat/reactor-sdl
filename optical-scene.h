@@ -5,34 +5,34 @@
 #include "button.h"
 
 /*
-список объектов с возм. выбора                                         -
-выделение одного.нескольких объектов                                   -
+список объектов с возм. выбора                                         +
+выделение одного/нескольких объектов                                   -
 прямоугольник вокруг выделенного объекта                               -
-список свойств при выделении одного объекта (общие и частные свойства) -
-изменение свойств                                                      -
-кнопки движения объектов                                               -
-кнопки движения камеры                                                 -
+список свойств при выделении одного объекта (общие и частные свойства) +
+изменение свойств                                                      +
+кнопки движения объектов                                               +
+кнопки движения камеры                                                 +
 проблема медленного рендера                                            -
 3 ракурса                                                              -
 
-панель выбора объекта (прокручиваемый список объектов)                 -
+панель выбора объекта (прокручиваемый список объектов)                 +
 панель управления объектом (движение, удаление)                        -
 
-trace random ray that hasn't been traced yet (stochastic rendering)
-queue of pixels to render
+trace random ray that hasn't been traced yet (stochastic rendering)    -
+queue of pixels to render                                              -
 
-keyboard events
-global state
-focused widget
-input field
-changing object properties
+keyboard events                                                        +
+global state                                                           +
+focused widget                                                         +
+input field                                                            +
+changing object properties                                             +
 
-scrollable list texture visibility
-better text rendering
-partial scene rendering
+scrollable list texture visibility                                     -
+better text rendering                                                  -
+partial scene rendering                                                -
 
-deleting objects
-don't show irrelevant properties
+deleting optical objects                                               -
+don't show irrelevant properties                                       +
 */
 
 class Ray;
@@ -47,6 +47,7 @@ class SphereSurface;
 class OptScene;
 
 class OptPropField;
+class ObjControlPanel;
 
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
@@ -124,6 +125,8 @@ public:
     virtual std::vector<OptProperty> getProperties();
     virtual bool setProperty(OptPropEnum prop, double val);
 
+    void movePos(Vector change);
+
 // protected:
     std::string name;
     OptScene* scene;
@@ -134,12 +137,12 @@ public:
 class OptObjectButton : public Button
 {
 public:
-    OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, WContainer* prop_cont);
+    OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, ObjControlPanel* panel);
     virtual void action() override;
 
 private:
     OptObject* obj;
-    WContainer* prop_cont;
+    ObjControlPanel* panel;
 };
 
 class MoveObjectButton : public Button
@@ -151,6 +154,18 @@ public:
 private:
     OptObject* obj;
     Vector change;
+};
+
+class ObjControlPanel : public Widget
+{
+public:
+    ObjControlPanel(Widget* parent, Vector tl, Vector br, double properties_h);
+    void setObject(OptObject* obj);
+
+private:
+    double properties_h;
+    OptObject *obj;
+    WContainer *prop_cont, *button_cont;
 };
 
 class Ray
@@ -239,7 +254,7 @@ public:
 class OptScene : public Widget
 {
 public:
-    OptScene(Widget* parent, Vector tl, Vector br, WContainer* prop_cont);
+    OptScene(Widget* parent, Vector tl, Vector br, ObjControlPanel* panel);
     virtual void paint() override;
 
     void setV(Vector V);
@@ -263,7 +278,9 @@ public:
 
     std::vector<Surface*> surfaces;
     std::vector<Source*> sources;
-    WContainer *obj_cont, *prop_cont;
+    
+    WContainer* obj_cont;
+    ObjControlPanel* panel;
 };
 
 class MoveCameraButton : public Button

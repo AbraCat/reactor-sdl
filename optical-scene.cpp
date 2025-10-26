@@ -8,7 +8,7 @@
 #include <cassert>
 
 const double intersect_eps = 0.01, ratio = 16.0 / 9.0, screen_size = 4;
-const int max_depth = 1, n_diffuse_rays = 1, n_shadow_rays = 1, n_threads = 1;
+const int max_depth = 1, n_diffuse_rays = 1, n_shadow_rays = 1, n_threads = 1, n_move_buttons = 6;
 
 const Vector sky_col = {0, 0.5, 0.75};
 extern const Material water(0, 0, 1, 1.06), wood(1, 1, 0, 1.3), std_material = wood;
@@ -70,6 +70,38 @@ bool OptObject::setProperty(OptPropEnum prop, double val)
     return 0;
 }
 
+void OptObject::movePos(Vector change) { pos += change; }
+
+
+
+ObjControlPanel::ObjControlPanel(Widget* parent, Vector tl, Vector br, double properties_h)
+    : Widget(tl, br, parent), properties_h(properties_h)
+{
+    prop_cont = new WContainer(this, {0, 0}, {width, properties_h}, OPT_TOTAL, 1);
+    button_cont = new WContainer(this, {0, properties_h}, wh, n_move_buttons, 0);
+}
+
+void ObjControlPanel::setObject(OptObject* obj)
+{
+    const double change = 1;
+
+    prop_cont->clearChildren();
+    button_cont->clearChildren();
+
+    for (OptProperty prop: obj->getProperties())
+        new OptPropWidget(prop_cont, {}, {}, obj, prop);
+
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, -change}, "forward");
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, change}, "back");
+    new MoveObjectButton(button_cont, {}, {}, obj, {-change, 0, 0}, "left");
+    new MoveObjectButton(button_cont, {}, {}, obj, {change, 0, 0}, "right");
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, -change, 0}, "up");
+    new MoveObjectButton(button_cont, {}, {}, obj, {0, change, 0}, "down");
+
+    prop_cont->drawRec();
+    button_cont->drawRec();
+}
+
 
 
 OptPropWidget::OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptProperty prop)
@@ -98,20 +130,15 @@ void OptPropField::action()
 
 
 
-OptObjectButton::OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, WContainer* prop_cont)
-    : Button(parent, tl, br, gray_v, obj->name), obj(obj), prop_cont(prop_cont)
+OptObjectButton::OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, ObjControlPanel* panel)
+    : Button(parent, tl, br, gray_v, obj->name), obj(obj), panel(panel)
 {
     //
 }
 
 void OptObjectButton::action()
 {
-    prop_cont->clearChildren();
-
-    for (OptProperty prop: obj->getProperties())
-        new OptPropWidget(prop_cont, {}, {}, obj, prop);
-
-    prop_cont->drawRec();
+    panel->setObject(obj);
 }
 
 
@@ -124,7 +151,8 @@ MoveObjectButton::MoveObjectButton(Widget* parent, Vector tl, Vector br, OptObje
 
 void MoveObjectButton::action()
 {
-    // obj->
+    obj->movePos(change);
+    obj->scene->paint();
 }
 
 void OptScene::calculateThread(int thread_num, VecMtx1* colors)
@@ -351,7 +379,7 @@ SphereSource::SphereSource(Vector color, Vector pos, double r, std::string name,
 
 Vector SphereSource::getRandPoint()
 {
-    return pos;
+    // return pos;
 
     Vector tl = pos - Vector(r, r, r), br = pos + Vector(r, r, r);
 
@@ -481,7 +509,7 @@ Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 }
 
 
-OptScene::OptScene(Widget* parent, Vector tl, Vector br, WContainer* prop_cont) : Widget(tl, br, parent)
+OptScene::OptScene(Widget* parent, Vector tl, Vector br, ObjControlPanel* panel) : Widget(tl, br, parent)
 {
     V = {0, 0, 16};
     screen_tl = Vector(-2, -1.5, 10) + Vector(0, 0.35, 0);
@@ -495,8 +523,8 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br, WContainer* prop_cont) 
 
     surfaces.push_back(new PlaneSurface(2, white_col, "plane", this));
 
-    obj_cont = nullptr;
-    this->prop_cont = prop_cont;
+    this->obj_cont = nullptr;
+    this->panel = panel;
 
     // surfaces.push_back(new SphereSurface({0, 0, 3}, 1, water));
     // surfaces.push_back(new SphereSurface({0.5, 0, 5.5}, 1, water));
@@ -511,9 +539,9 @@ WContainer* OptScene::makeObjectContainer(Widget* parent, Vector tl, Vector br)
     this->obj_cont = new WContainer(parent, tl, br, n_objects, 1, obj_button_h * n_objects);
 
     for (OptObject* obj: surfaces)
-        new OptObjectButton(obj_cont, {}, {}, obj, prop_cont);
+        new OptObjectButton(obj_cont, {}, {}, obj, panel);
     for (OptObject* obj: sources)
-        new OptObjectButton(obj_cont, {}, {}, obj, prop_cont);
+        new OptObjectButton(obj_cont, {}, {}, obj, panel);
 
     obj_cont->blockChildrenMouseDown(true);
     return obj_cont;
