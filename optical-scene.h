@@ -20,6 +20,18 @@
 
 trace random ray that hasn't been traced yet (stochastic rendering)
 queue of pixels to render
+
+keyboard events
+global state
+focused widget
+input field
+changing object properties
+
+better text rendering
+partial scene rendering
+
+deleting objects
+don't show irrelevant properties
 */
 
 class Ray;
@@ -33,6 +45,8 @@ class PlaneSurface;
 class SphereSurface;
 class OptScene;
 
+class OptPropField;
+
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
 
@@ -40,7 +54,7 @@ using VecMtx1 = std::vector<Vector>;
 using VecMtx2 = std::vector<std::vector<Vector>>;
 using VecMtx3 = std::vector<VecMtx2>;
 
-extern const Material water;
+extern const Material water, wood, std_material;
 
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
 
@@ -54,6 +68,7 @@ enum OptPropEnum
     OPT_POS_X,
     OPT_POS_Y,
     OPT_POS_Z,
+
     OPT_RADIUS,
 
     OPT_COLOR_R,
@@ -84,8 +99,18 @@ class OptPropWidget : public Widget
 public:
     OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop);
 
+// private:
+    TextField *name_field;
+    OptPropField *val_field;
+};
+
+class OptPropField : public InputField
+{
+public:
+    OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop, double val);
+    virtual void action() override;
+
 private:
-    TextField *name_field, *val_field;
     OptObject* obj;
     OptPropEnum prop;
 };
@@ -93,27 +118,33 @@ private:
 class OptObject
 {
 public:
-    OptObject(std::string name);
+    OptObject(std::string name, OptScene* scene);
 
-    void setProperty(OptPropEnum prop, double val);
-    double getPropertyVal(OptPropEnum prop);
-    void setPropertyName(OptPropEnum prop, std::string name);
-    std::string getPropertyName(OptPropEnum prop);
+    // void setProperty(OptPropEnum prop, double val);
+    // double getPropertyVal(OptPropEnum prop);
+    // void setPropertyName(OptPropEnum prop, std::string name);
+    // std::string getPropertyName(OptPropEnum prop);
 
-    void setOptColor(Vector color);
-    Vector getOptColor();
-    void setOptPos(Vector pos);
-    Vector getOptPos();
+    // void setOptColor(Vector color);
+    // Vector getOptColor();
+    // void setOptPos(Vector pos);
+    // Vector getOptPos();
 
-    virtual void move(Vector change);
-    virtual void updateProperties(); // updates fields according to properties vector
+    // virtual void move(Vector change);
+    // virtual void updateProperties(); // updates fields according to properties vector
+
+    virtual std::vector<OptProperty> getProperties();
+    virtual void setProperty(OptPropEnum prop, double val);
 
 // private:
     std::string name;
+    OptScene* scene;
 
-private:
+// protected:
     Vector pos, color;
-    std::vector<OptProperty> properties;
+
+// private:
+    // std::vector<OptProperty> properties;
 };
 
 class OptObjectButton : public Button
@@ -150,18 +181,16 @@ public:
 class Material
 {
 public:
-    Material(double diffuse_c, double reflect_c, double refract_c, double refract_k, Vector color);
+    Material(double diffuse_c, double reflect_c, double refract_c, double refract_k);
 
     double reflect_c, refract_c, diffuse_c;
     double refract_k;
-    Vector color;
 };
 
 class Surface : public OptObject
 {
 public:
-    Surface(Material m, std::string name);
-    Surface(Vector color, std::string name);
+    Surface(Vector color, std::string name, OptScene* scene, Material m = std_material);
     virtual void updateProperties() override;
 
     virtual bool intersect(Ray ray, double* t) = 0;
@@ -178,14 +207,14 @@ public:
 class Source : public OptObject
 {
 public:
-    Source(Vector color, Vector pos, std::string name);
+    Source(Vector color, Vector pos, std::string name, OptScene* scene);
     virtual Vector getRandPoint();
 };
 
 class SphereSource : public Source
 {
 public:
-    SphereSource(Vector color, Vector pos, double r, std::string name);
+    SphereSource(Vector color, Vector pos, double r, std::string name, OptScene* scene);
     virtual Vector getRandPoint() override;
 
     double r;
@@ -194,8 +223,7 @@ public:
 class PlaneSurface : public Surface
 {
 public:
-    PlaneSurface(double y_pos, Vector color, std::string name);
-    PlaneSurface(double y_pos, Material m, std::string name);
+    PlaneSurface(double y_pos, Vector color, std::string name, OptScene* scene, Material m = wood);
 
     virtual bool intersect(Ray ray, double* t) override;
     virtual Vector normal(Vector p) override;
@@ -206,15 +234,15 @@ public:
 class SphereSurface : public Surface
 {
 public:
-    SphereSurface(Vector pos, double r, Vector color, std::string name);
-    SphereSurface(Vector pos, double r, Material m, std::string name);
+    SphereSurface(Vector pos, double r, Vector color, std::string name, OptScene* scene, Material m = wood);
     
     virtual bool intersect(Ray ray, double* t) override;
     virtual Vector normal(Vector p) override;
 
     double r;
-    Vector pos;
 };
+
+
 
 class OptScene : public Widget
 {
@@ -239,7 +267,7 @@ public:
     WContainer* makeObjectContainer(Widget* parent, Vector tl, Vector br);
 
 // private:
-    Vector V;
+    Vector V, screen_tl, screen_w, screen_h;
 
     std::vector<Surface*> surfaces;
     std::vector<Source*> sources;

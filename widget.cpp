@@ -6,6 +6,12 @@
 
 
 
+State* state = nullptr;
+
+State::State() : focused(nullptr)
+{
+    //
+}
 
 
 
@@ -419,6 +425,11 @@ bool Widget::mouseReleaseEvent(MouseEvent* e)
     return 0;
 }
 
+bool Widget::keyboardEvent(KeyboardEvent* e)
+{
+    return 0;
+}
+
 bool Widget::onIdle(IdleEvent* e)
 {
     return 0;
@@ -449,6 +460,8 @@ WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool
         this->childWidth = (width - padding * (nChildren + 1)) / nChildren;
         this->childHeight = height - 2 * padding;
     }
+
+    block_children_mouse_down = false;
 }
 
 void WContainer::addWidget(Widget* w)
@@ -485,13 +498,15 @@ void WContainer::scroll(double frac)
 bool WContainer::handleEvent(Event* e)
 {
     MouseEvent* press_evt = dynamic_cast<MouseEvent*>(e);
-    if (press_evt != NULL && press_evt->type == MOUSE_DOWN && !inAbsRect(Vector(press_evt->x, press_evt->y)))
+    if (block_children_mouse_down && press_evt != NULL && press_evt->type == MOUSE_DOWN && !inAbsRect(Vector(press_evt->x, press_evt->y)))
         return e->dispatch(this);
 
     for (Widget* w: children)
         if (w->handleEvent(e)) return 1;
     return e->dispatch(this);
 }
+
+void WContainer::blockChildrenMouseDown(bool block) { block_children_mouse_down = block; }
 
 
 
@@ -516,4 +531,14 @@ bool MouseEvent::dispatch(Widget* w)
 bool IdleEvent::dispatch(Widget* w)
 {
     return w->onIdle(this);
+}
+
+KeyboardEvent::KeyboardEvent(char key) : key(key)
+{
+    //
+}
+
+bool KeyboardEvent::dispatch(Widget* w)
+{
+    return w->keyboardEvent(this);
 }

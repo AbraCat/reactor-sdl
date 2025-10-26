@@ -4,6 +4,7 @@
 #include <cassert>
 
 const double unpressColorCoeff = 0.7;
+const int key_enter = 13;
 
 TextField::TextField(Widget* parent, Vector tl, Vector br, std::string text, Vector color)
     : Widget(tl, br, parent), color(color), text(text)
@@ -19,14 +20,55 @@ void TextField::paint()
     t->addText(text);
 }
 
-void TextField::SetFieldColor(Vector color)
+void TextField::SetFieldColor(Vector color) { this->color = color; paint(); }
+void TextField::SetText(std::string text) { this->text = text; paint(); }
+std::string TextField::getText() { return text; }
+
+InputField::InputField(Widget* parent, Vector tl, Vector br, std::string text)
+    : TextField(parent, tl, br, text)
 {
-    this->color = color;
+    //
 }
 
-void TextField::SetText(std::string text)
+bool InputField::mousePressEvent(MouseEvent* e)
 {
-    this->text = text;
+    if (inAbsRect({e->x, e->y}))
+    {
+        state->focused = this;
+        SetFieldColor(gray_v);
+        return 1;
+    }
+
+    if (state->focused == this)
+    {
+        action();
+        return 1;
+    }
+
+    return 0;
+}
+
+bool InputField::keyboardEvent(KeyboardEvent* evt)
+{
+    if (evt->key == key_enter)
+    {
+        action();
+        return 1;
+    }
+
+    std::string cur_text = getText();
+    if (evt->key == SDLK_BACKSPACE)
+        SetText(cur_text.substr(0, cur_text.size() - 1));
+    else
+        SetText(getText() + std::string(1, evt->key));
+
+    return 1;
+}
+
+void InputField::action()
+{
+    state->focused = nullptr;
+    SetFieldColor(blackV);
 }
 
 Button::Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text)

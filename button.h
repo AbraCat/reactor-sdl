@@ -12,12 +12,24 @@ class TextField : public Widget
 public:
     TextField(Widget* parent, Vector tl, Vector br, std::string text, Vector color = blackV);
     virtual void paint() override;
+
     void SetFieldColor(Vector color);
     void SetText(std::string text);
+    std::string getText();
 
 private:
     Vector color;
     std::string text;
+};
+
+class InputField : public TextField
+{
+public:
+    InputField(Widget* parent, Vector tl, Vector br, std::string text);
+
+    virtual bool mousePressEvent(MouseEvent* e) override;
+    virtual bool keyboardEvent(KeyboardEvent* evt) override;
+    virtual void action();
 };
 
 class Button : public TextField

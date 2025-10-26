@@ -6,15 +6,11 @@
 
 #include <thread>
 
-const double screen_z = 10, screen_size = 1.65, intersect_eps = 0.01, ratio = 16.0 / 9.0;
+const double intersect_eps = 0.01, ratio = 16.0 / 9.0, screen_size = 4;
 const int max_depth = 1, n_diffuse_rays = 1, n_shadow_rays = 1, n_threads = 1;
 
-const Vector screen_skew = {0, 0.35, 0};
-Vector screen_tl = Vector(-screen_size * ratio, -screen_size) + screen_skew,
-    screen_br = Vector(screen_size * ratio, screen_size) + screen_skew;
-const Vector sky_col = {0, 0.5, 0.75}, stdV = {0, 0, 16};
-
-const Material water(0, 0, 1, 1.06, white_col);
+const Vector sky_col = {0, 0.5, 0.75};
+extern const Material water(0, 0, 1, 1.06), wood(1, 1, 0, 1.3), std_material = wood;
 
 bool d = 0;
 
@@ -36,9 +32,9 @@ double OptProperty::getVal() { return val; }
 std::string OptProperty::getName() { return name; }
 void OptProperty::setName(std::string name) { this->name = name; }
 
-OptObject::OptObject(std::string name)
+OptObject::OptObject(std::string name, OptScene* scene)
     : properties(std::vector<OptProperty>(OPT_TOTAL, OptProperty(OPT_TOTAL, "", 0))),
-    name(name)
+    name(name), scene(scene)
 {
     #define SET_NAME(name) properties[OPT_ ## name] = OptProperty(OPT_ ## name, #name, 0)
 
@@ -76,15 +72,8 @@ void OptObject::setPropertyName(OptPropEnum prop, std::string name)
 
 std::string OptObject::getPropertyName(OptPropEnum prop) { return properties[prop].getName(); }
 
-void OptObject::updateProperties()
-{
-    color = getOptColor();
-    pos = getOptPos();
-}
-
 void OptObject::setOptColor(Vector color)
 {
-    this->color = color;
     setProperty(OPT_COLOR_R, color.x);
     setProperty(OPT_COLOR_G, color.y);
     setProperty(OPT_COLOR_B, color.z);
@@ -92,13 +81,11 @@ void OptObject::setOptColor(Vector color)
 
 Vector OptObject::getOptColor()
 {
-    return color;
     return Vector(getPropertyVal(OPT_COLOR_R), getPropertyVal(OPT_COLOR_G), getPropertyVal(OPT_COLOR_B));
 }
 
 void OptObject::setOptPos(Vector pos)
 {
-    this->pos = pos;
     setProperty(OPT_POS_X, pos.x);
     setProperty(OPT_POS_Y, pos.y);
     setProperty(OPT_POS_Z, pos.z);
@@ -109,12 +96,26 @@ void OptObject::move(Vector change) { setOptPos(getOptPos() + change); } // upda
 
 
 OptPropWidget::OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop)
-    : Widget(tl, br, parent), obj(obj), prop(prop)
+    : Widget(tl, br, parent)
 {
     std::string prop_name = obj->getPropertyName(prop);
     double val = obj->getPropertyVal(prop);
     name_field = new TextField(this, {0, 0}, {width / 2, height}, prop_name);
-    val_field = new TextField(this, {width / 2, 0}, {width, height}, std::to_string(val));
+    val_field = new OptPropField(this, {width / 2, 0}, {width, height}, obj, prop, val);
+}
+
+OptPropField::OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop, double val)
+    : InputField(parent, tl, br, std::to_string(val)), obj(obj), prop(prop)
+{
+    //
+}
+
+void OptPropField::action()
+{
+    InputField::action();
+
+    obj->setProperty(prop, std::stod(getText()));
+    // obj->scene->paint();
 }
 
 
@@ -151,20 +152,21 @@ void MoveObjectButton::action()
 
 Vector OptObject::getOptPos()
 {
-    return pos;
     return Vector(getPropertyVal(OPT_POS_X), getPropertyVal(OPT_POS_Y), getPropertyVal(OPT_POS_Z));
 }
+
+void OptObject::setRadius(double r) { setProperty(OPT_RADIUS, r); }
+double OptObject::getRadius() { return getPropertyVal(OPT_RADIUS); }
 
 void OptScene::calculateThread(int thread_num, VecMtx1* colors)
 {
     for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
     {
-        double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / width; 
         for (int pixel_y = thread_num; pixel_y <= height; pixel_y += n_threads)
         {
-            double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / height; 
+            Vector p = screen_tl + screen_w * (1.0 * pixel_x / width) + screen_h * (1.0 * pixel_y / height);
 
-            Ray ray(V, Vector(x, y, screen_z) - V);
+            Ray ray(V, p - V);
             Vector color = traceRay(ray, 0);
 
             (*colors)[pixel_x * height + pixel_y] = color;
@@ -174,21 +176,18 @@ void OptScene::calculateThread(int thread_num, VecMtx1* colors)
 
 int calcSDLthread(void *void_data)
 {
-
     RenderThreadData* data = (RenderThreadData*)void_data;
     OptScene* s = data->scene;
     int thread_num = data->thread_num;
-
-    // printf("thread %d\n", thread_num);
     
     for (int pixel_x = 0; pixel_x <= s->width; ++pixel_x)
     {
-        double x = screen_tl.x + pixel_x * (screen_br.x - screen_tl.x) / s->width; 
         for (int pixel_y = thread_num; pixel_y <= s->height; pixel_y += n_threads)
         {
-            double y = screen_tl.y + pixel_y * (screen_br.y - screen_tl.y) / s->height; 
+            Vector p = s->screen_tl + s->screen_w * (1.0 * pixel_x / s->width) +
+                                      s->screen_h * (1.0 * pixel_y / s->height);
 
-            Ray ray(s->V, Vector(x, y, screen_z) - s->V);
+            Ray ray(s->V, p - s->V);
             Vector color = s->traceRay(ray, 0);
 
             (*(data->colors))[pixel_x * s->height + pixel_y] = color;
@@ -200,26 +199,30 @@ int calcSDLthread(void *void_data)
 }
 
 void OptScene::paint()
-{
-    // std::vector<std::thread> threads;
-    // VecMtx1 colors((height + 1) * (width + 1));
+{   
+    OptScene* s = this;
+    for (int pixel_x = 0; pixel_x <= s->width; ++pixel_x)
+    {
+        for (int pixel_y = 0; pixel_y <= s->height; pixel_y++)
+        {
+            if (pixel_x == width / 2 && pixel_y == height - 5) d = 1;
+            Vector p = s->screen_tl + s->screen_w * (1.0 * pixel_x / s->width) +
+                                      s->screen_h * (1.0 * pixel_y / s->height);
 
-    // for (int thread_num = 0; thread_num < n_threads; ++thread_num)
-    // {
-    //     threads.push_back(std::move(std::thread(&OptScene::calculateThread, this, thread_num, &colors)));
-    // }
+            if (d) print(p);
 
-    // for (int thread_num = 0; thread_num < n_threads; ++thread_num)
-    //     threads[thread_num].join();
+            Ray ray(s->V, p - s->V);
+            Vector color = s->traceRay(ray, 0);
+            
+            if (d) color = red_col;
+            t->addPoint({pixel_x, pixel_y}, color * 255);
+            if (d) d = 0;
+        }
+    }
+    return;
 
-    // for (int pixel_x = 0; pixel_x <= width; ++pixel_x)
-    // {
-    //     for (int pixel_y = 0; pixel_y <= height; ++pixel_y)
-    //     {
-    //         Vector color = colors[pixel_x * height + pixel_y];
-    //         t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
-    //     }
-    // }
+
+
 
     std::vector<SDL_Thread*> threads;
     VecMtx1 colors((height + 1) * (width + 1));
@@ -266,25 +269,21 @@ Ray::Ray(Vector p, Vector a) : p(p), a(a)
 Vector Ray::eval(double t) { return p + a * t; }
 
 Material::Material(double diffuse_c, double reflect_c, double refract_c, 
-    double refract_k, Vector color) :
+    double refract_k) :
     reflect_c(reflect_c), refract_c(refract_c), diffuse_c(diffuse_c),
-    refract_k(refract_k), color(color)
+    refract_k(refract_k)
 {
     // assert(diffuse_c + reflect_c + refract_c <= 1);
 }
 
-Surface::Surface(Material m, std::string name) : OptObject(name), m(m)
+Surface::Surface(Vector color, std::string name, OptScene* scene, Material m) : OptObject(name, scene), m(m)
 {
+    setOptColor(color);
+
     setProperty(OPT_DIFFUSE_PORTION, m.diffuse_c);
     setProperty(OPT_SPECULAR_PORTION, m.reflect_c);
     setProperty(OPT_DEFRACT_PORTION, m.refract_c);
     setProperty(OPT_DEFRACT_COEFF, m.refract_k);
-    setOptColor(m.color);
-}
-
-Surface::Surface(Vector color, std::string name) : Surface(Material(1, 1, 0, 1.3, color), name)
-{
-    //
 }
 
 void Surface::updateProperties()
@@ -306,7 +305,8 @@ void Surface::updateProperties()
     OPT_COLOR_B,
     */
 
-    m.color = getOptColor();
+    OptObject::updateProperties();
+
     m.diffuse_c = getPropertyVal(OPT_DIFFUSE_PORTION);
     m.reflect_c = getPropertyVal(OPT_SPECULAR_PORTION);
     m.refract_c = getPropertyVal(OPT_DEFRACT_PORTION);
@@ -367,7 +367,7 @@ Ray Surface::reflect_diffuse(Ray r, Vector p)
     return Ray(p, norm + random_vec);
 }
 
-Source::Source(Vector color, Vector pos, std::string name) : OptObject(name)
+Source::Source(Vector color, Vector pos, std::string name, OptScene* scene) : OptObject(name, scene)
 {
     setOptColor(color);
     setOptPos(pos);
@@ -378,8 +378,8 @@ Vector Source::getRandPoint()
     return getOptPos();
 }
 
-SphereSource::SphereSource(Vector color, Vector pos, double r, std::string name)
-    : Source(color, pos, name), r(r)
+SphereSource::SphereSource(Vector color, Vector pos, double r, std::string name, OptScene* scene)
+    : Source(color, pos, name, scene), r(r)
 {
     //
 }
@@ -400,14 +400,10 @@ Vector SphereSource::getRandPoint()
     return rand_p;
 }
 
-PlaneSurface::PlaneSurface(double y_pos, Vector color, std::string name) : Surface(color, name), y_pos(y_pos)
+PlaneSurface::PlaneSurface(double y_pos, Vector color, std::string name, OptScene* scene, Material m)
+    : Surface(color, name, scene, m), y_pos(y_pos)
 {
-    //
-}
-
-PlaneSurface::PlaneSurface(double y_pos, Material m, std::string name) : Surface(m, name), y_pos(y_pos)
-{
-    //
+    setOptPos({0, y_pos, 0});
 }
 
 bool PlaneSurface::intersect(Ray ray, double* t_ptr)
@@ -430,16 +426,11 @@ Vector PlaneSurface::normal(Vector p)
 }
 
 
-SphereSurface::SphereSurface(Vector pos, double r, Vector color, std::string name) : 
-    Surface(color, name), r(r), pos(pos)
+SphereSurface::SphereSurface(Vector pos, double r, Vector color, std::string name, OptScene* scene, Material m)
+    : Surface(color, name, scene, m), r(r)
 {
-    //
-}
-
-SphereSurface::SphereSurface(Vector pos, double r, Material m, std::string name) :
-    Surface(m, name), r(r), pos(pos)
-{
-
+    setProperty(OPT_RADIUS, r);
+    setOptPos(pos);
 }
     
 bool SphereSurface::intersect(Ray ray, double* t_ptr)
@@ -489,14 +480,17 @@ Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 
 OptScene::OptScene(Widget* parent, Vector tl, Vector br, WContainer* prop_cont) : Widget(tl, br, parent)
 {
-    V = stdV;
+    V = {0, 0, 16};
+    screen_tl = Vector(-2, -1.5, 10) + Vector(0, 0.35, 0);
+    screen_w = {screen_size, 0, 0};
+    screen_h = {0, screen_size / ratio, 0};
 
     surfaces = std::vector<Surface*>();
     sources = std::vector<Source*>();
     surfaces.reserve(10);
     sources.reserve(10);
 
-    surfaces.push_back(new PlaneSurface(2, white_col, "plane"));
+    surfaces.push_back(new PlaneSurface(2, white_col, "plane", this));
 
     obj_cont = nullptr;
     this->prop_cont = prop_cont;
@@ -508,7 +502,7 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br, WContainer* prop_cont) 
 
 WContainer* OptScene::makeObjectContainer(Widget* parent, Vector tl, Vector br)
 {
-    const int obj_button_h = 100;
+    const int obj_button_h = 200;
     int n_objects = surfaces.size() + sources.size();
 
     this->obj_cont = new WContainer(parent, tl, br, n_objects, 1, obj_button_h * n_objects);
@@ -518,6 +512,7 @@ WContainer* OptScene::makeObjectContainer(Widget* parent, Vector tl, Vector br)
     for (OptObject* obj: sources)
         new OptObjectButton(obj_cont, {}, {}, obj, prop_cont);
 
+    obj_cont->blockChildrenMouseDown(true);
     return obj_cont;
 }
 
@@ -618,7 +613,7 @@ Vector OptScene::traceRay(Ray ray, int depth)
     Vector color = diffuse_col * s->m.diffuse_c + 
                    reflect_col * s->m.reflect_c + 
                    refract_col * s->m.refract_c;
-    return limitVector(s->m.color * color, 0, 1);
+    return limitVector(s->color * color, 0, 1);
 }
 
 void OptScene::setV(Vector V) {this->V = V;}
@@ -627,14 +622,14 @@ std::vector<Surface*>::iterator OptScene::addSphere(Vector pos, Vector color, do
 {
     std::string name = "sphere " + std::to_string(surfaces.size());
 
-    surfaces.push_back(new SphereSurface(pos, r, color, name));
+    surfaces.push_back(new SphereSurface(pos, r, color, name, this));
     return surfaces.end() - 1;
 }
 
 std::vector<Source*>::iterator OptScene::addSource(Vector pos, Vector color, double r)
 {
     std::string name = "source " + std::to_string(sources.size());
-    Source* new_sorce = new SphereSource(color, pos, r, name);
+    Source* new_sorce = new SphereSource(color, pos, r, name, this);
 
     sources.push_back(new_sorce);
     return sources.end() - 1;
@@ -644,7 +639,6 @@ void OptScene::moveCamera(Vector change)
 {
     V += change;
     screen_tl += change;
-    screen_br += change;
     paint();
 }
 

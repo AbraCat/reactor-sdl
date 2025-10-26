@@ -43,6 +43,7 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
     // new ScaleScrollBar(scroll_cont, {}, {}, scene, 2);
 
 
+
     WContainer* prop_cont = new WContainer(this, {properties_left, 0},
         {properties_left + properties_w, scene_h}, OPT_TOTAL, 1);
 
@@ -55,30 +56,18 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
     // scene->addSphere({0, 0, -2}, purple_col, 0.3);
     scene->addSource({0, -1, 4}, green_col * 0.5, src_size);
 
-    // OptPropWidget* prop = new OptPropWidget(this, Vector(properties_left, 0), 
-    //     Vector(properties_left + properties_w, scene_h), *it1, OPT_RADIUS);
-
-    // TextField* tf = new TextField(this, {0, 0}, {200, 100}, "aboba");
-
     WContainer* cam_cont = new WContainer(this, {0, scene_h}, {scene_w, scene_h + button_h}, n_camera_buttons, 0);
-    new MoveCameraButton(cam_cont, scene, {0, 0, cam_change}, gray_v, "forward");
-    new MoveCameraButton(cam_cont, scene, {0, 0, -cam_change}, gray_v, "back");
+    new MoveCameraButton(cam_cont, scene, {0, 0, -cam_change}, gray_v, "forward");
+    new MoveCameraButton(cam_cont, scene, {0, 0, cam_change}, gray_v, "back");
     new MoveCameraButton(cam_cont, scene, {-cam_change, 0, 0}, gray_v, "left");
     new MoveCameraButton(cam_cont, scene, {cam_change, 0, 0}, gray_v, "right");
     new MoveCameraButton(cam_cont, scene, {0, -cam_change, 0}, gray_v, "up");
     new MoveCameraButton(cam_cont, scene, {0, cam_change, 0}, gray_v, "down");
 
     WContainer* obj_cont = scene->makeObjectContainer(this, {scene_w, 0}, {scene_w + obj_list_w, scene_h});
-
-    // OptObjectButton* obj_but1 = new OptObjectButton(this, {scene_w, 0}, {scene_w + list_w, scene_h}, *it1);
-
-    // WContainer* obj_cont = new WContainer(this, {scene_w, scene_h}, 
-    //     {scene_w + list_w, scene_h * 2}, max_n_opt_objects, 1, scene_h * 2);
-
-    // OptObjectButton* obj_but_1 = new OptObjectButton(obj_cont, {scene_w, 0}, {scene_w + list_w, scene_h}, *it1);
-    // OptObjectButton* obj_but_2 = new OptObjectButton(obj_cont, {scene_w, 0}, {scene_w + list_w, scene_h}, *it1);
-
     new ListScrollBar(this, {scene_w + obj_list_w, 0}, {scene_w + obj_list_w + scene_scroll_w, scene_h}, obj_cont);
+
+    // InputField* inp_f = new InputField(this, {0, 0}, {100, 50}, "aboba");
 }
 
 Desktop::~Desktop()

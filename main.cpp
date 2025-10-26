@@ -24,11 +24,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);
 
-    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     setRenderer(renderer);
+
+    state = new State();
 
     desktop = new Desktop();
     desktop->drawRec();
@@ -37,9 +39,23 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
-    if (event->type == SDL_EVENT_KEY_DOWN ||
-        event->type == SDL_EVENT_QUIT) {
+    if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;
+    }
+
+    if (event->type == SDL_EVENT_KEY_DOWN)
+    {
+        if (event->key.key == SDLK_RSHIFT) return SDL_APP_SUCCESS;
+        if (event->key.repeat == true) return SDL_APP_CONTINUE;
+        // printf("key %c\n", event->key.key);
+
+        if (state->focused != nullptr)
+        {
+            KeyboardEvent evt(event->key.key);
+            state->focused->keyboardEvent(&evt);
+        }
+
+        return SDL_APP_CONTINUE;
     }
 
     if (event->type == SDL_EVENT_MOUSE_MOTION)
@@ -69,7 +85,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    desktop->handleEvent(new IdleEvent());
+    IdleEvent evt;
+    desktop->handleEvent(&evt);
 
     desktop->t->paintRec();
     SDL_RenderPresent(renderer);
@@ -81,4 +98,5 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     delete desktop;
+    delete state;
 }

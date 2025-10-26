@@ -13,6 +13,22 @@ class Widget;
 class Event;
 class MouseEvent;
 class IdleEvent;
+class KeyboardEvent;
+class State;
+
+
+
+extern State* state;
+
+
+
+class State
+{
+public:
+    State();
+
+    Widget* focused;
+};
 
 
 
@@ -143,6 +159,7 @@ public:
     virtual bool mousePressEvent(MouseEvent* e);
     virtual bool mouseMoveEvent(MouseEvent* e);
     virtual bool mouseReleaseEvent(MouseEvent* e);
+    virtual bool keyboardEvent(KeyboardEvent* e);
 // protected:
     Texture *t;
 
@@ -170,8 +187,10 @@ public:
     virtual bool handleEvent(Event* e) override;
     void scroll(double frac);
 
+    void blockChildrenMouseDown(bool block);
+
 private:
-    bool vertical;
+    bool vertical, block_children_mouse_down;
     int nChildren, padding, childWidth, childHeight;
 
     double scroll_frac, list_length;
@@ -205,6 +224,15 @@ public:
 class IdleEvent : public Event
 {
     virtual bool dispatch(Widget* w) override;
+};
+
+class KeyboardEvent : public Event
+{
+public:
+    KeyboardEvent(char key);
+    virtual bool dispatch(Widget* w) override;
+
+    char key;
 };
 
 #endif // WIDGET_H
