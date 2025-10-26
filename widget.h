@@ -7,8 +7,9 @@
 #include <string>
 
 #include "myvector.h"
+#include "event.h"
+#include "texture.h"
 
-class Texture;
 class Widget;
 class Event;
 class MouseEvent;
@@ -16,11 +17,7 @@ class IdleEvent;
 class KeyboardEvent;
 class State;
 
-
-
 extern State* state;
-
-
 
 class State
 {
@@ -30,112 +27,6 @@ public:
     Widget* focused;
 };
 
-
-
-class CoordSystem
-{
-public:
-    CoordSystem(Vector centre, double xScale, double yScale);
-
-    Vector tranformToBaseCoord(Vector coord);
-    Vector baseToTransformCoord(Vector coord);
-
-    virtual void transform(Vector centre, double xScale, double yScale);
-    void move(Vector newPos);
-    void rescale(double new_scale_x, double new_scale_y);
-    void rescale(double new_scale_x, double new_scale_y, Vector point);
-
-    virtual Vector getAbsCentre();
-
-// protected:
-    Vector centre;
-    double xScale, yScale;
-};
-
-
-
-struct ColPoint
-{
-    Vector p, col;
-};
-
-struct ColFixedVec
-{
-    FixedVec vec;
-    Vector col;
-    bool fill;
-};
-
-struct ColCircle
-{
-    Vector centre, col;
-    double r;
-    bool fill;
-};
-
-struct ColPolygon
-{
-    std::vector<Vector> ps;
-    Vector col;
-    bool fill;
-};
-
-class Texture : public CoordSystem
-{
-public:
-    Texture(Widget* w);
-    virtual void paint();
-    void paintRec();
-    void clear();
-
-    void setVisibleIn(Widget* w);
-
-    virtual Vector getAbsCentre() override;
-    void rescaleCentre(double new_scale_x, double new_scale_y);
-
-    void addText(std::string text);
-    virtual void addPoint(Vector p, Vector color);
-    void addLine(FixedVec line, Vector color);
-
-    void addRect(FixedVec rect, Vector color, bool fill);
-    void addCircle(Vector centre, Vector col, double r, bool fill);
-    void addPolygon(std::vector<Vector> points, Vector color, bool fill);
-    void addVector(FixedVec v, Vector color);
-
-    void paintPoint(ColPoint p);
-    void paintLine(ColFixedVec line);
-    void paintRect(ColFixedVec rect);
-    void paintCircle(ColCircle cirlce);
-    void paintPolygon(ColPolygon polygon);
-    void paintText();
-
-// protected:
-    Widget *w, *visible_in;
-
-    std::string text;
-    std::vector<ColPoint> points;
-    std::vector<ColFixedVec> lines, rects;
-    std::vector<ColCircle> circles;
-    std::vector<ColPolygon> polygons;
-};
-
-class PixelTexture : public Texture
-{
-public:
-    PixelTexture(Widget* w);
-    ~PixelTexture();
-    virtual void paint() override;
-
-    void setPix(int x, int y, Vector col);
-    Vector getPix(int x, int y);
-
-    Vector* pix;
-};
-
-
-
-
-
 /*
 coordinate systems:
 
@@ -143,6 +34,7 @@ absTL - absolute
 tl, br - parent
 everything else - this (if not said otherwise)
 */
+
 class Widget
 {
 public:
@@ -192,70 +84,6 @@ public:
 
     Widget *parent;
     std::vector<Widget*> children;
-};
-
-class WContainer : public Widget
-{
-public:
-    WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical);
-
-    virtual void addWidget(Widget* widget) override;
-
-protected:
-    bool vertical;
-    int nChildren, padding, childWidth, childHeight;
-};
-
-class WList : public WContainer
-{
-public:
-    WList(Widget* parent, Vector tl, Vector br, bool vertical, double child_len);
-
-    virtual Vector propagatedAbsTL() override;
-    virtual bool handleEvent(Event* e) override;
-    
-    void scroll(double frac);
-
-private:
-    double scroll_frac, child_len;
-};
-
-
-class Event
-{
-public:
-    virtual bool dispatch(Widget* w) = 0;
-};
-
-enum MouseEnum
-{
-    MOUSE_DOWN,
-    MOUSE_UP,
-    MOUSE_MOVE
-};
-
-class MouseEvent : public Event
-{
-public:
-    MouseEvent(MouseEnum type, int x, int y);
-    virtual bool dispatch(Widget* w) override;
-
-    int x, y;
-    MouseEnum type;
-};
-
-class IdleEvent : public Event
-{
-    virtual bool dispatch(Widget* w) override;
-};
-
-class KeyboardEvent : public Event
-{
-public:
-    KeyboardEvent(char key);
-    virtual bool dispatch(Widget* w) override;
-
-    char key;
 };
 
 #endif // WIDGET_H

@@ -1,7 +1,7 @@
 #ifndef SCROLL_BAR_H
 #define SCROLL_BAR_H
 
-#include "widget.h"
+#include "wcontainer.h"
 #include "button.h"
 
 class ScrollThumb;

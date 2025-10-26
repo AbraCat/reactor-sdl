@@ -10,8 +10,9 @@ set(CMAKE_LIbrARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 
 # Create your game executable target as usual
-add_executable(hello WIN32 main.cpp sdl-adapter.cpp plane.cpp widget.cpp myvector.cpp reactor.cpp desktop.cpp
-    button.cpp scroll.cpp optical-scene.cpp)
+add_executable(hello WIN32 main.cpp sdl-adapter.cpp plane.cpp texture.cpp event.cpp widget.cpp wcontainer.cpp
+    myvector.cpp reactor.cpp desktop.cpp button.cpp scroll.cpp optical-scene.cpp optical-object.cpp
+    optical-control.cpp)
 
 # Link to the actual SDL3 library.
 target_link_libraries(hello PRIVATE SDL3::SDL3)

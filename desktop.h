@@ -5,7 +5,7 @@
 #include "plane.h"
 #include "reactor.h"
 #include "button.h"
-#include "optical-scene.h"
+#include "optical-control.h"
 
 class Desktop : public Widget
 {
