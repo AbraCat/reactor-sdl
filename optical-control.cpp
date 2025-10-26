@@ -209,10 +209,11 @@ void OptController::deleteObject(OptObject* obj)
     s->selected.erase(obj);
     panel->setObject(nullptr);
 
-    parent->removeChild(obj_cont);
-    obj_cont = makeObjectContainer({scene_w, 0}, {scene_w + obj_list_w, scene_h});
-
-    obj_scroll->list = obj_cont;
+    obj_cont->removeChildByPredicate([obj](Widget* w){
+        OptObjectButton* button = dynamic_cast<OptObjectButton*>(w);
+        assert(button != nullptr);
+        return button->obj == obj;
+    });
     obj_scroll->moveThumb(0);
 
     delete obj;

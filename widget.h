@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include "myvector.h"
 #include "event.h"
@@ -40,8 +41,10 @@ class Widget
 public:
     Widget(Vector tl, Vector br, Widget* parent = nullptr);
     ~Widget();
+
     virtual void addWidget(Widget* child);
-    virtual void removeChild(Widget* child);
+    virtual int removeChild(Widget* child);
+    virtual int removeChildByPredicate(std::function<bool(Widget*)> predicate);
     void clearChildren();
 
     void setPixelTexture(bool pixel_texture);

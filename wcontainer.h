@@ -8,6 +8,7 @@ class WContainer : public Widget
 public:
     WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical);
 
+    void resizeChild(int n_child);
     virtual void addWidget(Widget* widget) override;
 
 protected:
@@ -20,6 +21,7 @@ class WList : public WContainer
 public:
     WList(Widget* parent, Vector tl, Vector br, bool vertical, double child_len);
 
+    virtual int removeChildByPredicate(std::function<bool(Widget*)> predicate) override;
     virtual Vector propagatedAbsTL() override;
     virtual bool handleEvent(Event* e) override;
     

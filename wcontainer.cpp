@@ -22,6 +22,17 @@ WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool
     }
 }
 
+void WContainer::resizeChild(int nChild)
+{
+    Widget* w = children[nChild];
+
+    if (vertical) w->resize(Vector(padding, padding * (nChild + 1) + childHeight * nChild), 
+        Vector(wh.x - padding, (padding + childHeight) * (nChild + 1)));
+
+    else w->resize(Vector(padding * (nChild + 1) + childWidth * nChild, padding), 
+        Vector((padding + childWidth) * (nChild + 1), wh.y - padding));
+}
+
 void WContainer::addWidget(Widget* w)
 {
     // assert(children.size() < nChildren);
@@ -29,12 +40,7 @@ void WContainer::addWidget(Widget* w)
     Widget::addWidget(w);
 
     w->t->setVisibleIn(this);
-
-    if (vertical) w->resize(Vector(padding, padding * (nChild + 1) + childHeight * nChild), 
-        Vector(wh.x - padding, (padding + childHeight) * (nChild + 1)));
-
-    else w->resize(Vector(padding * (nChild + 1) + childWidth * nChild, padding), 
-        Vector((padding + childWidth) * (nChild + 1), wh.y - padding));
+    resizeChild(nChild);    
 }
 
 
@@ -55,6 +61,17 @@ WList::WList(Widget* parent, Vector tl, Vector br, bool vertical, double child_l
         childHeight = height;
         childWidth = child_len;
     }
+}
+
+int WList::removeChildByPredicate(std::function<bool(Widget*)> predicate)
+{
+    int n_removed = Widget::removeChildByPredicate(predicate);
+
+    for (int n_child = n_removed; n_child < children.size(); ++n_child)
+        resizeChild(n_child);
+
+    drawRec();
+    return n_removed;
 }
 
 Vector WList::propagatedAbsTL()

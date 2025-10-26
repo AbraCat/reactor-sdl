@@ -156,17 +156,32 @@ void Widget::addWidget(Widget* child)
     children.push_back(child);
 }
 
-void Widget::removeChild(Widget* child)
+int Widget::removeChild(Widget* child)
 {
-    for (std::vector<Widget*>::iterator it = children.begin(); it != children.end(); ++it)
+    for (int n_child = 0; n_child < children.size(); ++n_child)
     {
-        if (*it == child)
+        if (children[n_child] == child)
         {
-            children.erase(it);
-            // drawRec();
-            return;
+            children.erase(children.begin() + n_child);
+            return n_child;
         }
     }
+
+    return -1;
+}
+
+int Widget::removeChildByPredicate(std::function<bool(Widget*)> predicate)
+{
+    for (int n_child = 0; n_child < children.size(); ++n_child)
+    {
+        if (predicate(children[n_child]))
+        {
+            children.erase(children.begin() + n_child);
+            return n_child;
+        }
+    }
+
+    return -1;
 }
 
 void Widget::clearChildren()
