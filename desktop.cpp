@@ -11,43 +11,13 @@ const int nButtons = 6, wallStep = 10, nAddMols = 10, r_size = 600, b_pad = 200,
 const double h = 1.3, r = 2, src_size = 0.3, ratio = 16.0 / 9.0, cam_change = 1;
 
 const int scene_w = 500, scene_h = scene_w / ratio, button_h = 50, obj_list_w = 150, 
-    scene_scroll_w = 30, properties_w = 300, n_camera_buttons = 6, max_n_opt_objects = 2;
+    scene_scroll_w = 30, properties_w = 600, n_camera_buttons = 6, max_n_opt_objects = 2;
 
 const int properties_left = scene_w + obj_list_w + scene_scroll_w;
 
 Desktop::Desktop() : Widget(stdtl, stdbr)
 {
     setFillRect(1);
-    // reactor = new Reactor({b_pad, 0}, {b_pad + r_size, r_size}, this);
-
-    // energy_graph = new Graph(this, 1, {{255, 255, 255}}, 0.05, 1e3, 
-    //     {b_pad + r_size, 0}, {b_pad + r_size * 3 / 2, r_size / 2, 0});
-    // cnt_graph = new Graph(this, 2, {{0, 0, 255}, {255, 0, 0}}, 1.5, 10, 
-    //     {b_pad + r_size, r_size / 2}, {b_pad + r_size * 3 / 2, r_size, 0});
-
-    // clock = new Clock(this, {b_pad + r_size * 3 / 2, 0}, {b_pad + r_size * 3 / 2 + c_size, c_size}, 
-    //     c_size * 2 / 5, 3.14 / 60, 1);
-
-    // button_cont = new WContainer(this, {0, 0}, {b_pad, r_size}, nButtons, 1);
-    // new MoveWallButton(button_cont, reactor, Vector(0, 0, 255), -wallStep, "Move left");
-    // new MoveWallButton(button_cont, reactor, Vector(255, 0, 255), wallStep, "Move right");
-    // new TemperatureButton(button_cont, reactor, Vector(255, 0, 0), tempStep, "Temp up");
-    // new TemperatureButton(button_cont, reactor, Vector(255, 127, 0), -tempStep, "Temp down");
-    // new AddMolButton(button_cont, reactor, Vector(0, 255, 0), nAddMols, "Add mols");
-    // new AddMolButton(button_cont, reactor, Vector(255, 255), -nAddMols, "Remove mols");
-
-    // WContainer* scroll_cont = new WContainer(this, {b_pad + r_size * 3 / 2, c_size}, 
-    //     {b_pad + r_size * 3 / 2 + c_size,  c_size + scroll_len}, 3, 0);
-    // new MoveScrollBar(scroll_cont, {}, {}, scene, move_reactor_amplitude, 1);
-    // new MoveScrollBar(scroll_cont, {}, {}, scene, move_reactor_amplitude, 0);
-    // new ScaleScrollBar(scroll_cont, {}, {}, scene, 2);
-
-
-
-    // WContainer* prop_cont = new WContainer(this, {properties_left, 0},
-    //     {properties_left + properties_w, scene_h}, OPT_TOTAL, 1);
-    // WContainer* obj_move_cont = new WContainer(this, {properties_left, scene_h},
-    //     {properties_left + properties_w, scene_h + button_h}, n_camera_buttons, 0);
 
     ObjControlPanel* panel = new ObjControlPanel(this, {properties_left, 0},
         {properties_left + properties_w, scene_h + button_h}, scene_h);
@@ -71,8 +41,6 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
 
     WContainer* obj_cont = scene->makeObjectContainer(this, {scene_w, 0}, {scene_w + obj_list_w, scene_h});
     new ListScrollBar(this, {scene_w + obj_list_w, 0}, {scene_w + obj_list_w + scene_scroll_w, scene_h}, obj_cont);
-
-    // InputField* inp_f = new InputField(this, {0, 0}, {100, 50}, "aboba");
 }
 
 Desktop::~Desktop()

@@ -84,15 +84,17 @@ class Texture : public CoordSystem
 {
 public:
     Texture(Widget* w);
-    void paint();
+    virtual void paint();
     void paintRec();
     void clear();
+
+    void setVisibleIn(Widget* w);
 
     virtual Vector getAbsCentre() override;
     void rescaleCentre(double new_scale_x, double new_scale_y);
 
     void addText(std::string text);
-    void addPoint(Vector p, Vector color);
+    virtual void addPoint(Vector p, Vector color);
     void addLine(FixedVec line, Vector color);
 
     void addRect(FixedVec rect, Vector color, bool fill);
@@ -105,15 +107,29 @@ public:
     void paintRect(ColFixedVec rect);
     void paintCircle(ColCircle cirlce);
     void paintPolygon(ColPolygon polygon);
+    void paintText();
 
 // protected:
-    Widget* w;
+    Widget *w, *visible_in;
 
     std::string text;
     std::vector<ColPoint> points;
     std::vector<ColFixedVec> lines, rects;
     std::vector<ColCircle> circles;
     std::vector<ColPolygon> polygons;
+};
+
+class PixelTexture : public Texture
+{
+public:
+    PixelTexture(Widget* w);
+    ~PixelTexture();
+    virtual void paint() override;
+
+    void setPix(int x, int y, Vector col);
+    Vector getPix(int x, int y);
+
+    Vector* pix;
 };
 
 
@@ -135,6 +151,7 @@ public:
     virtual void addWidget(Widget* child);
     void clearChildren();
 
+    void setPixelTexture(bool pixel_texture);
     void setWidgetBorderVisible(bool visible);
     void setTextureBorderVisible(bool visible);
     void setFillRect(bool fill, Vector color = Vector(0, 0, 0));
@@ -170,7 +187,7 @@ public:
     Vector dragTL, dragBR, dragMouse; // relative to parent
 
     Vector fill_rect_color;
-    bool w_border_visible, t_border_visible, fill_rect;
+    bool w_border_visible, t_border_visible, fill_rect, pixel_texture;
 
     Widget *parent;
     std::vector<Widget*> children;

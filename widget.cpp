@@ -70,7 +70,10 @@ void CoordSystem::rescale(double new_scale_x, double new_scale_y, Vector point)
 Texture::Texture(Widget* w) : CoordSystem({0, 0}, 1, 1)
 {
     this->w = w;
+    this->visible_in = w;
 }
+
+void Texture::setVisibleIn(Widget* w) { this->visible_in = w; }
 
 Vector Texture::getAbsCentre() { return centre + w->getAbsTL(); }
 
@@ -92,15 +95,13 @@ void Texture::paint()
     for (ColFixedVec l: lines) paintLine(l);
     for (ColCircle c: circles) paintCircle(c);
     for (ColPolygon pol: polygons) paintPolygon(pol);
+    paintText();
+}
 
-    if (text.size() != 0)
-    {
-        // printf("putting text: \n");
-        // print(w->getAbsTL());
-        // print(w->getAbsTL() + w->wh);
-        // print(w->wh);
+void Texture::paintText()
+{
+    if (text.size() != 0 && visible_in->inAbsRect(w->getAbsTL() + w->wh * 0.5))
         putText(text, w->getAbsTL(), w->getAbsTL() + w->wh);
-    }
 }
 
 void Texture::paintRec()
@@ -122,7 +123,7 @@ void Texture::clear()
 void Texture::paintPoint(ColPoint p)
 {
     Vector absP = tranformToBaseCoord(p.p);
-    if (w->inAbsRect(absP))
+    if (visible_in->inAbsRect(absP))
     {
         setColor(p.col);
         drawPoint(absP);
@@ -134,7 +135,7 @@ void Texture::paintLine(ColFixedVec l)
     Vector absP1 = tranformToBaseCoord(l.vec.p1), absP2 = tranformToBaseCoord(l.vec.p2);
     FixedVec ans;
 
-    if (clipLine({absP1, absP2}, {w->absTL, w->absTL + w->wh}, &ans));
+    if (clipLine({absP1, absP2}, {visible_in->absTL, visible_in->absTL + visible_in->wh}, &ans));
     {
         setColor(l.col);
         drawLine(ans.p1, ans.p2);
@@ -146,24 +147,23 @@ void Texture::paintRect(ColFixedVec rect)
     if (rect.fill == 0) assert("should pass rect border as 4 lines" && 0);
 
     Vector absP1 = tranformToBaseCoord(rect.vec.p1), absP2 = tranformToBaseCoord(rect.vec.p2);
-    // if (w->inAbsRect(absP1) && w->inAbsRect(absP2))
-    // {
-    //     FixedVec ans;
-    //     if (rectIntersection({absP1, absP2}, {w->absTL, w->absTL + w->wh}, &ans))
-    //     {
-    //         setColor(rect.col);
-    //         drawRect(ans.p1, ans.p2, rect.fill);
-    //     }
-    // }
 
-    setColor(rect.col);
-    drawRect(absP1, absP2, rect.fill);
+    FixedVec intersection;
+    if (rectIntersection({absP1, absP2},
+        {visible_in->absTL, visible_in->absTL + visible_in->wh}, &intersection))
+    {
+        setColor(rect.col);
+        drawRect(intersection.p1, intersection.p2, rect.fill);
+    }
+
+    // setColor(rect.col);
+    // drawRect(absP1, absP2, rect.fill);
 }
 
 void Texture::paintCircle(ColCircle c)
 {
     Vector absC = tranformToBaseCoord(c.centre);
-    if (w->inAbsRect(absC))
+    if (visible_in->inAbsRect(absC))
     {
         setColor(c.col);
         drawCircle(absC, c.r * xScale, c.fill);
@@ -224,6 +224,32 @@ void Texture::addVector(FixedVec v, Vector color)
 
 
 
+
+PixelTexture::PixelTexture(Widget* w) : Texture(w)
+{
+    pix = new Vector[w->width * w->height];
+}
+
+PixelTexture::~PixelTexture() { delete pix; }
+
+void PixelTexture::paint()
+{
+    for (int y = 0; y < w->height; ++y)
+    {
+        for (int x = 0; x < w->width; ++x)
+        {
+            setColor(getPix(x, y));
+            drawPoint(Vector(x, y) + w->getAbsTL());
+        }
+    }
+}
+
+void PixelTexture::setPix(int x, int y, Vector col) { pix[y * w->width + x] = col; }
+Vector PixelTexture::getPix(int x, int y) { return pix[y * w->width + x]; }
+
+
+
+
 Widget::Widget(Vector tl, Vector br, Widget* parent)
 {
     this->tl = tl;
@@ -245,6 +271,8 @@ Widget::Widget(Vector tl, Vector br, Widget* parent)
     this->dragged = 0;
     this->dragTL = this->dragBR = {};
 
+    this->t = new Texture(this);
+
     this->parent = parent;
     if (parent != nullptr)
     {
@@ -253,8 +281,6 @@ Widget::Widget(Vector tl, Vector br, Widget* parent)
     }
     else
         this->absTL = Vector(0, 0);
-
-    this->t = new Texture(this);
 }
 
 Widget::~Widget()
@@ -299,6 +325,19 @@ void Widget::setDraggable(Vector dragTL, Vector dragBR)
         this->dragTL = dragTL;
         this->dragBR = dragBR;
     }
+}
+
+void Widget::setPixelTexture(bool pixel_texture)
+{
+    if (t != nullptr) delete t;
+
+    if (pixel_texture)
+    {
+        t = new PixelTexture(this);
+        return;
+    }
+
+    t = new Texture(this);
 }
 
 void Widget::setWidgetBorderVisible(bool visible) { w_border_visible = visible; }
@@ -469,6 +508,8 @@ void WContainer::addWidget(Widget* w)
     assert(children.size() < nChildren);
     int nChild = children.size();
     Widget::addWidget(w);
+
+    w->t->setVisibleIn(this);
 
     if (vertical) w->resize(Vector(padding, padding * (nChild + 1) + childHeight * nChild), 
         Vector(wh.x - padding, (padding + childHeight) * (nChild + 1)));

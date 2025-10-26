@@ -198,9 +198,9 @@ int calcSDLthread(void *void_data)
 void OptScene::paint()
 {   
     OptScene* s = this;
-    for (int pixel_x = 0; pixel_x <= s->width; ++pixel_x)
+    for (int pixel_x = 0; pixel_x < s->width; ++pixel_x)
     {
-        for (int pixel_y = 0; pixel_y <= s->height; pixel_y++)
+        for (int pixel_y = 0; pixel_y < s->height; pixel_y++)
         {
             if (pixel_x == width / 2 && pixel_y == height - 5) d = 1;
             Vector p = s->screen_tl + s->screen_w * (1.0 * pixel_x / s->width) +
@@ -212,7 +212,7 @@ void OptScene::paint()
             Vector color = s->traceRay(ray, 0);
             
             // if (d) color = red_col;
-            t->addPoint({pixel_x, pixel_y}, color * 255);
+            pix_texture->setPix(pixel_x, pixel_y, color * 255);
             if (d) d = 0;
         }
     }
@@ -248,6 +248,7 @@ void OptScene::paint()
             Vector color = colors[pixel_x * height + pixel_y];
             // t->addRect({{pixel_x, pixel_y}, {pixel_x + 1, pixel_y + 1}}, color * 255, 1);
             t->addPoint({pixel_x, pixel_y}, color * 255);
+            // pix_texture->setPix(pixel_x, pixel_y, color * 255);
         }
     }
 }
@@ -413,7 +414,7 @@ bool SphereSource::setProperty(OptPropEnum prop, double val)
 }
 
 PlaneSurface::PlaneSurface(double y_pos, Vector color, std::string name, OptScene* scene, Material m)
-    : Surface(color, {0, y_pos, 0}, name, scene, m), y_pos(y_pos)
+    : Surface(color, {0, y_pos, 0}, name, scene, m)
 {
     //
 }
@@ -424,7 +425,7 @@ bool PlaneSurface::intersect(Ray ray, double* t_ptr)
     // p.y + a.y * t = y_pos
     if (isZero(ray.a.y)) return 0;
 
-    double t = (y_pos - ray.p.y) / ray.a.y;
+    double t = (pos.y - ray.p.y) / ray.a.y;
     if (t < intersect_eps) return 0;
 
     if (t_ptr != nullptr) *t_ptr = t;
@@ -525,6 +526,10 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br, ObjControlPanel* panel)
 
     this->obj_cont = nullptr;
     this->panel = panel;
+
+    setPixelTexture(true);
+    pix_texture = dynamic_cast<PixelTexture*>(t);
+    assert(pix_texture != nullptr);
 
     // surfaces.push_back(new SphereSurface({0, 0, 3}, 1, water));
     // surfaces.push_back(new SphereSurface({0.5, 0, 5.5}, 1, water));

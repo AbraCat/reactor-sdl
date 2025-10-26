@@ -5,34 +5,18 @@
 #include "button.h"
 
 /*
-список объектов с возм. выбора                                         +
-выделение одного/нескольких объектов                                   -
-прямоугольник вокруг выделенного объекта                               -
-список свойств при выделении одного объекта (общие и частные свойства) +
-изменение свойств                                                      +
-кнопки движения объектов                                               +
-кнопки движения камеры                                                 +
 проблема медленного рендера                                            -
-3 ракурса                                                              -
-
-панель выбора объекта (прокручиваемый список объектов)                 +
-панель управления объектом (движение, удаление)                        -
-
+partial scene rendering                                                -
 trace random ray that hasn't been traced yet (stochastic rendering)    -
 queue of pixels to render                                              -
 
-keyboard events                                                        +
-global state                                                           +
-focused widget                                                         +
-input field                                                            +
-changing object properties                                             +
-
-scrollable list texture visibility                                     -
 better text rendering                                                  -
-partial scene rendering                                                -
+
+выделение нескольких объектов                                          -
+прямоугольник вокруг выделенного/ых объекта/ов                         -
+3 ракурса                                                              -
 
 deleting optical objects                                               -
-don't show irrelevant properties                                       +
 */
 
 class Ray;
@@ -231,8 +215,6 @@ public:
 
     virtual bool intersect(Ray ray, double* t) override;
     virtual Vector normal(Vector p) override;
-
-    double y_pos;
 };
 
 class SphereSurface : public Surface
@@ -281,6 +263,7 @@ public:
     
     WContainer* obj_cont;
     ObjControlPanel* panel;
+    PixelTexture *pix_texture;
 };
 
 class MoveCameraButton : public Button
