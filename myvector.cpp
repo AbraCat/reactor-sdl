@@ -111,6 +111,9 @@ bool clipLine(FixedVec line, FixedVec rect, FixedVec* ans)
 IntVec::IntVec() { this->x = 0; this->y = 0; }
 IntVec::IntVec(int x, int y) { this->x = x; this->y = y; }
 
+IntVec operator+(IntVec a, IntVec b) { return {a.x + b.x, a.y + b.y}; }
+IntVec operator-(IntVec a, IntVec b) { return {a.x - b.x, a.y - b.y}; }
+
 
 
 

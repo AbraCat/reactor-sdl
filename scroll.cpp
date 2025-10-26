@@ -3,6 +3,8 @@
 #include <cassert>
 #include <cmath>
 
+const double scroll_on_click = 0.1;
+
 ScrollBar::ScrollBar(Widget* parent, Vector tl, Vector br, double init_frac) : Widget(tl, br, parent)
 {
     assert(height > width * 3);
@@ -60,8 +62,7 @@ ScrollButton::ScrollButton(Vector tl, Vector br, ScrollBar* bar, bool up, Vector
 
 void ScrollButton::action()
 {
-    const double move_on_click = 0.05;
-    bar->moveThumb(up ? -move_on_click : move_on_click);
+    bar->moveThumb(up ? -scroll_on_click : scroll_on_click);
 }
 
 

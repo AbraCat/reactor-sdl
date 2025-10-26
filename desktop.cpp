@@ -32,8 +32,6 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
     scene->addSource({0, -1, 4}, green_col * 0.5, src_size);
 
     scene->addSphere({0, 0, 3}, white_col, 1, glass);
-    // scene->addSphere({0.5, 0, 5.5}, white_col, 1, glass);
-    // scene->addSphere({-0.5, -0.5, 7}, white_col, 0.75, glass);
 
     WContainer* cam_cont = new WContainer(this, {0, scene_h}, {scene_w, scene_h + button_h}, n_camera_buttons, 0);
     new MoveCameraButton(cam_cont, scene, {0, 0, -cam_change_z}, gray_v, "forward");
@@ -45,6 +43,8 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
 
     WContainer* obj_cont = scene->makeObjectContainer(this, {scene_w, 0}, {scene_w + obj_list_w, scene_h});
     new ListScrollBar(this, {scene_w + obj_list_w, 0}, {scene_w + obj_list_w + scene_scroll_w, scene_h}, obj_cont);
+
+    // new ToggleButton(this, {0, 700}, {50, 750}, gray_v, "aboba");
 }
 
 Desktop::~Desktop()

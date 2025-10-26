@@ -29,7 +29,12 @@ public:
 
     virtual bool mousePressEvent(MouseEvent* e) override;
     virtual bool keyboardEvent(KeyboardEvent* evt) override;
-    virtual void action();
+
+    void update_text();
+    virtual void action() = 0;
+
+    bool focused;
+    std::string init_text;
 };
 
 class Button : public TextField
@@ -41,12 +46,24 @@ public:
     virtual bool mouseReleaseEvent(MouseEvent* e) override;
 
     virtual void action() = 0;
-    void unpress();
+    virtual void unpress();
 
     bool is_pressed;
     Vector press_color, unpress_color;
     std::string text;
 };
+
+class ToggleButton : public Button
+{
+public:
+    ToggleButton(Widget* parent, Vector tl, Vector br, Vector color, std::string text);
+
+    virtual bool mousePressEvent(MouseEvent* e) override;
+    virtual bool mouseReleaseEvent(MouseEvent* e) override;
+
+    virtual void deactivate() = 0;
+};
+
 
 class MoveWallButton : public Button
 {

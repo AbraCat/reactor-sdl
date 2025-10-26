@@ -242,6 +242,8 @@ void PixelTexture::paint()
             drawPoint(Vector(x, y) + w->getAbsTL());
         }
     }
+
+    Texture::paint();
 }
 
 void PixelTexture::setPix(int x, int y, Vector col) { pix[y * w->width + x] = col; }

@@ -1,16 +1,18 @@
 #ifndef OPTICAL_SCENE_H
 #define OPTICAL_SCENE_H
 
+#include <set>
+
 #include "plane.h"
 #include "button.h"
 
 /*
 multithreading segfault                                     -
 
-button which can be toggled on/off                          -
-change button texture for selected objects                  -
-прямоугольник вокруг выделенного объекта                    -
-выделение нескольких объектов                               -
+button which can be toggled on/off                          +
+change button texture for selected objects                  +
+прямоугольник вокруг выделенного объекта                    +
+выделение нескольких объектов                               +
 
 better text rendering                                       -
 3 ракурса                                                   -
@@ -113,14 +115,17 @@ public:
     std::string name;
     OptScene* scene;
 
+    bool has_rect;
+    double size;
     Vector pos, color;
 };
 
-class OptObjectButton : public Button
+class OptObjectButton : public ToggleButton
 {
 public:
     OptObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, ObjControlPanel* panel);
     virtual void action() override;
+    virtual void deactivate() override;
 
 private:
     OptObject* obj;
@@ -238,6 +243,14 @@ public:
     virtual void paint() override;
     virtual bool onIdle(IdleEvent* evt) override;
 
+    Vector screen_to_pixels(Vector p);
+    Vector pixels_to_screen(IntVec pix);
+
+    void select(OptObject* obj);
+    void deselect(OptObject* obj);
+    void selected_changed();
+    FixedVec getRect(OptObject* obj);
+
     void setV(Vector V);
     void moveCamera(Vector change);
 
@@ -247,18 +260,18 @@ public:
     Vector traceDiffuse(Surface* s, Vector p);
     Vector traceRefract(Surface* s, Ray ray, Vector p, int depth);
 
-    void calculateThread(int thread_num, VecMtx1* colors);
-
     std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r, Material m = plastic);
     std::vector<Source*>::iterator addSource(Vector pos, Vector color, double r);
 
     WContainer* makeObjectContainer(Widget* parent, Vector tl, Vector br);
 
 // private:
+    bool redraw_picture;
     Vector V, screen_tl, screen_w, screen_h;
 
     std::vector<Surface*> surfaces;
     std::vector<Source*> sources;
+    std::set<OptObject*> selected;
 
     std::vector<IntVec> pix_queue;
     

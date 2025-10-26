@@ -27,23 +27,23 @@ std::string TextField::getText() { return text; }
 InputField::InputField(Widget* parent, Vector tl, Vector br, std::string text)
     : TextField(parent, tl, br, text)
 {
-    //
+    init_text = text;
 }
 
 bool InputField::mousePressEvent(MouseEvent* e)
 {
-    if (inAbsRect({e->x, e->y}))
+    if (inAbsRect({e->x, e->y}) && !focused)
     {
         state->focused = this;
+        focused = true;
+
         SetFieldColor(gray_v);
-        return 1;
+        init_text = getText();
+        return 0;
     }
 
-    if (state->focused == this)
-    {
-        action();
-        return 1;
-    }
+    if (focused)
+        update_text();
 
     return 0;
 }
@@ -52,7 +52,7 @@ bool InputField::keyboardEvent(KeyboardEvent* evt)
 {
     if (evt->key == key_enter)
     {
-        action();
+        update_text();
         return 1;
     }
 
@@ -65,10 +65,14 @@ bool InputField::keyboardEvent(KeyboardEvent* evt)
     return 1;
 }
 
-void InputField::action()
+void InputField::update_text()
 {
-    state->focused = nullptr;
     SetFieldColor(blackV);
+    focused = 0;
+    if (state->focused == this) state->focused = nullptr;
+
+    if (getText() != init_text) action();
+    init_text = getText();
 }
 
 Button::Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text)
@@ -92,7 +96,7 @@ bool Button::mousePressEvent(MouseEvent* e)
     SetFieldColor(press_color);
     paint();
     action();
-    return 1;
+    return 0;
 }
 
 bool Button::mouseReleaseEvent(MouseEvent* e)
@@ -108,6 +112,34 @@ bool Button::mouseReleaseEvent(MouseEvent* e)
 void Button::unpress()
 {
     is_pressed = 0;
+}
+
+
+
+ToggleButton::ToggleButton(Widget* parent, Vector tl, Vector br, Vector color, std::string text)
+    : Button(parent, tl, br, color, text)
+{
+    //
+}
+
+bool ToggleButton::mousePressEvent(MouseEvent* e)
+{
+    Widget::mousePressEvent(e);
+
+    if (!inAbsRect({e->x, e->y})) return 0;
+
+    is_pressed = !is_pressed;
+    SetFieldColor(is_pressed ? press_color : unpress_color);
+
+    if (is_pressed) action();
+    else deactivate();
+    return 0;
+}
+
+bool ToggleButton::mouseReleaseEvent(MouseEvent* e)
+{
+    Widget::mouseReleaseEvent(e);
+    return 0;
 }
 
 

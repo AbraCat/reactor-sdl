@@ -26,6 +26,9 @@ public:
     int x, y;
 };
 
+IntVec operator+(IntVec a, IntVec b);
+IntVec operator-(IntVec a, IntVec b);
+
 
 
 class Vector
