@@ -5,17 +5,13 @@
 
 #include "plane.h"
 #include "button.h"
+#include "scroll.h"
 
 /*
 multithreading segfault                                     -
 
-button which can be toggled on/off                          +
-change button texture for selected objects                  +
-прямоугольник вокруг выделенного объекта                    +
-выделение нескольких объектов                               +
-
 better text rendering                                       -
-3 ракурса                                                   -
+3 views                                                     -
 deleting optical objects                                    -
 */
 
@@ -32,6 +28,7 @@ class OptScene;
 
 class OptPropField;
 class ObjControlPanel;
+class OptController;
 
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
@@ -127,9 +124,8 @@ public:
     virtual void action() override;
     virtual void deactivate() override;
 
-private:
+// private:
     OptObject* obj;
-    ObjControlPanel* panel;
 };
 
 class MoveObjectButton : public Button
@@ -141,6 +137,16 @@ public:
 private:
     OptObject* obj;
     Vector change;
+};
+
+class DeleteObjectButton : public Button
+{
+public:
+    DeleteObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, std::string text);
+    virtual void action() override;
+
+private:
+    OptObject* obj;
 };
 
 class ObjControlPanel : public Widget
@@ -236,10 +242,34 @@ public:
 
 
 
+class OptController
+{
+public:
+    OptController(Widget* parent);
+    WContainer* makeObjectContainer(Vector tl, Vector br);
+
+    void addObject(OptObject* obj);
+    std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r, Material m = plastic);
+    std::vector<Source*>::iterator addSource(Vector pos, Vector color, double r);
+    
+    void selected_changed();
+    void deleteObject(OptObject* obj);
+
+    Widget* parent;
+
+    OptScene* s;
+    // OptController* control;
+    WContainer *cam_cont, *obj_cont;
+    ListScrollBar *obj_scroll;
+    ObjControlPanel* panel;
+};
+
+
+
 class OptScene : public Widget
 {
 public:
-    OptScene(Widget* parent, Vector tl, Vector br, ObjControlPanel* panel);
+    OptScene(Widget* parent, Vector tl, Vector br, OptController* control);
     virtual void paint() override;
     virtual bool onIdle(IdleEvent* evt) override;
 
@@ -248,7 +278,6 @@ public:
 
     void select(OptObject* obj);
     void deselect(OptObject* obj);
-    void selected_changed();
     FixedVec getRect(OptObject* obj);
 
     void setV(Vector V);
@@ -260,11 +289,6 @@ public:
     Vector traceDiffuse(Surface* s, Vector p);
     Vector traceRefract(Surface* s, Ray ray, Vector p, int depth);
 
-    std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r, Material m = plastic);
-    std::vector<Source*>::iterator addSource(Vector pos, Vector color, double r);
-
-    WContainer* makeObjectContainer(Widget* parent, Vector tl, Vector br);
-
 // private:
     bool redraw_picture;
     Vector V, screen_tl, screen_w, screen_h;
@@ -273,10 +297,8 @@ public:
     std::vector<Source*> sources;
     std::set<OptObject*> selected;
 
+    OptController* control;
     std::vector<IntVec> pix_queue;
-    
-    WContainer* obj_cont;
-    ObjControlPanel* panel;
     PixelTexture *pix_texture;
 };
 

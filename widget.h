@@ -149,6 +149,7 @@ public:
     Widget(Vector tl, Vector br, Widget* parent = nullptr);
     ~Widget();
     virtual void addWidget(Widget* child);
+    virtual void removeChild(Widget* child);
     void clearChildren();
 
     void setPixelTexture(bool pixel_texture);

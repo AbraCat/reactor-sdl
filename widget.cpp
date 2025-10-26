@@ -259,10 +259,6 @@ Widget::Widget(Vector tl, Vector br, Widget* parent)
     width = br.x - tl.x;
     height = br.y - tl.y;
     this->wh = Vector(width, height);
-    // print(wh);
-    // printf("widget\n");
-    // print(tl);
-    // print(br);
 
     w_border_visible = 0;
     t_border_visible = 0;
@@ -401,6 +397,19 @@ void Widget::addWidget(Widget* child)
     children.push_back(child);
 }
 
+void Widget::removeChild(Widget* child)
+{
+    for (std::vector<Widget*>::iterator it = children.begin(); it != children.end(); ++it)
+    {
+        if (*it == child)
+        {
+            children.erase(it);
+            // drawRec();
+            return;
+        }
+    }
+}
+
 void Widget::clearChildren()
 {
     for (Widget* w: children)
@@ -480,7 +489,6 @@ bool Widget::onIdle(IdleEvent* e)
 WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical, double list_length)
     : Widget(tl, br, parent)
 {
-    // setTextureBorderVisible(1);
     setWidgetBorderVisible(1);
     this->vertical = vertical;
     this->nChildren = nChildren;
@@ -541,8 +549,12 @@ void WContainer::scroll(double frac)
 bool WContainer::handleEvent(Event* e)
 {
     MouseEvent* press_evt = dynamic_cast<MouseEvent*>(e);
-    if (block_children_mouse_down && press_evt != NULL && press_evt->type == MOUSE_DOWN && !inAbsRect(Vector(press_evt->x, press_evt->y)))
+    if (block_children_mouse_down && press_evt != NULL && press_evt->type == MOUSE_DOWN &&
+        !inAbsRect(Vector(press_evt->x, press_evt->y)))
+    {
+        printf("aaa\n");
         return e->dispatch(this);
+    }
 
     for (Widget* w: children)
         if (w->handleEvent(e)) return 1;

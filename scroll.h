@@ -84,7 +84,7 @@ public:
     ListScrollBar(Widget* parent, Vector tl, Vector br, WContainer* list);
     virtual void action(double frac) override;
 
-private:
+// private:
     WContainer* list;
 };
 

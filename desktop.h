@@ -22,7 +22,7 @@ private:
     Clock* clock;
     WContainer *button_cont;
 
-    OptScene* scene;
+    OptController* control;
 };
 
 #endif // MY_APP_H
