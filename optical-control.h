@@ -62,11 +62,10 @@ private:
 class ObjControlPanel : public Widget
 {
 public:
-    ObjControlPanel(Widget* parent, Vector tl, Vector br, double properties_h);
+    ObjControlPanel(Widget* parent, Vector tl, Vector br);
     void setObject(OptObject* obj);
 
 private:
-    double properties_h;
     OptObject *obj;
     WContainer *prop_cont, *button_cont;
 };

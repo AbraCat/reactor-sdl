@@ -21,11 +21,11 @@ class OptController;
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
 
+extern const double ratio;
+
 
 
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
-
-
 
 class OptScene : public Widget
 {

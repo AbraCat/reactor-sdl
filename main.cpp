@@ -24,7 +24,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);
 
-    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }

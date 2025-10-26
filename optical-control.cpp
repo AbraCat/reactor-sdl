@@ -11,23 +11,23 @@
 #include <cmath>
 #include <cassert>
 
-const double ratio = 16.0 / 9.0, obj_change = 1;
+const double obj_change = 1;
 const int n_move_buttons = 6, obj_button_h = 100;
 
 const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2, -1.15, 4};
 
 const double cam_change_x = 0.5, cam_change_y = 0.5, cam_change_z = 1;
 
-const int scene_w = 1000, scene_h = scene_w / ratio, button_h = 50, obj_list_w = 150, 
-    scene_scroll_w = 30, properties_w = 600, properties_left = scene_w + obj_list_w + scene_scroll_w,
-    n_camera_buttons = 6, max_n_objects = 10;
+const int scene_w = 1200, scene_h = scene_w / ratio, button_h = 50, obj_list_w = 150, 
+    scene_scroll_w = 50, properties_w = 400, properties_left = scene_w + obj_list_w + scene_scroll_w,
+    properties_h = 500, n_camera_buttons = 6, max_n_objects = 10;
 
 
-ObjControlPanel::ObjControlPanel(Widget* parent, Vector tl, Vector br, double properties_h)
-    : Widget(tl, br, parent), properties_h(properties_h)
+ObjControlPanel::ObjControlPanel(Widget* parent, Vector tl, Vector br)
+    : Widget(tl, br, parent)
 {
     prop_cont = new WContainer(this, {0, 0}, {width, properties_h}, OPT_TOTAL, 1);
-    button_cont = new WContainer(this, {0, properties_h}, wh, n_move_buttons + 1, 0);
+    button_cont = new WContainer(this, {0, properties_h}, wh, n_move_buttons + 1, 1);
 }
 
 void ObjControlPanel::setObject(OptObject* obj)
@@ -133,7 +133,7 @@ OptController::OptController(Widget* parent) : parent(parent)
     s = new OptScene(parent, {0, 0}, {scene_w, scene_h}, this);
 
     panel = new ObjControlPanel(parent, {properties_left, 0},
-        {properties_left + properties_w, scene_h + button_h}, scene_h);
+        {properties_left + properties_w, scene_h + button_h});
 
     cam_cont = new WContainer(parent, {0, scene_h}, {scene_w, scene_h + button_h}, n_camera_buttons, 0);
     new MoveCameraButton(cam_cont, s, {0, 0, -cam_change_z}, gray_v, "forward");
@@ -143,9 +143,9 @@ OptController::OptController(Widget* parent) : parent(parent)
     new MoveCameraButton(cam_cont, s, {0, -cam_change_y, 0}, gray_v, "up");
     new MoveCameraButton(cam_cont, s, {0, cam_change_y, 0}, gray_v, "down");
 
-    obj_cont = makeObjectContainer({scene_w, 0}, {scene_w + obj_list_w, scene_h});
+    obj_cont = makeObjectContainer({scene_w, 0}, {scene_w + obj_list_w, scene_h + button_h});
     obj_scroll = new ListScrollBar(parent, {scene_w + obj_list_w, 0},
-        {scene_w + obj_list_w + scene_scroll_w, scene_h}, obj_cont);
+        {scene_w + obj_list_w + scene_scroll_w, scene_h + button_h}, obj_cont);
 }
 
 WList* OptController::makeObjectContainer(Vector tl, Vector br)
