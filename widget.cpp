@@ -486,7 +486,7 @@ bool Widget::onIdle(IdleEvent* e)
 }
 
 
-WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical, double list_length)
+WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical)
     : Widget(tl, br, parent)
 {
     setWidgetBorderVisible(1);
@@ -494,14 +494,9 @@ WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool
     this->nChildren = nChildren;
     this->padding = 0;
 
-    // vertical
-    if (list_length == 0) list_length = height;
-    this->list_length = list_length;
-    scroll_frac = 0;
-
     if (vertical)
     {
-        this->childHeight = (list_length - padding * (nChildren + 1)) / nChildren;
+        this->childHeight = (height - padding * (nChildren + 1)) / nChildren;
         this->childWidth = width - 2 * padding;
     }
     else
@@ -509,13 +504,11 @@ WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool
         this->childWidth = (width - padding * (nChildren + 1)) / nChildren;
         this->childHeight = height - 2 * padding;
     }
-
-    block_children_mouse_down = false;
 }
 
 void WContainer::addWidget(Widget* w)
 {
-    assert(children.size() < nChildren);
+    // assert(children.size() < nChildren);
     int nChild = children.size();
     Widget::addWidget(w);
 
@@ -528,31 +521,47 @@ void WContainer::addWidget(Widget* w)
         Vector((padding + childWidth) * (nChild + 1), wh.y - padding));
 }
 
-Vector WContainer::propagatedAbsTL()
+
+
+
+WList::WList(Widget* parent, Vector tl, Vector br, bool vertical, double child_len)
+    : WContainer(parent, tl, br, 1, vertical), child_len(child_len)
 {
-    // vertical
-    return Vector(absTL.x, absTL.y - scroll_frac * (list_length - height));
+    scroll_frac = 0;
+
+    if (vertical)
+    {
+        childWidth = width;
+        childHeight = child_len;
+    }
+    else
+    {
+        childHeight = height;
+        childWidth = child_len;
+    }
 }
 
-void WContainer::paint()
+Vector WList::propagatedAbsTL()
 {
-    Widget::paint();
+    if (vertical)
+        return Vector(absTL.x, absTL.y - scroll_frac * (child_len * children.size() - height));
+    else
+        return Vector(absTL.x - scroll_frac * (child_len * children.size() - width), absTL.y);
 }
 
-void WContainer::scroll(double frac)
+void WList::scroll(double frac)
 {
     scroll_frac = frac;
     propagateAbsPos();
-    paint();
+    // drawRec();
 }
 
-bool WContainer::handleEvent(Event* e)
+bool WList::handleEvent(Event* e)
 {
     MouseEvent* press_evt = dynamic_cast<MouseEvent*>(e);
-    if (block_children_mouse_down && press_evt != NULL && press_evt->type == MOUSE_DOWN &&
+    if (press_evt != NULL && press_evt->type == MOUSE_DOWN &&
         !inAbsRect(Vector(press_evt->x, press_evt->y)))
     {
-        printf("aaa\n");
         return e->dispatch(this);
     }
 
@@ -561,7 +570,7 @@ bool WContainer::handleEvent(Event* e)
     return e->dispatch(this);
 }
 
-void WContainer::blockChildrenMouseDown(bool block) { block_children_mouse_down = block; }
+
 
 
 

@@ -81,11 +81,11 @@ private:
 class ListScrollBar : public ScrollBar
 {
 public:
-    ListScrollBar(Widget* parent, Vector tl, Vector br, WContainer* list);
+    ListScrollBar(Widget* parent, Vector tl, Vector br, WList* list);
     virtual void action(double frac) override;
 
 // private:
-    WContainer* list;
+    WList* list;
 };
 
 #endif // SCROLL_BAR_H

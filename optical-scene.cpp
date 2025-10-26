@@ -687,31 +687,6 @@ Vector OptScene::traceRay(Ray ray, int depth)
 
 void OptScene::setV(Vector V) {this->V = V;}
 
-void OptController::addObject(OptObject* obj)
-{
-    new OptObjectButton(obj_cont, {}, {}, obj, panel);
-}
-
-std::vector<Surface*>::iterator OptController::addSphere(Vector pos, Vector color, double r, Material m)
-{
-    std::string name = "sphere " + std::to_string(s->surfaces.size());
-    SphereSurface* new_sphere = new SphereSurface(pos, r, color, name, s, m);
-
-    s->surfaces.push_back(new_sphere);
-    addObject(new_sphere);
-    return s->surfaces.end() - 1;
-}
-
-std::vector<Source*>::iterator OptController::addSource(Vector pos, Vector color, double r)
-{
-    std::string name = "source " + std::to_string(s->sources.size());
-    Source* new_source = new SphereSource(color, pos, r, name, s);
-
-    s->sources.push_back(new_source);
-    addObject(new_source);
-    return s->sources.end() - 1;
-}
-
 void OptScene::moveCamera(Vector change)
 {
     V += change;
@@ -755,19 +730,19 @@ OptController::OptController(Widget* parent) : parent(parent)
         {scene_w + obj_list_w + scene_scroll_w, scene_h}, obj_cont);
 }
 
-WContainer* OptController::makeObjectContainer(Vector tl, Vector br)
+WList* OptController::makeObjectContainer(Vector tl, Vector br)
 {
-    // int n_objects = s->surfaces.size() + s->sources.size();
+    int n_objects = s->surfaces.size() + s->sources.size();
 
-    this->obj_cont = new WContainer(parent, tl, br, max_n_objects, 1, obj_button_h * max_n_objects);
+    this->obj_cont = new WList(parent, tl, br, 1, obj_button_h);
     
     for (OptObject* obj: s->surfaces)
         new OptObjectButton(obj_cont, {}, {}, obj, panel);
     for (OptObject* obj: s->sources)
         new OptObjectButton(obj_cont, {}, {}, obj, panel);
-
-    obj_cont->blockChildrenMouseDown(true);
     return obj_cont;
+
+    return nullptr;
 }
 
 void OptController::deleteObject(OptObject* obj)
@@ -790,18 +765,6 @@ void OptController::deleteObject(OptObject* obj)
         }
     }
 
-    // for (std::vector<Widget*>::iterator it = obj_cont->children.begin(); it != obj_cont->children.end(); ++it)
-    // {
-    //     OptObjectButton* button = dynamic_cast<OptObjectButton*>(*it);
-    //     assert(button != nullptr);
-
-    //     if (button->obj == obj)
-    //     {
-    //         obj_cont->children.erase(it);
-    //         break;
-    //     }
-    // }
-
     s->selected.erase(obj);
     panel->setObject(nullptr);
 
@@ -814,4 +777,29 @@ void OptController::deleteObject(OptObject* obj)
     delete obj;
     obj_cont->drawRec();
     s->paint();
+}
+
+void OptController::addObject(OptObject* obj)
+{
+    new OptObjectButton(obj_cont, {}, {}, obj, panel);
+}
+
+std::vector<Surface*>::iterator OptController::addSphere(Vector pos, Vector color, double r, Material m)
+{
+    std::string name = "sphere " + std::to_string(s->surfaces.size());
+    SphereSurface* new_sphere = new SphereSurface(pos, r, color, name, s, m);
+
+    s->surfaces.push_back(new_sphere);
+    addObject(new_sphere);
+    return s->surfaces.end() - 1;
+}
+
+std::vector<Source*>::iterator OptController::addSource(Vector pos, Vector color, double r)
+{
+    std::string name = "source " + std::to_string(s->sources.size());
+    Source* new_source = new SphereSource(color, pos, r, name, s);
+
+    s->sources.push_back(new_source);
+    addObject(new_source);
+    return s->sources.end() - 1;
 }

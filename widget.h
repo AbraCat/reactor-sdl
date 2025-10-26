@@ -197,23 +197,28 @@ public:
 class WContainer : public Widget
 {
 public:
-    WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical, double list_length = 0);
-    virtual void paint() override;
+    WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical);
 
     virtual void addWidget(Widget* widget) override;
-    virtual Vector propagatedAbsTL() override;
-    virtual bool handleEvent(Event* e) override;
-    void scroll(double frac);
 
-    void blockChildrenMouseDown(bool block);
-
-private:
-    bool vertical, block_children_mouse_down;
+protected:
+    bool vertical;
     int nChildren, padding, childWidth, childHeight;
-
-    double scroll_frac, list_length;
 };
 
+class WList : public WContainer
+{
+public:
+    WList(Widget* parent, Vector tl, Vector br, bool vertical, double child_len);
+
+    virtual Vector propagatedAbsTL() override;
+    virtual bool handleEvent(Event* e) override;
+    
+    void scroll(double frac);
+
+private:
+    double scroll_frac, child_len;
+};
 
 
 class Event

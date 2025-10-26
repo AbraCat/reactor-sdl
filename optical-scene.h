@@ -246,7 +246,7 @@ class OptController
 {
 public:
     OptController(Widget* parent);
-    WContainer* makeObjectContainer(Vector tl, Vector br);
+    WList* makeObjectContainer(Vector tl, Vector br);
 
     void addObject(OptObject* obj);
     std::vector<Surface*>::iterator addSphere(Vector pos, Vector color, double r, Material m = plastic);
@@ -258,8 +258,8 @@ public:
     Widget* parent;
 
     OptScene* s;
-    // OptController* control;
-    WContainer *cam_cont, *obj_cont;
+    WContainer *cam_cont;
+    WList *obj_cont;
     ListScrollBar *obj_scroll;
     ObjControlPanel* panel;
 };

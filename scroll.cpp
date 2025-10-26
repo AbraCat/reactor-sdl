@@ -164,7 +164,7 @@ void ScaleScrollBar::action(double frac)
     w->t->rescaleCentre(fracToScale(frac, 1), fracToScale(frac, 0));
 }
 
-ListScrollBar::ListScrollBar(Widget* parent, Vector tl, Vector br, WContainer* list)
+ListScrollBar::ListScrollBar(Widget* parent, Vector tl, Vector br, WList* list)
     : ScrollBar(parent, tl, br, 0), list(list)
 {
     
