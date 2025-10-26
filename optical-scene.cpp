@@ -1,10 +1,11 @@
 #include "optical-scene.h"
 
+#include <sstream>
+// #include <thread>
+
 #include <limits>
 #include <cmath>
 #include <cassert>
-
-#include <thread>
 
 const double intersect_eps = 0.01, ratio = 16.0 / 9.0, screen_size = 4;
 const int max_depth = 1, n_diffuse_rays = 1, n_shadow_rays = 1, n_threads = 1;
@@ -32,90 +33,67 @@ double OptProperty::getVal() { return val; }
 std::string OptProperty::getName() { return name; }
 void OptProperty::setName(std::string name) { this->name = name; }
 
-OptObject::OptObject(std::string name, OptScene* scene)
-    : properties(std::vector<OptProperty>(OPT_TOTAL, OptProperty(OPT_TOTAL, "", 0))),
-    name(name), scene(scene)
-{
-    #define SET_NAME(name) properties[OPT_ ## name] = OptProperty(OPT_ ## name, #name, 0)
-
-    SET_NAME(DIFFUSE_PORTION);
-    SET_NAME(SPECULAR_PORTION);
-    SET_NAME(DEFRACT_PORTION);
-    SET_NAME(DEFRACT_COEFF);
-
-    SET_NAME(POS_X);
-    SET_NAME(POS_Y);
-    SET_NAME(POS_Z);
-    SET_NAME(RADIUS);
-
-    SET_NAME(COLOR_R);
-    SET_NAME(COLOR_G);
-    SET_NAME(COLOR_B);
-
-    #undef SET_NAME
-}
-
-void OptObject::setProperty(OptPropEnum prop, double val)
-{
-    properties[prop].setVal(val);
-}
-
-double OptObject::getPropertyVal(OptPropEnum prop)
-{
-    return properties[prop].getVal();
-}
-
-void OptObject::setPropertyName(OptPropEnum prop, std::string name)
-{
-    properties[prop].setName(name);
-}
-
-std::string OptObject::getPropertyName(OptPropEnum prop) { return properties[prop].getName(); }
-
-void OptObject::setOptColor(Vector color)
-{
-    setProperty(OPT_COLOR_R, color.x);
-    setProperty(OPT_COLOR_G, color.y);
-    setProperty(OPT_COLOR_B, color.z);
-}
-
-Vector OptObject::getOptColor()
-{
-    return Vector(getPropertyVal(OPT_COLOR_R), getPropertyVal(OPT_COLOR_G), getPropertyVal(OPT_COLOR_B));
-}
-
-void OptObject::setOptPos(Vector pos)
-{
-    setProperty(OPT_POS_X, pos.x);
-    setProperty(OPT_POS_Y, pos.y);
-    setProperty(OPT_POS_Z, pos.z);
-}
-
-void OptObject::move(Vector change) { setOptPos(getOptPos() + change); } // update scene
-
-
-
-OptPropWidget::OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop)
-    : Widget(tl, br, parent)
-{
-    std::string prop_name = obj->getPropertyName(prop);
-    double val = obj->getPropertyVal(prop);
-    name_field = new TextField(this, {0, 0}, {width / 2, height}, prop_name);
-    val_field = new OptPropField(this, {width / 2, 0}, {width, height}, obj, prop, val);
-}
-
-OptPropField::OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop, double val)
-    : InputField(parent, tl, br, std::to_string(val)), obj(obj), prop(prop)
+OptObject::OptObject(std::string name, OptScene* scene, Vector color, Vector pos)
+    : name(name), scene(scene), color(color), pos(pos)
 {
     //
+}
+
+std::vector<OptProperty> OptObject::getProperties()
+{
+    std::vector<OptProperty> properties;
+
+    properties.push_back(OptProperty(OPT_COLOR_R, "color_r", color.x));
+    properties.push_back(OptProperty(OPT_COLOR_G, "color_g", color.y));
+    properties.push_back(OptProperty(OPT_COLOR_B, "color_b", color.z));
+
+    properties.push_back(OptProperty(OPT_POS_X, "pos_x", pos.x));
+    properties.push_back(OptProperty(OPT_POS_Y, "pos_y", pos.y));
+    properties.push_back(OptProperty(OPT_POS_Z, "pos_z", pos.z));
+
+    return properties;
+}
+
+bool OptObject::setProperty(OptPropEnum prop, double val)
+{
+    switch (prop)
+    {
+        case OPT_COLOR_R: color.x = val; return 1;
+        case OPT_COLOR_G: color.y = val; return 1;
+        case OPT_COLOR_B: color.z = val; return 1;
+
+        case OPT_POS_X: pos.x = val; return 1;
+        case OPT_POS_Y: pos.y = val; return 1;
+        case OPT_POS_Z: pos.z = val; return 1;
+    }
+
+    return 0;
+}
+
+
+
+OptPropWidget::OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptProperty prop)
+    : Widget(tl, br, parent)
+{
+    name_field = new TextField(this, {0, 0}, {width / 2, height}, prop.getName());
+    val_field = new OptPropField(this, {width / 2, 0}, {width, height}, obj, prop);
+}
+
+OptPropField::OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptProperty prop)
+    : InputField(parent, tl, br, ""), obj(obj), prop(prop)
+{
+    std::ostringstream out;
+    out.precision(2);
+    out << std::fixed << prop.val;
+    SetText(std::move(out).str());
 }
 
 void OptPropField::action()
 {
     InputField::action();
 
-    obj->setProperty(prop, std::stod(getText()));
-    // obj->scene->paint();
+    obj->setProperty(prop.prop, std::stod(getText()));
+    obj->scene->paint();
 }
 
 
@@ -130,8 +108,8 @@ void OptObjectButton::action()
 {
     prop_cont->clearChildren();
 
-    for (int n_prop = 0; n_prop < OPT_TOTAL; ++n_prop)
-        new OptPropWidget(prop_cont, {}, {}, obj, (OptPropEnum)n_prop);
+    for (OptProperty prop: obj->getProperties())
+        new OptPropWidget(prop_cont, {}, {}, obj, prop);
 
     prop_cont->drawRec();
 }
@@ -148,15 +126,6 @@ void MoveObjectButton::action()
 {
     // obj->
 }
-
-
-Vector OptObject::getOptPos()
-{
-    return Vector(getPropertyVal(OPT_POS_X), getPropertyVal(OPT_POS_Y), getPropertyVal(OPT_POS_Z));
-}
-
-void OptObject::setRadius(double r) { setProperty(OPT_RADIUS, r); }
-double OptObject::getRadius() { return getPropertyVal(OPT_RADIUS); }
 
 void OptScene::calculateThread(int thread_num, VecMtx1* colors)
 {
@@ -209,12 +178,12 @@ void OptScene::paint()
             Vector p = s->screen_tl + s->screen_w * (1.0 * pixel_x / s->width) +
                                       s->screen_h * (1.0 * pixel_y / s->height);
 
-            if (d) print(p);
+            // if (d) print(p);
 
             Ray ray(s->V, p - s->V);
             Vector color = s->traceRay(ray, 0);
             
-            if (d) color = red_col;
+            // if (d) color = red_col;
             t->addPoint({pixel_x, pixel_y}, color * 255);
             if (d) d = 0;
         }
@@ -276,41 +245,37 @@ Material::Material(double diffuse_c, double reflect_c, double refract_c,
     // assert(diffuse_c + reflect_c + refract_c <= 1);
 }
 
-Surface::Surface(Vector color, std::string name, OptScene* scene, Material m) : OptObject(name, scene), m(m)
+Surface::Surface(Vector color, Vector pos, std::string name, OptScene* scene, Material m)
+    : OptObject(name, scene, color, pos), m(m)
 {
-    setOptColor(color);
-
-    setProperty(OPT_DIFFUSE_PORTION, m.diffuse_c);
-    setProperty(OPT_SPECULAR_PORTION, m.reflect_c);
-    setProperty(OPT_DEFRACT_PORTION, m.refract_c);
-    setProperty(OPT_DEFRACT_COEFF, m.refract_k);
+    //
 }
 
-void Surface::updateProperties()
+std::vector<OptProperty> Surface::getProperties()
 {
-    OptObject::updateProperties();
-    /*
-    OPT_DIFFUSE_PORTION,
-    OPT_SPECULAR_PORTION,
-    OPT_DEFRACT_PORTION,
-    OPT_DEFRACT_COEFF,
+    std::vector<OptProperty> properties = OptObject::getProperties();
 
-    OPT_POS_X,
-    OPT_POS_Y,
-    OPT_POS_Z,
-    OPT_RADIUS,
+    properties.push_back(OptProperty(OPT_DIFFUSE_PORTION, "diffuse_c", m.diffuse_c));
+    properties.push_back(OptProperty(OPT_SPECULAR_PORTION, "specular_c", m.reflect_c));
+    properties.push_back(OptProperty(OPT_REFRACT_PORTION, "refract_c", m.refract_c));
+    properties.push_back(OptProperty(OPT_REFRACT_COEFF, "refract_k", m.refract_k));
 
-    OPT_COLOR_R,
-    OPT_COLOR_G,
-    OPT_COLOR_B,
-    */
+    return properties;
+}
 
-    OptObject::updateProperties();
+bool Surface::setProperty(OptPropEnum prop, double val)
+{
+    if (OptObject::setProperty(prop, val)) return 1;
 
-    m.diffuse_c = getPropertyVal(OPT_DIFFUSE_PORTION);
-    m.reflect_c = getPropertyVal(OPT_SPECULAR_PORTION);
-    m.refract_c = getPropertyVal(OPT_DEFRACT_PORTION);
-    m.refract_k = getPropertyVal(OPT_DEFRACT_COEFF);
+    switch (prop)
+    {
+        case OPT_DIFFUSE_PORTION: m.diffuse_c = val; return 1;
+        case OPT_SPECULAR_PORTION: m.reflect_c = val; return 1;
+        case OPT_REFRACT_PORTION: m.refract_c = val; return 1;
+        case OPT_REFRACT_COEFF: m.refract_k = val; return 1;
+    }
+
+    return 0;
 }
 
 bool Surface::rayGoesIn(Ray r, Vector intersection_p)
@@ -367,15 +332,15 @@ Ray Surface::reflect_diffuse(Ray r, Vector p)
     return Ray(p, norm + random_vec);
 }
 
-Source::Source(Vector color, Vector pos, std::string name, OptScene* scene) : OptObject(name, scene)
+Source::Source(Vector color, Vector pos, std::string name, OptScene* scene)
+    : OptObject(name, scene, color, pos)
 {
-    setOptColor(color);
-    setOptPos(pos);
+    //
 }
 
 Vector Source::getRandPoint()
 {
-    return getOptPos();
+    return pos;
 }
 
 SphereSource::SphereSource(Vector color, Vector pos, double r, std::string name, OptScene* scene)
@@ -386,7 +351,6 @@ SphereSource::SphereSource(Vector color, Vector pos, double r, std::string name,
 
 Vector SphereSource::getRandPoint()
 {
-    Vector pos = getOptPos();
     return pos;
 
     Vector tl = pos - Vector(r, r, r), br = pos + Vector(r, r, r);
@@ -400,10 +364,30 @@ Vector SphereSource::getRandPoint()
     return rand_p;
 }
 
-PlaneSurface::PlaneSurface(double y_pos, Vector color, std::string name, OptScene* scene, Material m)
-    : Surface(color, name, scene, m), y_pos(y_pos)
+std::vector<OptProperty> SphereSource::getProperties()
 {
-    setOptPos({0, y_pos, 0});
+    std::vector<OptProperty> properties = Source::getProperties();
+    properties.push_back(OptProperty(OPT_RADIUS, "radius", r));
+    return properties;
+}
+
+bool SphereSource::setProperty(OptPropEnum prop, double val)
+{
+    if (Source::setProperty(prop, val)) return 1;
+
+    if (prop == OPT_RADIUS)
+    {
+        r = val;
+        return 1;
+    }
+
+    return 0;
+}
+
+PlaneSurface::PlaneSurface(double y_pos, Vector color, std::string name, OptScene* scene, Material m)
+    : Surface(color, {0, y_pos, 0}, name, scene, m), y_pos(y_pos)
+{
+    //
 }
 
 bool PlaneSurface::intersect(Ray ray, double* t_ptr)
@@ -427,10 +411,29 @@ Vector PlaneSurface::normal(Vector p)
 
 
 SphereSurface::SphereSurface(Vector pos, double r, Vector color, std::string name, OptScene* scene, Material m)
-    : Surface(color, name, scene, m), r(r)
+    : Surface(color, pos, name, scene, m), r(r)
 {
-    setProperty(OPT_RADIUS, r);
-    setOptPos(pos);
+    //
+}
+
+std::vector<OptProperty> SphereSurface::getProperties()
+{
+    std::vector<OptProperty> properties = Surface::getProperties();
+    properties.push_back(OptProperty(OPT_RADIUS, "radius", r));
+    return properties;
+}
+
+bool SphereSurface::setProperty(OptPropEnum prop, double val)
+{
+    if (Surface::setProperty(prop, val)) return 1;
+
+    if (prop == OPT_RADIUS)
+    {
+        r = val;
+        return 1;
+    }
+
+    return 0;
 }
     
 bool SphereSurface::intersect(Ray ray, double* t_ptr)
@@ -474,7 +477,7 @@ Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 {
     Vector L = p_light - p_surface;
     double cosA = angle(L, s->normal(p_surface));
-    return l->getOptColor() * cosA;
+    return l->color * cosA;
 }
 
 

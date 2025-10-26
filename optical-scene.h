@@ -27,6 +27,7 @@ focused widget
 input field
 changing object properties
 
+scrollable list texture visibility
 better text rendering
 partial scene rendering
 
@@ -62,8 +63,8 @@ enum OptPropEnum
 {
     OPT_DIFFUSE_PORTION,
     OPT_SPECULAR_PORTION,
-    OPT_DEFRACT_PORTION,
-    OPT_DEFRACT_COEFF,
+    OPT_REFRACT_PORTION,
+    OPT_REFRACT_COEFF,
 
     OPT_POS_X,
     OPT_POS_Y,
@@ -88,7 +89,7 @@ public:
     std::string getName();
     void setName(std::string name);
 
-private:
+// private:
     OptPropEnum prop;
     std::string name;
     double val;
@@ -97,7 +98,7 @@ private:
 class OptPropWidget : public Widget
 {
 public:
-    OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop);
+    OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* obj, OptProperty prop);
 
 // private:
     TextField *name_field;
@@ -107,44 +108,27 @@ public:
 class OptPropField : public InputField
 {
 public:
-    OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptPropEnum prop, double val);
+    OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptProperty prop);
     virtual void action() override;
 
 private:
     OptObject* obj;
-    OptPropEnum prop;
+    OptProperty prop;
 };
 
 class OptObject
 {
 public:
-    OptObject(std::string name, OptScene* scene);
-
-    // void setProperty(OptPropEnum prop, double val);
-    // double getPropertyVal(OptPropEnum prop);
-    // void setPropertyName(OptPropEnum prop, std::string name);
-    // std::string getPropertyName(OptPropEnum prop);
-
-    // void setOptColor(Vector color);
-    // Vector getOptColor();
-    // void setOptPos(Vector pos);
-    // Vector getOptPos();
-
-    // virtual void move(Vector change);
-    // virtual void updateProperties(); // updates fields according to properties vector
+    OptObject(std::string name, OptScene* scene, Vector color, Vector pos);
 
     virtual std::vector<OptProperty> getProperties();
-    virtual void setProperty(OptPropEnum prop, double val);
+    virtual bool setProperty(OptPropEnum prop, double val);
 
-// private:
+// protected:
     std::string name;
     OptScene* scene;
 
-// protected:
     Vector pos, color;
-
-// private:
-    // std::vector<OptProperty> properties;
 };
 
 class OptObjectButton : public Button
@@ -190,8 +174,10 @@ public:
 class Surface : public OptObject
 {
 public:
-    Surface(Vector color, std::string name, OptScene* scene, Material m = std_material);
-    virtual void updateProperties() override;
+    Surface(Vector color, Vector pos, std::string name, OptScene* scene, Material m = std_material);
+
+    virtual std::vector<OptProperty> getProperties();
+    virtual bool setProperty(OptPropEnum prop, double val);
 
     virtual bool intersect(Ray ray, double* t) = 0;
     virtual Vector normal(Vector p) = 0; // should face outside
@@ -217,6 +203,9 @@ public:
     SphereSource(Vector color, Vector pos, double r, std::string name, OptScene* scene);
     virtual Vector getRandPoint() override;
 
+    virtual std::vector<OptProperty> getProperties();
+    virtual bool setProperty(OptPropEnum prop, double val);
+
     double r;
 };
 
@@ -235,6 +224,9 @@ class SphereSurface : public Surface
 {
 public:
     SphereSurface(Vector pos, double r, Vector color, std::string name, OptScene* scene, Material m = wood);
+
+    virtual std::vector<OptProperty> getProperties();
+    virtual bool setProperty(OptPropEnum prop, double val);
     
     virtual bool intersect(Ray ray, double* t) override;
     virtual Vector normal(Vector p) override;
