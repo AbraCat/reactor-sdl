@@ -27,12 +27,14 @@ std::string TextField::getText() { return text; }
 InputField::InputField(Widget* parent, Vector tl, Vector br, std::string text)
     : TextField(parent, tl, br, text)
 {
-    init_text = text;
+    focused = 0;
 }
 
 bool InputField::mousePressEvent(MouseEvent* e)
 {
-    if (inAbsRect({e->x, e->y}) && !focused)
+    bool in_abs_rect = inAbsRect({e->x, e->y});
+
+    if (in_abs_rect && !focused)
     {
         state->focused = this;
         focused = true;
@@ -42,7 +44,7 @@ bool InputField::mousePressEvent(MouseEvent* e)
         return 0;
     }
 
-    if (focused)
+    if (!in_abs_rect && focused)
         update_text();
 
     return 0;
@@ -71,8 +73,8 @@ void InputField::update_text()
     focused = 0;
     if (state->focused == this) state->focused = nullptr;
 
-    if (getText() != init_text) action();
-    init_text = getText();
+    if (getText() != init_text)
+        action();
 }
 
 Button::Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text)

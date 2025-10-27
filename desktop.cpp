@@ -15,14 +15,14 @@ Desktop::Desktop() : Widget(stdtl, stdbr)
     setFillRect(1);
     control = new OptController(this);
 
+    control->addSource({0, -1, 4}, green_col * 0.5, src_size);
+
     control->addSphere({-1, 0, 0}, gray_col, 0.5);
     control->addSphere({1, -0.5, 0}, gray_col, 0.5);
     control->addSphere({0.3, 1, 0}, gray_col, 0.5);
     control->addSphere({0, 0, -12}, gray_col, 5);
     control->addSphere({0, 0, -2}, purple_col, 0.3);
     control->addSphere({0, 0, 3}, white_col, 1, glass);
-    
-    control->addSource({0, -1, 4}, green_col * 0.5, src_size);
 }
 
 Desktop::~Desktop()

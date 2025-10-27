@@ -11,17 +11,23 @@
 #include <cmath>
 #include <cassert>
 
-const double obj_change = 1;
-const int n_move_buttons = 6, obj_button_h = 100;
-
 const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2, -1.15, 4};
 
-const double cam_change_x = 0.5, cam_change_y = 0.5, cam_change_z = 1;
+const double cam_change_x = 0.5, cam_change_y = 0.5, cam_change_z = 1, obj_change = 1;
 
-const int scene_w = 1200, scene_h = scene_w / ratio, button_h = 50, obj_list_w = 150, 
-    scene_scroll_w = 50, properties_w = 400, properties_left = scene_w + obj_list_w + scene_scroll_w,
-    properties_h = 500, n_camera_buttons = 6, max_n_objects = 10;
+const int scene_w = 1200, scene_h = scene_w / ratio, button_h = 50, obj_button_h = 120, 
+    obj_list_w = 150, properties_h = 500, obj_scroll_w = 50, properties_w = 400,
+    properties_left = scene_w + obj_list_w + obj_scroll_w,
+    n_camera_buttons = 6, n_move_buttons = 6, max_n_objects = 10;
 
+
+std::string doubleToStr(double val)
+{
+    std::ostringstream out;
+    out.precision(2);
+    out << std::fixed << val;
+    return std::move(out).str();
+}
 
 ObjControlPanel::ObjControlPanel(Widget* parent, Vector tl, Vector br)
     : Widget(tl, br, parent)
@@ -40,18 +46,33 @@ void ObjControlPanel::setObject(OptObject* obj)
         for (OptProperty prop: obj->getProperties())
             new OptPropWidget(prop_cont, {}, {}, obj, prop);
 
-        new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, -obj_change}, "forward");
-        new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, obj_change}, "back");
-        new MoveObjectButton(button_cont, {}, {}, obj, {-obj_change, 0, 0}, "left");
-        new MoveObjectButton(button_cont, {}, {}, obj, {obj_change, 0, 0}, "right");
-        new MoveObjectButton(button_cont, {}, {}, obj, {0, -obj_change, 0}, "up");
-        new MoveObjectButton(button_cont, {}, {}, obj, {0, obj_change, 0}, "down");
+        new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, -obj_change}, "forward", this);
+        new MoveObjectButton(button_cont, {}, {}, obj, {0, 0, obj_change}, "back", this);
+        new MoveObjectButton(button_cont, {}, {}, obj, {-obj_change, 0, 0}, "left", this);
+        new MoveObjectButton(button_cont, {}, {}, obj, {obj_change, 0, 0}, "right", this);
+        new MoveObjectButton(button_cont, {}, {}, obj, {0, -obj_change, 0}, "up", this);
+        new MoveObjectButton(button_cont, {}, {}, obj, {0, obj_change, 0}, "down", this);
 
         new DeleteObjectButton(button_cont, {}, {}, obj, "delete");
     }
 
     prop_cont->drawRec();
     button_cont->drawRec();
+}
+
+void ObjControlPanel::setDisplayedVal(OptPropEnum prop, double val)
+{
+    for (Widget* w: prop_cont->children)
+    {
+        OptPropWidget* prop_w = dynamic_cast<OptPropWidget*>(w);
+        assert(prop_w != nullptr);
+
+        if (prop_w->val_field->prop.prop == prop)
+        {
+            prop_w->val_field->SetText(doubleToStr(val));
+            break;
+        }
+    }
 }
 
 
@@ -66,10 +87,7 @@ OptPropWidget::OptPropWidget(Widget* parent, Vector tl, Vector br, OptObject* ob
 OptPropField::OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptProperty prop)
     : InputField(parent, tl, br, ""), obj(obj), prop(prop)
 {
-    std::ostringstream out;
-    out.precision(2);
-    out << std::fixed << prop.val;
-    SetText(std::move(out).str());
+    SetText(doubleToStr(prop.val));
 }
 
 void OptPropField::action()
@@ -91,8 +109,8 @@ void OptObjectButton::deactivate() { obj->scene->control->deselect(obj); }
 
 
 MoveObjectButton::MoveObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj,
-    Vector change, std::string text)
-    : Button(parent, tl, br, gray_v, text), obj(obj), change(change)
+    Vector change, std::string text, ObjControlPanel* panel)
+    : Button(parent, tl, br, gray_v, text), obj(obj), change(change), panel(panel)
 {
     //
 }
@@ -100,6 +118,11 @@ MoveObjectButton::MoveObjectButton(Widget* parent, Vector tl, Vector br, OptObje
 void MoveObjectButton::action()
 {
     obj->movePos(change);
+
+    panel->setDisplayedVal(OPT_POS_X, obj->pos.x);
+    panel->setDisplayedVal(OPT_POS_Y, obj->pos.y);
+    panel->setDisplayedVal(OPT_POS_Z, obj->pos.z);
+
     obj->scene->paint();
 }
 
@@ -145,7 +168,7 @@ OptController::OptController(Widget* parent) : parent(parent)
 
     obj_cont = makeObjectContainer({scene_w, 0}, {scene_w + obj_list_w, scene_h + button_h});
     obj_scroll = new ListScrollBar(parent, {scene_w + obj_list_w, 0},
-        {scene_w + obj_list_w + scene_scroll_w, scene_h + button_h}, obj_cont);
+        {scene_w + obj_list_w + obj_scroll_w, scene_h + button_h}, obj_cont);
 }
 
 WList* OptController::makeObjectContainer(Vector tl, Vector br)

@@ -17,7 +17,7 @@ const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2
 const double cam_change_x = 0.5, cam_change_y = 0.5, cam_change_z = 1;
 
 const int scene_w = 1000, scene_h = scene_w / ratio, button_h = 50, obj_list_w = 150, 
-    scene_scroll_w = 30, properties_w = 600, properties_left = scene_w + obj_list_w + scene_scroll_w,
+    obj_scroll_w = 30, properties_w = 600, properties_left = scene_w + obj_list_w + obj_scroll_w,
     n_camera_buttons = 6, max_n_objects = 10;
 
 bool d = 0;

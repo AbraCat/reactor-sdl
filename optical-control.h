@@ -12,7 +12,7 @@ public:
     OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObject* obj, OptProperty prop);
     virtual void action() override;
 
-private:
+// private:
     OptObject* obj;
     OptProperty prop;
 };
@@ -38,15 +38,29 @@ public:
     OptObject* obj;
 };
 
+class MoveCameraButton : public Button
+{
+public:
+    MoveCameraButton(Widget* parent, OptScene* scene, Vector change, Vector color, std::string text);
+    virtual void action() override;
+
+private:
+    OptScene* scene;
+    Vector change;
+};
+
 class MoveObjectButton : public Button
 {
 public:
-    MoveObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, Vector change, std::string text);
+    MoveObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, Vector change,
+        std::string text, ObjControlPanel* panel);
+
     virtual void action() override;
 
 private:
     OptObject* obj;
     Vector change;
+    ObjControlPanel* panel;
 };
 
 class DeleteObjectButton : public Button
@@ -59,18 +73,19 @@ private:
     OptObject* obj;
 };
 
+
+
 class ObjControlPanel : public Widget
 {
 public:
     ObjControlPanel(Widget* parent, Vector tl, Vector br);
     void setObject(OptObject* obj);
+    void setDisplayedVal(OptPropEnum prop, double val);
 
 private:
     OptObject *obj;
     WContainer *prop_cont, *button_cont;
 };
-
-
 
 class OptController
 {
@@ -95,17 +110,6 @@ public:
     WList *obj_cont;
     ListScrollBar *obj_scroll;
     ObjControlPanel* panel;
-};
-
-class MoveCameraButton : public Button
-{
-public:
-    MoveCameraButton(Widget* parent, OptScene* scene, Vector change, Vector color, std::string text);
-    virtual void action() override;
-
-private:
-    OptScene* scene;
-    Vector change;
 };
 
 #endif // OPTICAL_CONTROL_H
