@@ -35,10 +35,10 @@ void drawRect(Vector tl, Vector br, bool fill)
 
 void putText(std::string text, Vector tl, Vector br)
 {
-    double scale = 2, lft_pad = 5, width = 5;
+    double scale = 2, lft_pad = 5, text_h = 5;
 
     SDL_SetRenderScale(rend, scale, scale);
-    SDL_RenderDebugText(rend, (tl.x + lft_pad) / scale, ((tl.y + br.y) / 2 - width) / scale, text.c_str());
+    SDL_RenderDebugText(rend, (tl.x + lft_pad) / scale, ((tl.y + br.y) / 2 - text_h) / scale, text.c_str());
     SDL_SetRenderScale(rend, 1, 1);
 }
 

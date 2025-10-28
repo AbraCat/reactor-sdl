@@ -15,8 +15,8 @@ const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2
 
 const double cam_change_x = 0.5, cam_change_y = 0.5, cam_change_z = 1, obj_change = 1;
 
-const int scene_w = 1200, scene_h = scene_w / ratio, button_h = 50, obj_button_h = 120, 
-    obj_list_w = 150, properties_h = 500, obj_scroll_w = 50, properties_w = 400,
+const int scene_w = 1000, scene_h = scene_w / ratio, button_h = 50, obj_button_h = 120, 
+    obj_list_w = 150, properties_h = scene_h * 0.7, obj_scroll_w = 50, properties_w = 400,
     properties_left = scene_w + obj_list_w + obj_scroll_w,
     n_camera_buttons = 6, n_move_buttons = 6, max_n_objects = 10;
 
@@ -32,6 +32,8 @@ std::string doubleToStr(double val)
 ObjControlPanel::ObjControlPanel(Widget* parent, Vector tl, Vector br)
     : Widget(tl, br, parent)
 {
+    setFillRect(1);
+    
     prop_cont = new WContainer(this, {0, 0}, {width, properties_h}, OPT_TOTAL, 1);
     button_cont = new WContainer(this, {0, properties_h}, wh, n_move_buttons + 1, 1);
 }
@@ -56,8 +58,9 @@ void ObjControlPanel::setObject(OptObject* obj)
         new DeleteObjectButton(button_cont, {}, {}, obj, "delete");
     }
 
-    prop_cont->paintRec();
-    button_cont->paintRec();
+    prop_cont->updateTextureRec();
+    button_cont->updateTextureRec();
+    this->t->updated = 1;
 }
 
 void ObjControlPanel::setDisplayedVal(OptPropEnum prop, double val)
@@ -240,7 +243,7 @@ void OptController::deleteObject(OptObject* obj)
     obj_scroll->moveThumb(0);
 
     delete obj;
-    obj_cont->paintRec();
+    obj_cont->updateTextureRec();
     s->updateTexture();
 }
 

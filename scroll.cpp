@@ -9,6 +9,7 @@ ScrollBar::ScrollBar(Widget* parent, Vector tl, Vector br, double init_frac) : W
 {
     assert(height > width * 3);
     setTextureBorderVisible(1);
+    setFillRect(1);
 
     this->up_button = new ScrollButton({}, {width, width}, this, 1);
     this->down_button = new ScrollButton({0, height - width}, wh, this, 0);

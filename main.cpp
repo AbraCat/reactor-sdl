@@ -13,27 +13,22 @@ static SDL_Renderer *renderer = NULL;
 static Desktop* desktop;
 
 const double fps = 30;
+const int begin_ticks = 1000;
+bool first_frame = 1;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);
 
-    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Hello World", 1920, 1000, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     setRenderer(renderer);
 
-    SDL_FRect re;
-    re.h = re.w = 100;
-    re.x = re.y = 0;
-    SDL_RenderFillRect(renderer, &re);
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-
     state = new State();
-
     desktop = new Desktop();
-    desktop->paintRec();
+
     return SDL_APP_CONTINUE;
 }
 
@@ -84,15 +79,20 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
+    if (first_frame)
+    {
+        desktop->updateTextureRec();
+        first_frame = 0;
+    }
+
+    if (SDL_GetTicks() < begin_ticks)
+        desktop->t->renderRec();
+
     IdleEvent evt;
     desktop->handleEvent(&evt);
 
-    // desktop->t->renderIfUpdatedRec();
-    if (state->needs_rerender)
-    {
-        desktop->t->renderRec();
-        state->needs_rerender = 0;
-    }
+    // desktop->t->renderRec();
+    desktop->t->renderIfUpdatedRec();
     SDL_RenderPresent(renderer);
 
     SDL_Delay(1000.0 / fps);

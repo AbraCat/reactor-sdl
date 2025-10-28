@@ -65,9 +65,8 @@ public:
     virtual void resize(Vector newtl, Vector newbr);
     virtual void movePos(Vector newtl);
 
-    void paint();
-    void paintRec();
     virtual void updateTexture();
+    void updateTextureRec();
 
     virtual bool handleEvent(Event* e);
     virtual bool onIdle(IdleEvent* e);

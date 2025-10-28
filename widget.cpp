@@ -146,17 +146,11 @@ void Widget::drawWidgetRect(bool fill, Vector color)
     t->addRect({{0, 0}, wh}, color, fill);
 }
 
-void Widget::paint()
+void Widget::updateTextureRec()
 {
-    updateTexture();
-    // t->render();
-}
-
-void Widget::paintRec()
-{
-    this->paint();
+    this->updateTexture();
     for (Widget* w: children)
-        w->paintRec();
+        w->updateTextureRec();
 }
 
 void Widget::addWidget(Widget* child)

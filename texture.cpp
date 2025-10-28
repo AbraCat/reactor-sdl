@@ -90,7 +90,9 @@ void Texture::render()
 
 void Texture::paintText()
 {
-    if (text.size() != 0 && visible_in->inAbsRect(w->getAbsTL() + w->wh * 0.5))
+    const double text_h = 10;
+    if (text.size() != 0 && visible_in->inAbsRect(w->getAbsTL() + w->wh * 0.5 + Vector(0, text_h)) &&
+                            visible_in->inAbsRect(w->getAbsTL() + w->wh * 0.5 + Vector(0, -text_h)))
         putText(text, w->getAbsTL(), w->getAbsTL() + w->wh);
 }
 
@@ -101,24 +103,15 @@ void Texture::renderRec()
         child->t->renderRec();
 }
 
-// void Texture::renderIfUpdated()
-// {
-//     if (updated)
-//     {
-//         render();
-//         updated = 0;
-//     }
-// }
+void Texture::renderIfUpdatedRec()
+{
+    if (updated) renderRec();
 
-// void Texture::renderIfUpdatedRec()
-// {
-//     if (updated) renderRec();
+    for (Widget* child: w->children)
+        child->t->renderIfUpdatedRec();
 
-//     for (Widget* child: w->children)
-//         child->t->renderIfUpdatedRec();
-
-//     updated = 0;
-// }
+    updated = 0;
+}
 
 void Texture::clear()
 {
@@ -127,6 +120,8 @@ void Texture::clear()
     rects.clear();
     circles.clear();
     polygons.clear();
+
+    updated = 1;
 }
 
 void Texture::paintPoint(ColPoint p)

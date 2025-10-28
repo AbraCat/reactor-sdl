@@ -53,8 +53,6 @@ void OptScene::updateTexture()
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(pix_queue.begin(), pix_queue.end(), g);
-
-    // redraw_picture = 1;
 }
 
 int calcIdleThread(void* void_data)
@@ -109,7 +107,6 @@ bool OptScene::onIdle(IdleEvent* evt)
         assert(status == 0);
     }
 
-    // t->renderRec();
     return 0;
 }
 

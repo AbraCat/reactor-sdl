@@ -49,6 +49,7 @@ void WContainer::addWidget(Widget* w)
 WList::WList(Widget* parent, Vector tl, Vector br, bool vertical, double child_len)
     : WContainer(parent, tl, br, 1, vertical), child_len(child_len)
 {
+    setFillRect(1);
     scroll_frac = 0;
 
     if (vertical)
@@ -70,7 +71,7 @@ int WList::removeChildByPredicate(std::function<bool(Widget*)> predicate)
     for (int n_child = n_removed; n_child < children.size(); ++n_child)
         resizeChild(n_child);
 
-    paintRec();
+    updateTextureRec();
     return n_removed;
 }
 
@@ -86,7 +87,7 @@ void WList::scroll(double frac)
 {
     scroll_frac = frac;
     propagateAbsPos();
-    // paintRec();
+    t->updated = 1;
 }
 
 bool WList::handleEvent(Event* e)

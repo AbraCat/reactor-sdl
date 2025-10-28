@@ -63,8 +63,7 @@ public:
     Texture(Widget* w);
     virtual void render();
     void renderRec();
-    // void renderIfUpdated();
-    // void renderIfUpdatedRec();
+    void renderIfUpdatedRec();
     void clear();
 
     void setVisibleIn(Widget* w);
