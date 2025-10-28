@@ -228,7 +228,7 @@ void clearInvalidMols(std::vector<Molecule*>& mols)
 bool Reactor::onIdle(IdleEvent* e)
 {
     advance();
-    paint();
+    updateTexture();
     return 0;
 }
 
@@ -259,9 +259,9 @@ void Reactor::advance()
     clearInvalidMols(mols);
 }
 
-void Reactor::paint()
+void Reactor::updateTexture()
 {
-    Widget::paint();
+    Widget::updateTexture();
     t->addRect({walltl, wallbr}, {255, 255, 255}, 0);
 
     for (std::vector<Molecule*>::iterator molIter = mols.begin(); molIter != mols.end(); molIter++)

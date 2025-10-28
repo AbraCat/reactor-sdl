@@ -25,6 +25,7 @@ class State
 public:
     State();
 
+    bool needs_rerender;
     Widget* focused;
 };
 
@@ -64,8 +65,9 @@ public:
     virtual void resize(Vector newtl, Vector newbr);
     virtual void movePos(Vector newtl);
 
-    void drawRec();
-    virtual void paint();
+    void paint();
+    void paintRec();
+    virtual void updateTexture();
 
     virtual bool handleEvent(Event* e);
     virtual bool onIdle(IdleEvent* e);

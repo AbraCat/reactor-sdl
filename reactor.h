@@ -65,7 +65,7 @@ class Reactor : public Widget
 public:
     Reactor(Vector tl, Vector br, Widget* parent);
     ~Reactor();
-    virtual void paint() override;
+    virtual void updateTexture() override;
     virtual void resize(Vector newtl, Vector newbr) override;
 
     virtual bool onIdle(IdleEvent* e) override;

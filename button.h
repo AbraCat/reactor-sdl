@@ -11,7 +11,7 @@ class TextField : public Widget
 {
 public:
     TextField(Widget* parent, Vector tl, Vector br, std::string text, Vector color = blackV);
-    virtual void paint() override;
+    virtual void updateTexture() override;
 
     void SetFieldColor(Vector color);
     void SetText(std::string text);

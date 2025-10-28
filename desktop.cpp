@@ -30,9 +30,9 @@ Desktop::~Desktop()
     //
 }
 
-void Desktop::paint()
+void Desktop::updateTexture()
 {
-    Widget::paint();
+    Widget::updateTexture();
 }
 
 bool Desktop::onIdle(IdleEvent* e)

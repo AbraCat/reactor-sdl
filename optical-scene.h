@@ -14,6 +14,7 @@
 multithreading segfault
 better text rendering
 3 views
+propagate texture transformation
 */
 
 class OptController;
@@ -31,7 +32,7 @@ class OptScene : public Widget
 {
 public:
     OptScene(Widget* parent, Vector tl, Vector br, OptController* control);
-    virtual void paint() override;
+    virtual void updateTexture() override;
     virtual bool onIdle(IdleEvent* evt) override;
 
     Vector screen_to_pixels(Vector p);

@@ -56,8 +56,8 @@ void ObjControlPanel::setObject(OptObject* obj)
         new DeleteObjectButton(button_cont, {}, {}, obj, "delete");
     }
 
-    prop_cont->drawRec();
-    button_cont->drawRec();
+    prop_cont->paintRec();
+    button_cont->paintRec();
 }
 
 void ObjControlPanel::setDisplayedVal(OptPropEnum prop, double val)
@@ -93,7 +93,7 @@ OptPropField::OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObjec
 void OptPropField::action()
 {
     obj->setProperty(prop.prop, std::stod(getText()));
-    obj->scene->paint();
+    obj->scene->updateTexture();
 }
 
 
@@ -123,7 +123,7 @@ void MoveObjectButton::action()
     panel->setDisplayedVal(OPT_POS_Y, obj->pos.y);
     panel->setDisplayedVal(OPT_POS_Z, obj->pos.z);
 
-    obj->scene->paint();
+    obj->scene->updateTexture();
 }
 
 DeleteObjectButton::DeleteObjectButton(Widget* parent, Vector tl, Vector br, OptObject* obj, std::string text)
@@ -206,7 +206,7 @@ void OptController::selected_changed()
         panel->setObject(nullptr);
 
     s->redraw_picture = 0;
-    s->paint();
+    s->updateTexture();
 }
 
 void OptController::deleteObject(OptObject* obj)
@@ -240,8 +240,8 @@ void OptController::deleteObject(OptObject* obj)
     obj_scroll->moveThumb(0);
 
     delete obj;
-    obj_cont->drawRec();
-    s->paint();
+    obj_cont->paintRec();
+    s->updateTexture();
 }
 
 void OptController::addObject(OptObject* obj)

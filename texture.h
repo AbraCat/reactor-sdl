@@ -61,8 +61,10 @@ class Texture : public CoordSystem
 {
 public:
     Texture(Widget* w);
-    virtual void paint();
-    void paintRec();
+    virtual void render();
+    void renderRec();
+    // void renderIfUpdated();
+    // void renderIfUpdatedRec();
     void clear();
 
     void setVisibleIn(Widget* w);
@@ -87,6 +89,7 @@ public:
     void paintText();
 
 // protected:
+    bool updated;
     Widget *w, *visible_in;
 
     std::string text;
@@ -101,7 +104,7 @@ class PixelTexture : public Texture
 public:
     PixelTexture(Widget* w);
     ~PixelTexture();
-    virtual void paint() override;
+    virtual void render() override;
 
     void setPix(int x, int y, Vector col);
     Vector getPix(int x, int y);

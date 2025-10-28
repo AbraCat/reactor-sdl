@@ -6,9 +6,10 @@
 
 State* state = nullptr;
 
-State::State() : focused(nullptr)
+State::State()
 {
-    //
+    focused = nullptr;
+    needs_rerender = 1;
 }
 
 Widget::Widget(Vector tl, Vector br, Widget* parent)
@@ -47,7 +48,7 @@ Widget::~Widget()
     delete t;
 }
 
-void Widget::paint()
+void Widget::updateTexture()
 {
     t->clear();
 
@@ -131,6 +132,8 @@ void Widget::resize(Vector newtl, Vector newbr)
     wh = Vector(width, height);
 
     propagateAbsPos();
+    if (parent != nullptr) parent->t->updated = 1;
+    state->needs_rerender = 1;
 }
 
 void Widget::movePos(Vector newtl)
@@ -143,11 +146,17 @@ void Widget::drawWidgetRect(bool fill, Vector color)
     t->addRect({{0, 0}, wh}, color, fill);
 }
 
-void Widget::drawRec()
+void Widget::paint()
+{
+    updateTexture();
+    // t->render();
+}
+
+void Widget::paintRec()
 {
     this->paint();
     for (Widget* w: children)
-        w->drawRec();
+        w->paintRec();
 }
 
 void Widget::addWidget(Widget* child)

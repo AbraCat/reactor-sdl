@@ -14,26 +14,26 @@ static Desktop* desktop;
 
 const double fps = 30;
 
-/*
-TODO:
-
-propagate texture transformation
-*/
-
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);
 
-    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Hello World", 1800, 1000, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     setRenderer(renderer);
 
+    SDL_FRect re;
+    re.h = re.w = 100;
+    re.x = re.y = 0;
+    SDL_RenderFillRect(renderer, &re);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
     state = new State();
 
     desktop = new Desktop();
-    desktop->drawRec();
+    desktop->paintRec();
     return SDL_APP_CONTINUE;
 }
 
@@ -47,7 +47,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     {
         if (event->key.key == SDLK_RSHIFT) return SDL_APP_SUCCESS;
         if (event->key.repeat == true) return SDL_APP_CONTINUE;
-        // printf("key %c\n", event->key.key);
 
         if (state->focused != nullptr)
         {
@@ -88,7 +87,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     IdleEvent evt;
     desktop->handleEvent(&evt);
 
-    desktop->t->paintRec();
+    // desktop->t->renderIfUpdatedRec();
+    if (state->needs_rerender)
+    {
+        desktop->t->renderRec();
+        state->needs_rerender = 0;
+    }
     SDL_RenderPresent(renderer);
 
     SDL_Delay(1000.0 / fps);

@@ -2,3 +2,4 @@ build/
 vendored/
 run
 replace.cpp
+.vscode/

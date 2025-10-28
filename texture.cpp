@@ -56,6 +56,7 @@ void CoordSystem::rescale(double new_scale_x, double new_scale_y, Vector point)
 
 Texture::Texture(Widget* w) : CoordSystem({0, 0}, 1, 1)
 {
+    this->updated = 1;
     this->w = w;
     this->visible_in = w;
 }
@@ -69,7 +70,7 @@ void Texture::rescaleCentre(double new_scale_x, double new_scale_y)
     rescale(new_scale_x, new_scale_y, w->wh * 0.5);
 }
 
-void Texture::paint()
+void Texture::render()
 {   
     if (w->w_border_visible)
     {
@@ -83,6 +84,8 @@ void Texture::paint()
     for (ColCircle c: circles) paintCircle(c);
     for (ColPolygon pol: polygons) paintPolygon(pol);
     paintText();
+
+    updated = 0;
 }
 
 void Texture::paintText()
@@ -91,12 +94,31 @@ void Texture::paintText()
         putText(text, w->getAbsTL(), w->getAbsTL() + w->wh);
 }
 
-void Texture::paintRec()
+void Texture::renderRec()
 {
-    paint();
+    render();
     for (Widget* child: w->children)
-        child->t->paintRec();
+        child->t->renderRec();
 }
+
+// void Texture::renderIfUpdated()
+// {
+//     if (updated)
+//     {
+//         render();
+//         updated = 0;
+//     }
+// }
+
+// void Texture::renderIfUpdatedRec()
+// {
+//     if (updated) renderRec();
+
+//     for (Widget* child: w->children)
+//         child->t->renderIfUpdatedRec();
+
+//     updated = 0;
+// }
 
 void Texture::clear()
 {
@@ -169,10 +191,27 @@ void Texture::paintPolygon(ColPolygon pol)
     fillConvexPolygon(absPoints);
 }
 
-void Texture::addText(std::string text) { this->text = text; }
-void Texture::addPoint(Vector p, Vector color) { points.push_back({p, color}); }
+void Texture::addText(std::string text)
+{
+    this->text = text;
+    updated = 1;
+    state->needs_rerender = 1;
+}
 
-void Texture::addLine(FixedVec line, Vector color) { lines.push_back({line, color, 0}); }
+void Texture::addPoint(Vector p, Vector color)
+{
+    points.push_back({p, color});
+    updated = 1;
+    state->needs_rerender = 1;
+}
+
+void Texture::addLine(FixedVec line, Vector color)
+{
+    lines.push_back({line, color, 0});
+    updated = 1;
+    state->needs_rerender = 1;
+}
+
 void Texture::addRect(FixedVec rect, Vector color, bool fill)
 {
     if (fill) rects.push_back({rect, color, fill});
@@ -185,16 +224,23 @@ void Texture::addRect(FixedVec rect, Vector color, bool fill)
         addLine({rect.p2, bl}, color);
         addLine({rect.p2, tr}, color);
     }
+
+    updated = 1;
+    state->needs_rerender = 1;
 }
 
 void Texture::addCircle(Vector centre, Vector col, double r, bool fill)
 {
     circles.push_back({centre, col, r, fill});
+    updated = 1;
+    state->needs_rerender = 1;
 }
 
 void Texture::addPolygon(std::vector<Vector> points, Vector color, bool fill)
 {
     polygons.push_back({points, color, fill});
+    updated = 1;
+    state->needs_rerender = 1;
 }
 
 void Texture::addVector(FixedVec v, Vector color)
@@ -207,6 +253,9 @@ void Texture::addVector(FixedVec v, Vector color)
 
     addLine(v, color);
     addPolygon({v.p2, v.p2 + e2, v.p2 + e1}, color, 1);
+
+    updated = 1;
+    state->needs_rerender = 1;
 }
 
 
@@ -219,7 +268,7 @@ PixelTexture::PixelTexture(Widget* w) : Texture(w)
 
 PixelTexture::~PixelTexture() { delete pix; }
 
-void PixelTexture::paint()
+void PixelTexture::render()
 {
     for (int y = 0; y < w->height; ++y)
     {
@@ -230,8 +279,14 @@ void PixelTexture::paint()
         }
     }
 
-    Texture::paint();
+    Texture::render();
 }
 
-void PixelTexture::setPix(int x, int y, Vector col) { pix[y * w->width + x] = col; }
+void PixelTexture::setPix(int x, int y, Vector col)
+{
+    pix[y * w->width + x] = col;
+    updated = 1;
+    state->needs_rerender = 1;
+}
+
 Vector PixelTexture::getPix(int x, int y) { return pix[y * w->width + x]; }

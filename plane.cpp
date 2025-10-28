@@ -39,9 +39,9 @@ void CoordWidget::drawCuts()
         t->addLine({{-cutsLength / t->xScale, y}, {cutsLength / t->xScale, y}}, {255, 255, 255});
 }
 
-void CoordWidget::paint()
+void CoordWidget::updateTexture()
 {
-    Widget::paint();
+    Widget::updateTexture();
 
     if (axisVisible)
     {
@@ -70,9 +70,9 @@ Graph::Graph(Widget* parent, int nGraphs, std::vector<Vector> colors, double ySc
     this->points = std::vector<std::vector<double>>(nGraphs, std::vector<double>(nPoints, 0));
 }
 
-void Graph::paint()
+void Graph::updateTexture()
 {
-    CoordWidget::paint();
+    CoordWidget::updateTexture();
 
     for (int nGraph = 0; nGraph < nGraphs; ++nGraph)
     {
@@ -91,7 +91,7 @@ void Graph::addPoint(std::vector<double> point)
         points[nGraph].erase(points[nGraph].begin());
     }
     
-    paint();
+    updateTexture();
 }
 
 
@@ -108,9 +108,9 @@ Clock::Clock(Widget* parent, Vector tl, Vector br, double scale, double angleSte
     arrow =  {{0, 0, 0}, {arrowLen, 0, 0}};
 }
 
-void Clock::paint()
+void Clock::updateTexture()
 {
-    CoordWidget::paint();
+    CoordWidget::updateTexture();
 
     t->addCircle({}, whiteV, arrowLen, 0);
     
@@ -130,6 +130,6 @@ void Clock::paint()
 bool Clock::onIdle(IdleEvent* e)
 {
     arrow = rotateV(arrow, angleStep);
-    paint();
+    updateTexture();
     return 0;
 }

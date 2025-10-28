@@ -9,7 +9,7 @@
 #include <cassert>
 
 const double ratio = 16.0 / 9.0, screen_size = 4, obj_change = 1;
-const int max_depth = 10, n_diffuse_rays = 1, n_shadow_rays = 1, n_move_buttons = 6, obj_button_h = 100,
+const int max_depth = 8, n_diffuse_rays = 1, n_shadow_rays = 1, n_move_buttons = 6, obj_button_h = 100,
     n_threads = 1, pix_per_frame = 5e4, select_rect_size = 75;
 
 const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2, -1.15, 4};
@@ -29,7 +29,7 @@ struct RenderThreadData
     std::vector<IntVec>* thread_pix;
 };
 
-void OptScene::paint()
+void OptScene::updateTexture()
 {
     t->clear();
     for (OptObject* obj: selected)
@@ -109,6 +109,7 @@ bool OptScene::onIdle(IdleEvent* evt)
         assert(status == 0);
     }
 
+    // t->renderRec();
     return 0;
 }
 
@@ -273,5 +274,5 @@ void OptScene::moveCamera(Vector change)
 {
     V += change;
     screen_tl += change;
-    paint();
+    updateTexture();
 }

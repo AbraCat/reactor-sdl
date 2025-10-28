@@ -13,7 +13,7 @@ public:
     Desktop();
     ~Desktop();
 
-    virtual void paint() override;
+    virtual void updateTexture() override;
     virtual bool onIdle(IdleEvent* e) override;
 
 private:

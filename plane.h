@@ -15,7 +15,7 @@ public:
 
     void setAxisVisible(bool axisVisible);
     void drawCuts();
-    virtual void paint() override;
+    virtual void updateTexture() override;
 
 protected:
     Vector planeTL, planeBR;
@@ -30,7 +30,7 @@ public:
     Graph(Widget* parent, int nGraphs, std::vector<Vector> colors, double yScale, double cutStepY, 
         Vector tl, Vector br);
 
-    virtual void paint() override;
+    virtual void updateTexture() override;
     void addPoint(std::vector<double> point);
 
 private:
@@ -43,7 +43,7 @@ class Clock : public CoordWidget
 {
 public:
     Clock(Widget* parent, Vector tl, Vector br, double scale, double angleStep, double arrowLen);
-    virtual void paint() override;
+    virtual void updateTexture() override;
     virtual bool onIdle(IdleEvent* e) override;
     
 private:

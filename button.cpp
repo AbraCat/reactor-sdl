@@ -12,16 +12,16 @@ TextField::TextField(Widget* parent, Vector tl, Vector br, std::string text, Vec
     setTextureBorderVisible(1);
 }
 
-void TextField::paint()
+void TextField::updateTexture()
 {
-    Widget::paint();
+    Widget::updateTexture();
     drawWidgetRect(1, color);
     
     t->addText(text);
 }
 
-void TextField::SetFieldColor(Vector color) { this->color = color; paint(); }
-void TextField::SetText(std::string text) { this->text = text; paint(); }
+void TextField::SetFieldColor(Vector color) { this->color = color; updateTexture(); }
+void TextField::SetText(std::string text) { this->text = text; updateTexture(); }
 std::string TextField::getText() { return text; }
 
 InputField::InputField(Widget* parent, Vector tl, Vector br, std::string text)
@@ -96,7 +96,7 @@ bool Button::mousePressEvent(MouseEvent* e)
 
     is_pressed = 1;
     SetFieldColor(press_color);
-    paint();
+    updateTexture();
     action();
     return 0;
 }
@@ -107,7 +107,7 @@ bool Button::mouseReleaseEvent(MouseEvent* e)
 
     is_pressed = 0;
     SetFieldColor(unpress_color);
-    paint();
+    updateTexture();
     return 0;
 }
 
