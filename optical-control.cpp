@@ -15,9 +15,9 @@ const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2
 
 const double cam_change_x = 0.5, cam_change_y = 0.5, cam_change_z = 1, obj_change = 1;
 
-const int scene_w = 1000, scene_h = scene_w / ratio, button_h = 50, obj_button_h = 120, 
-    obj_list_w = 150, properties_h = scene_h * 0.7, obj_scroll_w = 50, properties_w = 400,
-    properties_left = scene_w + obj_list_w + obj_scroll_w,
+const int scene_w = 1000, scene_h = scene_w / ratio, button_h = 50, obj_list_w = 150,
+    obj_button_h = obj_list_w / 1.4, properties_h = scene_h * 0.7, obj_scroll_w = 50, 
+    properties_w = 400, properties_left = scene_w + obj_list_w + obj_scroll_w,
     n_camera_buttons = 6, n_move_buttons = 6, max_n_objects = 10;
 
 
@@ -91,6 +91,18 @@ OptPropField::OptPropField(OptPropWidget* parent, Vector tl, Vector br, OptObjec
     : InputField(parent, tl, br, ""), obj(obj), prop(prop)
 {
     SetText(doubleToStr(prop.val));
+
+    setValidator([](std::string s){
+        try
+        {
+            double val = std::stod(s);
+            return true;
+        }
+        catch(std::exception& e)
+        {
+            return false;
+        }
+    });
 }
 
 void OptPropField::action()

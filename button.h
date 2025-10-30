@@ -33,8 +33,11 @@ public:
     void update_text();
     virtual void action() = 0;
 
+    void setValidator(std::function<bool(std::string)> text_valid);
+
     bool focused;
     std::string init_text;
+    std::function<bool(std::string)> text_valid;
 };
 
 class Button : public TextField

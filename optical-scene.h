@@ -10,13 +10,6 @@
 #include "button.h"
 #include "scroll.h"
 
-/*
-multithreading segfault
-better text rendering
-3 views
-propagate texture transformation
-*/
-
 class OptController;
 
 using SurfaceIt = std::vector<Surface*>::iterator;

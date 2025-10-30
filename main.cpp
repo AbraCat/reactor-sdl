@@ -16,6 +16,17 @@ const double fps = 30;
 const int begin_ticks = 1000;
 bool first_frame = 1;
 
+/*
+virtual functions:
+copying object
+saving and reading scene configuration to/from file
+
+multithreading segfault
+better text rendering
+3 views
+propagate texture transformation
+*/
+
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);

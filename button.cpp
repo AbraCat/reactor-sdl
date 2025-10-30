@@ -28,6 +28,7 @@ InputField::InputField(Widget* parent, Vector tl, Vector br, std::string text)
     : TextField(parent, tl, br, text)
 {
     focused = 0;
+    this->text_valid = std::function([](std::string s){ return true; });
 }
 
 bool InputField::mousePressEvent(MouseEvent* e)
@@ -73,8 +74,24 @@ void InputField::update_text()
     focused = 0;
     if (state->focused == this) state->focused = nullptr;
 
+    std::string new_text = getText();
     if (getText() != init_text)
-        action();
+    {
+        if (text_valid(new_text))
+        {
+            action();
+        }
+        else
+        {
+            SetText(init_text);
+        }
+
+    }
+}
+
+void InputField::setValidator(std::function<bool(std::string)> text_valid)
+{
+    this->text_valid = text_valid;
 }
 
 Button::Button(Widget* parent, Vector tl, Vector br, Vector color, std::string text)
