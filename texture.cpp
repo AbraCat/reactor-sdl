@@ -3,6 +3,71 @@
 #include "widget.h"
 #include "assert.h"
 
+#include "texture.hpp"
+#include "color.hpp"
+
+dr4::Texture::Texture(dr4::Vec2f size) : w(size.x), h(size.y)
+{
+    pix = new dr4::Color[(int)(w * h + 1)];
+}
+
+void dr4::Texture::SetSize(Vec2f size) { w = size.x; h = size.y; }
+
+dr4::Vec2f dr4::Texture::GetSize() { return Vec2f(w, h); }
+
+float dr4::Texture::Width() { return w; }
+
+float dr4::Texture::Height() { return h; }
+
+void dr4::Texture::Draw(Texture &texture, const dr4::Vec2f &pos)
+{
+    int x_lower = std::max(0, (int)pos.x), y_lower = std::max(0, (int)pos.y);
+    int x_upper = std::min(w, int(pos.x + texture.Width())), y_upper = std::min(h, int(pos.y + texture.Height()));
+
+    for (int x = x_lower; x < x_upper; ++x)
+    {
+        for (int y = x_lower; y < y_upper; ++y)
+        {
+            SetPix(x, y, texture.GetPix(x - texture.Width(), y - texture.Height()));
+        }
+    }
+}
+
+void dr4::Rectangle::DrawOn(Texture &texture) {
+    FixedVec texture_rect(Vector(0, 0), Vector(texture.w, texture.h)),
+        this_rect(Vector(rect.pos.x, rect.pos.y), Vector(rect.size.x, rect.size.y));
+
+    FixedVec drawn_rect;
+    if(!rectIntersection(texture_rect, this_rect, &drawn_rect))
+        return;
+
+    for (int x = drawn_rect.p1.x; x < drawn_rect.p2.x; ++x)
+    {
+        for (int y = drawn_rect.p1.y; y < drawn_rect.p2.y; ++y)
+        {
+            texture.SetPix(x, y, fill);
+        }
+    }
+
+    for (int x = drawn_rect.p1.x; x < drawn_rect.p2.x; ++x)
+    {
+        texture.SetPix(x, drawn_rect.p1.y, borderColor);
+        texture.SetPix(x, drawn_rect.p2.y, borderColor);
+    }
+    for (int y = drawn_rect.p1.y; y < drawn_rect.p2.y; ++y)
+    {
+        texture.SetPix(drawn_rect.p1.x, y, borderColor);
+        texture.SetPix(drawn_rect.p2.x, y, borderColor);
+    }
+}
+
+
+
+
+
+
+
+
 CoordSystem::CoordSystem(Vector centre, double xScale, double yScale) :
     centre(centre), xScale(xScale), yScale(yScale)
 {

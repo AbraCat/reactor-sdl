@@ -12,9 +12,13 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 # Create your game executable target as usual
 add_executable(hello WIN32 main.cpp sdl-adapter.cpp plane.cpp texture.cpp event.cpp widget.cpp wcontainer.cpp
     myvector.cpp reactor.cpp desktop.cpp button.cpp scroll.cpp optical-scene.cpp optical-object.cpp
-    optical-control.cpp)
+    optical-control.cpp
+    
+    window.cpp)
 
 # Link to the actual SDL3 library.
 target_link_libraries(hello PRIVATE SDL3::SDL3)
+
+target_include_directories(hello PRIVATE ./include/cum ./include/hui ./include/dr4 ./include/dr4/math)
 
 target_compile_options(hello PRIVATE -Wno-narrowing)

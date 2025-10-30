@@ -44,6 +44,9 @@ public:
 class FixedVec
 {
 public:
+    FixedVec();
+    FixedVec(Vector p1, Vector p2);
+
     Vector p1, p2;
 };
 
