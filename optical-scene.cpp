@@ -158,27 +158,23 @@ void OptScene::Redraw()
 //         s->pix_texture->setPix(pix.x, pix.y, color * 255);
 //     }
 
-    // printf("%lf %lf\n", size.x, size.y);s
+    dr4::MyImage img(size.x, size.y);
 
-    for (int x = 0; x < size.x; ++x)
+    for (int x = 0; x < size.x - 1; ++x)
     {
-        for (int y = 0; y < size.y; ++y)
+        for (int y = 0; y < size.y - 1; ++y)
         {
-            if (x == 195 && y == 150) d = 1;
             Vector p = pixels_to_screen(IntVec(x, y));
 
             Ray ray(V, p - V);
             Vector traced_color = traceRay(ray, 0);
             Vector color = limitVector(traced_color, 0, 1) * 255;
 
-            // pix_texture->setPix(pix.x, pix.y, color * 255);
-
-            dr4::Rectangle rect(dr4::Rect2f(dr4::Vec2f(x, y),
-                dr4::Vec2f(1, 1)), dr4::Color(color.x, color.y, color.z, 255), dr4::Color(0, 0, 0, 0));
-
-            texture->Draw(rect);
+            img.SetPix(x, y, dr4::Color(color.x, color.y, color.z, 255));
         }
     }
+    
+    texture->Draw(img);
 }
 
 Vector OptScene::screen_to_pixels(Vector p)
