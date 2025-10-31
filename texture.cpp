@@ -67,19 +67,20 @@ float dr4::MyTexture::Width() const { return w; }
 
 float dr4::MyTexture::Height() const { return h; }
 
-// void dr4::MyTexture::Draw(Texture &texture, const dr4::Vec2f &pos)
-// {
-//     int x_lower = std::max(0, (int)pos.x), y_lower = std::max(0, (int)pos.y);
-//     int x_upper = std::min(w, int(pos.x + texture.Width())), y_upper = std::min(h, int(pos.y + texture.Height()));
+void dr4::MyTexture::Draw(Texture &texture, const dr4::Vec2f &pos)
+{
+    MyTexture* sdl_t = dynamic_cast<MyTexture*>(&texture);
+    assert(sdl_t != nullptr);
 
-//     for (int x = x_lower; x < x_upper; ++x)
-//     {
-//         for (int y = x_lower; y < y_upper; ++y)
-//         {
-//             SetPix(x, y, texture.GetPix(x - texture.Width(), y - texture.Height()));
-//         }
-//     }
-// }
+    SDL_SetRenderTarget(getRenderer(), this->t);
+
+    SDL_FRect dst_rect;
+    dst_rect.x = pos.x;
+    dst_rect.y = pos.y;
+    dst_rect.w = texture.Width();
+    dst_rect.h = texture.Height();
+    SDL_RenderTexture(getRenderer(), sdl_t->t, NULL, &dst_rect);
+}
 
 void dr4::MyTexture::Draw(const Rectangle &rect)
 {

@@ -24,6 +24,8 @@ public:
     MyContainerWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size);
     ~MyContainerWidget();
 
+    virtual void DrawOnParent() override;
+
     virtual void addChild(hui::Widget* w);
     virtual EventResult PropogateToChildren(Event &event) override;
 

@@ -5,9 +5,10 @@
 #include "sdl-adapter.h"
 #include "window.hpp"
 #include "texture.hpp"
+#include "my-dr4-plugin.h"
 
-static dr4::MyWindow* window = NULL;
-static dr4::Texture* root_texture = NULL;
+static dr4::Window* window = NULL;
+dr4::DR4Backend* plugin = NULL;
 
 const double fps = 30;
 const int begin_ticks = 1000, width = 1920, height = 1000;
@@ -30,13 +31,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(1);
 
-    window = new dr4::MyWindow(dr4::Vec2f(width, height), "Optical Constructor");
+    plugin = dr4::CreateDR4Backend();
+    window = plugin->CreateWindow();
+
+    // window = new dr4::MyWindow(dr4::Vec2f(width, height), "Optical Constructor");
     window->Open();
-
-    // state = new State();
-    // desktop = new Desktop();
-
-    // window->Display();
 
     return SDL_APP_CONTINUE;
 }
@@ -105,9 +104,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-    // delete desktop;
-    // delete state;
-
     window->Close();
     delete window;
 }

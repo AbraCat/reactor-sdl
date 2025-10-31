@@ -25,7 +25,8 @@ public:
     /// Redraws widget's texture
     virtual void Redraw() = 0;
 
-    // EventResult OnMouseDown(MouseDownEvent &evt);
+    virtual EventResult OnIdle(IdleEvent &evt);
+    virtual EventResult OnMouseDown(MouseDownEvent &evt);
     /// TODO : ... other handlers
 
 public:
@@ -44,20 +45,9 @@ public:
     virtual Widget *GetParent() const;
     virtual void SetParent(Widget *parent_);
 
-    // void DrawOn(dr4::Texture &texture);
-};
+    void DrawOn(dr4::Texture &texture);
 
-class MyWidget : public hui::Widget
-{
-    //
-};
-
-class TestWidget : public Widget
-{
-public:
-    TestWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size);
-
-    virtual void Redraw() override;
+    virtual void DrawOnParent();
 };
 
 }; // namespace hui

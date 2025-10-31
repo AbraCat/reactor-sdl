@@ -118,7 +118,7 @@ Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 OptScene::OptScene(hui::State* state, Widget* parent, dr4::Vec2f pos, dr4::Vec2f size)
     : hui::Widget(state, pos, size) //, control(control)
 {
-    control = nullptr;
+    // control = nullptr;
 
     V = init_V;
     screen_tl = init_screen_tl;

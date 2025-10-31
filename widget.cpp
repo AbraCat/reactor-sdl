@@ -35,26 +35,48 @@ dr4::Vec2f hui::Widget::GetSize() const { return texture->GetSize(); }
  hui::Widget* hui::Widget::GetParent() const { return parent; };
  void hui::Widget::SetParent(Widget *parent_) { parent = parent_; }
 
-// void hui::Widget::DrawOn(dr4::Texture &texture) {
-//     // if (textureIsInvalid) {
-//     //     Redraw();
-//     //     textureIsInvalid = false;
-//     // }
-//     // texture.Draw(texture, relPos);
+hui::EventResult hui::Widget::OnIdle(IdleEvent &evt)
+{
+    return hui::EventResult::UNHANDLED;
+}
+
+hui::EventResult hui::Widget::OnMouseDown(MouseDownEvent &evt)
+{
+    return hui::EventResult::UNHANDLED;
+}
+
+void hui::Widget::DrawOn(dr4::Texture &texture) {
+    // if (textureIsInvalid) {
+    //     Redraw();
+    //     textureIsInvalid = false;
+    // }
+    // texture.Draw(texture, relPos);
+
+    Redraw();
+    texture.Draw(*(this->texture), relPos);
+}
+
+void hui::Widget::DrawOnParent()
+{
+    if (parent == nullptr) return;
+    DrawOn(*parent->texture);
+}
+
+
+
+
+// hui::TestWidget::TestWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)
+//     : Widget(state, pos, size)
+// {
+//     //
 // }
 
-hui::TestWidget::TestWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)
-    : Widget(state, pos, size)
-{
-    //
-}
-
-void hui::TestWidget::Redraw()
-{
-    dr4::Rectangle rect(dr4::Rect2f(dr4::Vec2f(100, 100),
-        dr4::Vec2f(100, 100)), dr4::Color(255, 0, 0, 255), dr4::Color(0, 0, 0, 0));
-    texture->Draw(rect);
-}
+// void hui::TestWidget::Redraw()
+// {
+//     dr4::Rectangle rect(dr4::Rect2f(dr4::Vec2f(100, 100),
+//         dr4::Vec2f(100, 100)), dr4::Color(255, 0, 0, 255), dr4::Color(0, 0, 0, 0));
+//     texture->Draw(rect);
+// }
 
 
 

@@ -78,7 +78,7 @@ namespace dr4
 
         virtual void Draw(const Rectangle &rect) = 0;
         virtual void Draw(const Image &img) = 0;
-        // virtual void Draw(Texture &texture, const Vec2f &pos) = 0;
+        virtual void Draw(Texture &texture, const Vec2f &pos) = 0;
 
         // virtual void Draw(const Image &img) = 0;
         // virtual Image* lock() = 0;
@@ -96,7 +96,7 @@ namespace dr4
         virtual float Height() const;
 
         virtual void Draw(const Rectangle &rect);
-        // virtual void Draw(Texture &texture, const Vec2f &pos);
+        virtual void Draw(Texture &texture, const Vec2f &pos);
         virtual void Draw(const Image &img) override;
 
         bool lockable;

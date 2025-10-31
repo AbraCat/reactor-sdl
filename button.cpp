@@ -6,23 +6,27 @@
 const double unpressColorCoeff = 0.7;
 const int key_enter = 13;
 
-TextField::TextField(Widget* parent, Vector tl, Vector br, std::string text, Vector color)
-    : Widget(tl, br, parent), color(color), text(text)
+TextField::TextField(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)
+    : Widget(state, pos, size), color(color), text(text)
 {
-    setTextureBorderVisible(1);
+    // setTextureBorderVisible(1);
 }
 
-void TextField::updateTexture()
+void TextField::Redraw()
 {
-    Widget::updateTexture();
-    drawWidgetRect(1, color);
+    // Widget::Redraw();
+    // drawWidgetRect(1, color);
     
-    t->addText(text);
+    // t->addText(text);
+
+    //
 }
 
-void TextField::SetFieldColor(Vector color) { this->color = color; updateTexture(); }
-void TextField::SetText(std::string text) { this->text = text; updateTexture(); }
+void TextField::SetFieldColor(Vector color) { this->color = color; Redraw(); }
+void TextField::SetText(std::string text) { this->text = text; Redraw(); }
 std::string TextField::getText() { return text; }
+
+#if 0
 
 InputField::InputField(Widget* parent, Vector tl, Vector br, std::string text)
     : TextField(parent, tl, br, text)
@@ -160,42 +164,4 @@ bool ToggleButton::mouseReleaseEvent(MouseEvent* e)
     Widget::mouseReleaseEvent(e);
     return 0;
 }
-
-
-
-
-MoveWallButton::MoveWallButton(Widget* parent, Reactor* reactor, Vector color, int step, std::string text)
-    : Button(parent, Vector(), Vector(), color, text)
-{
-    this->reactor = reactor;
-    this->step = step;
-}
-
-void MoveWallButton::action()
-{
-    reactor->moveWall(step);
-}
-
-TemperatureButton::TemperatureButton(Widget* parent, Reactor* reactor, Vector color, double step, std::string text)
-    : Button(parent, Vector(), Vector(), color, text)
-{
-    this->reactor = reactor;
-    this->step = step;
-}
-
-void TemperatureButton::action()
-{
-    reactor->increaseTemp(step);
-}
-
-AddMolButton::AddMolButton(Widget* parent, Reactor* reactor, Vector color, int nAddMols, std::string text)
-    : Button(parent, Vector(), Vector(), color, text)
-{
-    this->reactor = reactor;
-    this->nAddMols = nAddMols;
-}
-
-void AddMolButton::action()
-{
-    reactor->addRandomMols(nAddMols);
-}
+#endif // 0

@@ -4,14 +4,14 @@
 #include <set>
 
 #include "optical-object.h"
-#include "wcontainer.h"
-#include "plane.h"
-#include "button.h"
-#include "scroll.h"
+// #include "wcontainer.h"
+// #include "plane.h"
+// #include "button.h"
+// #include "scroll.h"
 
 #include "widget.hpp"
 
-class OptController;
+// class OptController;
 
 using SurfaceIt = std::vector<Surface*>::iterator;
 using SourceIt = std::vector<Source*>::iterator;
@@ -54,7 +54,7 @@ public:
     std::vector<Source*> sources;
     std::set<OptObject*> selected;
 
-    OptController* control;
+    // OptController* control;
     // std::vector<IntVec> pix_queue;
     // PixelTexture *pix_texture;
 };

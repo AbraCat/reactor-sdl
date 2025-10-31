@@ -3,6 +3,7 @@
 
 #include "sdl-adapter.h"
 #include "optical-scene.h"
+#include "desktop.h"
 
 #include <cassert>
 
@@ -38,7 +39,7 @@ dr4::Vec2f dr4::MyWindow::GetSize() const
 void dr4::MyWindow::Open()
 {
     SDL_Renderer* rend;
-    if (!SDL_CreateWindowAndRenderer("Hello World", width, height, SDL_WINDOW_RESIZABLE, &window, &rend)) {
+    if (!SDL_CreateWindowAndRenderer(title.c_str(), width, height, SDL_WINDOW_RESIZABLE, &window, &rend)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return;
     }
@@ -48,9 +49,11 @@ void dr4::MyWindow::Open()
 
     // this->root_widget = new hui::TestWidget(hui_state, Vec2f(0, 0), Vec2f(width, height));
     const int scene_w = 1000;
-    root_widget = new OptScene(hui_state, nullptr, dr4::Vec2f(0, 0), dr4::Vec2f(scene_w, scene_w / ratio));
+    root_widget = new Desktop(hui_state, dr4::Vec2f(width, height));
+    // root_widget = new OptScene(hui_state, nullptr, dr4::Vec2f(0, 0), dr4::Vec2f(scene_w, scene_w / ratio));
 
-    root_widget->Redraw();
+    // root_widget->Redraw();
+    root_widget->DrawOnParent();
 }
 
 bool dr4::MyWindow::IsOpen() const { return is_open; }

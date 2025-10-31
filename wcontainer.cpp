@@ -24,6 +24,16 @@ hui::MyContainerWidget::~MyContainerWidget()
     }
 }
 
+void hui::MyContainerWidget::DrawOnParent()
+{
+    for (hui::Widget* w: children)
+    {
+        w->DrawOnParent();
+    }
+
+    hui::Widget::DrawOnParent();
+}
+
 void hui::MyContainerWidget::addChild(hui::Widget* w)
 {
     children.push_back(w);
@@ -32,6 +42,8 @@ void hui::MyContainerWidget::addChild(hui::Widget* w)
 
 hui::EventResult hui::MyContainerWidget::PropogateToChildren(Event &event)
 {
+    // TODO: change event coordinates
+
     for (Widget* w: children)
     {
         EventResult res = hui::EventResult::UNHANDLED;
@@ -45,6 +57,8 @@ hui::EventResult hui::MyContainerWidget::PropogateToChildren(Event &event)
 
     return event.Apply(*this);
 }
+
+
 
 
 

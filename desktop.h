@@ -5,24 +5,31 @@
 #include "plane.h"
 #include "reactor.h"
 #include "button.h"
-#include "optical-control.h"
+// #include "optical-control.h"
+#include "optical-scene.h"
 
-class Desktop : public Widget
+#include "widget.hpp"
+#include "container.hpp"
+#include "vec2.hpp"
+
+class Desktop : public hui::MyContainerWidget
 {
 public:
-    Desktop();
+    Desktop(hui::State* state, dr4::Vec2f size);
     ~Desktop();
 
-    virtual void updateTexture() override;
-    virtual bool onIdle(IdleEvent* e) override;
+    virtual void Redraw() override;
+
+    // virtual void updateTexture() override;
+    // virtual bool onIdle(IdleEvent* e) override;
 
 private:
     Reactor *reactor;
     Graph *energy_graph, *cnt_graph;
     Clock* clock;
-    WContainer *button_cont;
+    // WContainer *button_cont;
 
-    OptController* control;
+    // OptController* control;
 };
 
 #endif // MY_APP_H
