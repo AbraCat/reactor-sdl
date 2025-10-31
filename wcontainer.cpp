@@ -1,5 +1,51 @@
 #include "wcontainer.h"
 
+#include "container.hpp"
+
+
+
+hui::ContainerWidget::ContainerWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)
+    : hui::Widget(state, pos, size)
+{
+    //
+}
+
+hui::MyContainerWidget::MyContainerWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)
+    : hui::ContainerWidget(state, pos, size)
+{
+    //
+}
+
+hui::MyContainerWidget::~MyContainerWidget()
+{
+    for (hui::Widget* w: children)
+    {
+        delete w;
+    }
+}
+
+void hui::MyContainerWidget::addChild(hui::Widget* w)
+{
+    children.push_back(w);
+    w->SetParent(this);
+}
+
+hui::EventResult hui::MyContainerWidget::PropogateToChildren(Event &event)
+{
+    for (Widget* w: children)
+    {
+        EventResult res = hui::EventResult::UNHANDLED;
+        ContainerWidget* container = dynamic_cast<ContainerWidget*>(w);
+
+        if (container == nullptr) res = event.Apply(*w);
+        else res = container->PropogateToChildren(event);
+
+        if (res == EventResult::HANDLED) return res;
+    }
+
+    return event.Apply(*this);
+}
+
 
 
 WContainer::WContainer(Widget* parent, Vector tl, Vector br, int nChildren, bool vertical)

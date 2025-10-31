@@ -15,7 +15,7 @@ State* state = nullptr;
 
 hui::Widget::Widget(hui::State *state) : hui::Widget(state, dr4::Vec2f(), dr4::Vec2f(300, 300))
 {
-    assert(0);
+    // assert(0);
 }
 
 hui::Widget::Widget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)

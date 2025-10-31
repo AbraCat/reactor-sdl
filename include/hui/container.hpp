@@ -4,16 +4,30 @@
 #include "event.hpp"
 #include "widget.hpp"
 
+#include <vector>
+
 namespace hui {
 
-class ContainerWidget : public Widget {
-
-protected:
-
+class ContainerWidget : public hui::Widget {
+public:
+    ContainerWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size);
+// protected:
     virtual EventResult PropogateToChildren(Event &event) = 0;
 
     // TODO: reimplement methods using that
 
+};
+
+class MyContainerWidget : public ContainerWidget
+{
+public:
+    MyContainerWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size);
+    ~MyContainerWidget();
+
+    virtual void addChild(hui::Widget* w);
+    virtual EventResult PropogateToChildren(Event &event) override;
+
+    std::vector<hui::Widget*> children;
 };
 
 };
