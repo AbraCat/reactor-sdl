@@ -9,6 +9,7 @@ const double Pi = 3.1415926;
 static SDL_Renderer* rend = nullptr;
 
 void setRenderer(SDL_Renderer* renderer) { rend = renderer; }
+SDL_Renderer* getRenderer() { return rend; }
 void setColor(Vector color) { SDL_SetRenderDrawColor(rend, color.x, color.y, color.z, 255); }
 
 void drawPoint(Vector p)

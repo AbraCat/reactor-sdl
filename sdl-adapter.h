@@ -8,6 +8,7 @@
 #include <string>
 
 void setRenderer(SDL_Renderer* renderer);
+SDL_Renderer* getRenderer();
 void setColor(Vector color);
 
 void drawPoint(Vector p);

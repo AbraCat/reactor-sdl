@@ -4,7 +4,7 @@
 #include <string>
 #include <optional>
 
-#include "event.hpp"
+// #include "event.hpp"
 #include "color.hpp"
 #include "vec2.hpp"
 #include "texture.hpp"
@@ -30,9 +30,7 @@ public:
     virtual void Close() = 0;
 
     // virtual void Clear(const Color &color) = 0;
-
-    // virtual void Draw(const Drawable &object) = 0;
-    // virtual void Draw(const Texture &texture, Vec2f pos) = 0;
+    virtual void Draw(const Texture &texture, Vec2f pos) = 0;
 
     virtual void Display() = 0;
 
@@ -40,15 +38,15 @@ public:
 };
 
 class MyWindow : public Window {
-    // hui::Widget* root_widget;
-    // dr4::Texture root_texture;
+public:
+    hui::Widget* root_widget;
+    // dr4::MyTexture* root_texture;
 
     std::string title;
     int width, height;
     bool is_open;
 
     SDL_Window *window;
-    SDL_Renderer *renderer;
 
 public:
     MyWindow(Vec2f size, std::string title);
@@ -65,7 +63,7 @@ public:
     // virtual void Clear(const Color &color);
 
     // virtual void Draw(const Drawable &object);
-    // virtual void Draw(const Texture &texture, Vec2f pos);
+    virtual void Draw(const Texture &texture, Vec2f pos) override;
 
     virtual void Display();
 

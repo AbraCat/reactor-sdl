@@ -9,44 +9,55 @@ namespace hui {
 
 class State;
 
-class Widget : public dr4::Drawable {
+class Widget {
 
 protected:
 
     dr4::Vec2f relPos; ///< Relative to parent
     Widget *parent = nullptr;
     State *const state;
-    dr4::Texture *const texture;
     bool textureIsInvalid;
 
+    dr4::Vec2f size;
+
+public:
+    dr4::MyTexture *texture; // *const
     /// Redraws widget's texture
     virtual void Redraw() = 0;
 
-    EventResult OnMouseDown(MouseDownEvent &evt);
+    // EventResult OnMouseDown(MouseDownEvent &evt);
     /// TODO : ... other handlers
 
 public:
 
-    Widget(State *state);
+    Widget(hui::State *state);
+    Widget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size);
 
     // REVIEW : move implementations to cpp files?
     
-    dr4::Vec2f GetRelPos() const { return relPos; };
-    virtual void SetRelPos(dr4::Vec2f pos) { relPos = pos; };
+    dr4::Vec2f GetRelPos() const;
+    virtual void SetRelPos(dr4::Vec2f pos);
 
-    dr4::Vec2f GetSize() const { return texture->GetSize(); }
-    virtual void SetSize(dr4::Vec2f size) { texture->SetSize(size); }
+    dr4::Vec2f GetSize() const;
+    virtual void SetSize(dr4::Vec2f size);
 
-    virtual Widget *GetParent() const { return parent; };
-    virtual void SetParent(Widget *parent_) { parent = parent_; }
+    virtual Widget *GetParent() const;
+    virtual void SetParent(Widget *parent_);
 
-    void DrawOn(dr4::Texture &texture) override {
-        if (textureIsInvalid) {
-            Redraw();
-            textureIsInvalid = false;
-        }
-        texture.Draw(texture, relPos);
-    }
+    // void DrawOn(dr4::Texture &texture);
+};
+
+class MyWidget : public hui::Widget
+{
+    //
+};
+
+class TestWidget : public Widget
+{
+public:
+    TestWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size);
+
+    virtual void Redraw() override;
 };
 
 }; // namespace hui

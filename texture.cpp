@@ -6,61 +6,107 @@
 #include "texture.hpp"
 #include "color.hpp"
 
-dr4::Texture::Texture(dr4::Vec2f size) : w(size.x), h(size.y)
+const int pix_bytes = 3;
+
+dr4::Rectangle::Rectangle(Rect2f r, Color fill, Color border_col)
+    : rect(r), fill(fill), borderColor(border_col)
 {
-    pix = new dr4::Color[(int)(w * h + 1)];
+    // printf("created rect: %lf %lf\n", r.pos.x, r.pos.y);
 }
 
-void dr4::Texture::SetSize(Vec2f size) { w = size.x; h = size.y; }
 
-dr4::Vec2f dr4::Texture::GetSize() { return Vec2f(w, h); }
 
-float dr4::Texture::Width() { return w; }
 
-float dr4::Texture::Height() { return h; }
-
-void dr4::Texture::Draw(Texture &texture, const dr4::Vec2f &pos)
+dr4::MyImage::MyImage(int w, int h) : width(w), height(h)
 {
-    int x_lower = std::max(0, (int)pos.x), y_lower = std::max(0, (int)pos.y);
-    int x_upper = std::min(w, int(pos.x + texture.Width())), y_upper = std::min(h, int(pos.y + texture.Height()));
-
-    for (int x = x_lower; x < x_upper; ++x)
-    {
-        for (int y = x_lower; y < y_upper; ++y)
-        {
-            SetPix(x, y, texture.GetPix(x - texture.Width(), y - texture.Height()));
-        }
-    }
+    void* buffer = calloc(w * h, pix_bytes);
+    buf = (char*)buffer;
 }
 
-void dr4::Rectangle::DrawOn(Texture &texture) {
-    FixedVec texture_rect(Vector(0, 0), Vector(texture.w, texture.h)),
-        this_rect(Vector(rect.pos.x, rect.pos.y), Vector(rect.size.x, rect.size.y));
-
-    FixedVec drawn_rect;
-    if(!rectIntersection(texture_rect, this_rect, &drawn_rect))
-        return;
-
-    for (int x = drawn_rect.p1.x; x < drawn_rect.p2.x; ++x)
-    {
-        for (int y = drawn_rect.p1.y; y < drawn_rect.p2.y; ++y)
-        {
-            texture.SetPix(x, y, fill);
-        }
-    }
-
-    for (int x = drawn_rect.p1.x; x < drawn_rect.p2.x; ++x)
-    {
-        texture.SetPix(x, drawn_rect.p1.y, borderColor);
-        texture.SetPix(x, drawn_rect.p2.y, borderColor);
-    }
-    for (int y = drawn_rect.p1.y; y < drawn_rect.p2.y; ++y)
-    {
-        texture.SetPix(drawn_rect.p1.x, y, borderColor);
-        texture.SetPix(drawn_rect.p2.x, y, borderColor);
-    }
+void dr4::MyImage::SetPix(int x, int y, dr4::Color col)
+{
+    buf[pix_bytes * (y * height + 0)] = col.r;
+    buf[pix_bytes * (y * height + 1)] = col.g;
+    buf[pix_bytes * (y * height + 2)] = col.b;
 }
 
+dr4::Color dr4::MyImage::GetPix(int x, int y) const
+{
+    char r = buf[pix_bytes * (y * height + 0)],
+    g = buf[pix_bytes * (y * height + 1)],
+    b = buf[pix_bytes * (y * height + 2)];
+
+    return dr4::Color(r, g, b, 255);
+}
+
+
+
+
+
+dr4::MyTexture::MyTexture(dr4::Vec2f size) : w(size.x), h(size.y)
+{
+    t = SDL_CreateTexture(getRenderer(), SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_TARGET, w, h);
+}
+
+void dr4::MyTexture::SetSize(Vec2f size) { w = size.x; h = size.y; }
+
+dr4::Vec2f dr4::MyTexture::GetSize() const { return Vec2f(w, h); }
+
+float dr4::MyTexture::Width() const { return w; }
+
+float dr4::MyTexture::Height() const { return h; }
+
+// void dr4::MyTexture::Draw(Texture &texture, const dr4::Vec2f &pos)
+// {
+//     int x_lower = std::max(0, (int)pos.x), y_lower = std::max(0, (int)pos.y);
+//     int x_upper = std::min(w, int(pos.x + texture.Width())), y_upper = std::min(h, int(pos.y + texture.Height()));
+
+//     for (int x = x_lower; x < x_upper; ++x)
+//     {
+//         for (int y = x_lower; y < y_upper; ++y)
+//         {
+//             SetPix(x, y, texture.GetPix(x - texture.Width(), y - texture.Height()));
+//         }
+//     }
+// }
+
+void dr4::MyTexture::Draw(const Rectangle &rect)
+{
+    // printf("drawing rect: %lf %lf\n", rect.rect.pos.x, rect.rect.pos.y);
+    SDL_FRect r;
+    r.x = rect.rect.pos.x;
+    r.y = rect.rect.pos.y;
+    r.w = rect.rect.size.x;
+    r.h = rect.rect.size.y;
+
+    // printf("%lf %lf %lf %lf %p\n", r.x, r.y, r.w, r.h, getRenderer());
+
+    // if (rect.fill.r != 0 || rect.fill.g != 0 || rect.fill.b != 0)
+    //     print(Vector(rect.fill.r, rect.fill.g, rect.fill.b));
+    
+    setColor(Vector(rect.fill.r, rect.fill.g, rect.fill.b));
+    SDL_SetRenderTarget(getRenderer(), t);
+    SDL_RenderFillRect(getRenderer(), &r);
+
+    // setColor(Vector(rect.borderColor.r, rect.borderColor.g, rect.borderColor.b));
+    // SDL_SetRenderTarget(getRenderer(), t);
+    // SDL_RenderRect(getRenderer(), &r);
+}
+
+void dr4::MyTexture::Draw(const Image &img)
+{
+    // SDL_SetRenderTarget(getRenderer(), t);
+
+    // for (int x = 0; x < Width(); ++x)
+    // {
+    //     for (int y = 0; y < Height(); ++y)
+    //     {
+    //         dr4::Color col = img.GetPix(x, y);
+    //         setColor(Vector(col.r, col.g, col.b));
+    //         SDL_RenderPoint(getRenderer(), x, y);
+    //     }
+    // }
+}
 
 
 

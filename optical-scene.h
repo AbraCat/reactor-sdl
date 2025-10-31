@@ -4,11 +4,12 @@
 #include <set>
 
 #include "optical-object.h"
-
 #include "wcontainer.h"
 #include "plane.h"
 #include "button.h"
 #include "scroll.h"
+
+#include "widget.hpp"
 
 class OptController;
 
@@ -21,12 +22,15 @@ extern const double ratio;
 
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light);
 
-class OptScene : public Widget
+class OptScene : public hui::Widget
 {
 public:
-    OptScene(Widget* parent, Vector tl, Vector br, OptController* control);
-    virtual void updateTexture() override;
-    virtual bool onIdle(IdleEvent* evt) override;
+    // OptScene(Widget* parent, Vector tl, Vector br, OptController* control);
+    OptScene(hui::State* state, hui::Widget* parent, dr4::Vec2f pos, dr4::Vec2f size);
+    void updateTexture();
+    // virtual bool onIdle(IdleEvent* evt) override;
+
+    virtual void Redraw() override;
 
     Vector screen_to_pixels(Vector p);
     Vector pixels_to_screen(IntVec pix);
@@ -51,8 +55,8 @@ public:
     std::set<OptObject*> selected;
 
     OptController* control;
-    std::vector<IntVec> pix_queue;
-    PixelTexture *pix_texture;
+    // std::vector<IntVec> pix_queue;
+    // PixelTexture *pix_texture;
 };
 
 #endif // OPTICAL_SCENE_H

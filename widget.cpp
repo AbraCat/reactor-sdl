@@ -1,10 +1,64 @@
 #include "widget.h"
 #include "sdl-adapter.h"
 
+#include "widget.hpp"
+
 #include <iostream>
 #include <cassert>
 
 State* state = nullptr;
+
+
+
+
+
+
+hui::Widget::Widget(hui::State *state) : hui::Widget(state, dr4::Vec2f(), dr4::Vec2f(300, 300))
+{
+    assert(0);
+}
+
+hui::Widget::Widget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)
+    : state(state), relPos(pos), size(size)
+{
+    texture = new dr4::MyTexture(size);
+
+    // printf("size: %lf %lf\n", size.x, size.y);
+}
+    
+dr4::Vec2f hui::Widget::GetRelPos() const { return relPos; };
+ void hui::Widget::SetRelPos(dr4::Vec2f pos) { relPos = pos; };
+
+dr4::Vec2f hui::Widget::GetSize() const { return texture->GetSize(); }
+ void hui::Widget::SetSize(dr4::Vec2f size) { texture->SetSize(size); }
+
+ hui::Widget* hui::Widget::GetParent() const { return parent; };
+ void hui::Widget::SetParent(Widget *parent_) { parent = parent_; }
+
+// void hui::Widget::DrawOn(dr4::Texture &texture) {
+//     // if (textureIsInvalid) {
+//     //     Redraw();
+//     //     textureIsInvalid = false;
+//     // }
+//     // texture.Draw(texture, relPos);
+// }
+
+hui::TestWidget::TestWidget(hui::State *state, dr4::Vec2f pos, dr4::Vec2f size)
+    : Widget(state, pos, size)
+{
+    //
+}
+
+void hui::TestWidget::Redraw()
+{
+    dr4::Rectangle rect(dr4::Rect2f(dr4::Vec2f(100, 100),
+        dr4::Vec2f(100, 100)), dr4::Color(255, 0, 0, 255), dr4::Color(0, 0, 0, 0));
+    texture->Draw(rect);
+}
+
+
+
+
 
 State::State()
 {

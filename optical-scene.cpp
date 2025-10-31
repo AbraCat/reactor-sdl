@@ -16,6 +16,8 @@ const Vector sky_col = {0, 0.5, 0.75}, init_V = {0, 0, 10}, init_screen_tl = {-2
 
 const double cam_change_x = 0.5, cam_change_y = 0.5, cam_change_z = 1;
 
+bool d = 0;
+
 struct RenderThreadData
 {
     OptScene* scene;
@@ -25,96 +27,99 @@ struct RenderThreadData
 
 void OptScene::updateTexture()
 {
-    t->clear();
-    for (OptObject* obj: selected)
-    {
-        if (!obj->has_rect) continue;
-        FixedVec rect = getRect(obj);
-        t->addRect(rect, red_v, 0);
-    }
+    // t->clear();
+    // for (OptObject* obj: selected)
+    // {
+    //     if (!obj->has_rect) continue;
+    //     FixedVec rect = getRect(obj);
+    //     t->addRect(rect, red_v, 0);
+    // }
 
-    if (!redraw_picture)
-    {
-        redraw_picture = 1;
-        return;
-    }
+    // if (!redraw_picture)
+    // {
+    //     redraw_picture = 1;
+    //     return;
+    // }
 
-    pix_queue = std::vector<IntVec>(width * height);
-    for (int y = 0; y < height; ++y)
-        for (int x = 0; x < width; ++x)
-            pix_queue[y * width + x] = IntVec(x, y);
+    // pix_queue = std::vector<IntVec>(width * height);
+    // for (int y = 0; y < height; ++y)
+    //     for (int x = 0; x < width; ++x)
+    //         pix_queue[y * width + x] = IntVec(x, y);
 
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(pix_queue.begin(), pix_queue.end(), g);
+    // std::random_device rd;
+    // std::mt19937 g(rd());
+    // std::shuffle(pix_queue.begin(), pix_queue.end(), g);
 }
 
-int calcIdleThread(void* void_data)
-{
-    RenderThreadData* data = (RenderThreadData*)void_data;
-    OptScene* s = data->scene;
+// int calcIdleThread(void* void_data)
+// {
+//     RenderThreadData* data = (RenderThreadData*)void_data;
+//     OptScene* s = data->scene;
 
-    for (IntVec pix: *(data->thread_pix))
-    {
-        Vector p = s->pixels_to_screen(pix);
+//     for (IntVec pix: *(data->thread_pix))
+//     {
+//         Vector p = s->pixels_to_screen(pix);
 
-        Ray ray(s->V, p - s->V);
-        Vector color = s->traceRay(ray, 0);
+//         Ray ray(s->V, p - s->V);
+//         Vector color = s->traceRay(ray, 0);
 
-        s->pix_texture->setPix(pix.x, pix.y, color * 255);
-    }
+//         s->pix_texture->setPix(pix.x, pix.y, color * 255);
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
-bool OptScene::onIdle(IdleEvent* evt)
-{
-    if (pix_queue.size() == 0) return 0;
+// bool OptScene::onIdle(IdleEvent* evt)
+// {
+//     if (pix_queue.size() == 0) return 0;
 
-    std::vector<std::vector<IntVec>> thread_pix(n_threads, std::vector<IntVec>());
-    std::vector<SDL_Thread*> threads;
-    RenderThreadData* thread_data = new RenderThreadData[n_threads];
+//     std::vector<std::vector<IntVec>> thread_pix(n_threads, std::vector<IntVec>());
+//     std::vector<SDL_Thread*> threads;
+//     RenderThreadData* thread_data = new RenderThreadData[n_threads];
 
-    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
-    {
-        if (pix_queue.size() == 0) break;
+//     for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+//     {
+//         if (pix_queue.size() == 0) break;
 
-        for (int n_pix = 0; n_pix < pix_per_frame; ++n_pix)
-        {
-            thread_pix[thread_num].push_back(pix_queue.back());
-            pix_queue.pop_back();
-            if (pix_queue.size() == 0) break;
-        }
+//         for (int n_pix = 0; n_pix < pix_per_frame; ++n_pix)
+//         {
+//             thread_pix[thread_num].push_back(pix_queue.back());
+//             pix_queue.pop_back();
+//             if (pix_queue.size() == 0) break;
+//         }
 
-        thread_data[thread_num].scene = this;
-        thread_data[thread_num].thread_num = thread_num;
-        thread_data[thread_num].thread_pix = &thread_pix[thread_num];
+//         thread_data[thread_num].scene = this;
+//         thread_data[thread_num].thread_num = thread_num;
+//         thread_data[thread_num].thread_pix = &thread_pix[thread_num];
 
-        threads.push_back(SDL_CreateThread(calcIdleThread,
-            std::to_string(thread_num).c_str(), &thread_data[thread_num]));
-    }
+//         threads.push_back(SDL_CreateThread(calcIdleThread,
+//             std::to_string(thread_num).c_str(), &thread_data[thread_num]));
+//     }
 
-    for (int thread_num = 0; thread_num < n_threads; ++thread_num)
-    {
-        int status = 0;
-        SDL_WaitThread(threads[thread_num], &status);
-        assert(status == 0);
-    }
+//     for (int thread_num = 0; thread_num < n_threads; ++thread_num)
+//     {
+//         int status = 0;
+//         SDL_WaitThread(threads[thread_num], &status);
+//         assert(status == 0);
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 Vector getDiffuseColor(Surface* s, Source* l, Vector p_surface, Vector p_light)
 {
     Vector L = p_light - p_surface;
     double cosA = angle(L, s->normal(p_surface));
+
     return l->color * cosA;
 }
 
 
-OptScene::OptScene(Widget* parent, Vector tl, Vector br, OptController* control)
-    : Widget(tl, br, parent), control(control)
+OptScene::OptScene(hui::State* state, Widget* parent, dr4::Vec2f pos, dr4::Vec2f size)
+    : hui::Widget(state, pos, size) //, control(control)
 {
+    control = nullptr;
+
     V = init_V;
     screen_tl = init_screen_tl;
     screen_w = {screen_size, 0, 0};
@@ -126,21 +131,64 @@ OptScene::OptScene(Widget* parent, Vector tl, Vector br, OptController* control)
     sources.reserve(10);
 
     redraw_picture = 1;
-    setPixelTexture(true);
-    pix_texture = dynamic_cast<PixelTexture*>(t);
-    assert(pix_texture != nullptr);
+    // setPixelTexture(true);
+    // pix_texture = dynamic_cast<PixelTexture*>(t);
+    // assert(pix_texture != nullptr);
 
     surfaces.push_back(new PlaneSurface(2, white_col, "plane", this));
+    sources.push_back(new SphereSource(gray_col * 0.5, {0, -1, 4}, 1, "source", this));
+
+    surfaces.push_back(new SphereSurface({-1, 0, 0}, 0.5, gray_col, "sphere", this));
+    surfaces.push_back(new SphereSurface({1, -0.5, 0}, 0.5, gray_col, "sphere", this));
+    surfaces.push_back(new SphereSurface({0.3, 1, 0}, 0.5, gray_col, "sphere", this));
+    surfaces.push_back(new SphereSurface({0, 0, -12}, 5, gray_col, "sphere", this));
+    surfaces.push_back(new SphereSurface({0, 0, -2}, 0.3, purple_col, "sphere", this));
+    surfaces.push_back(new SphereSurface({0, 0, 3}, 1, white_col, "sphere", this, glass));
+}
+
+void OptScene::Redraw()
+{
+    // for (IntVec pix: *(data->thread_pix))
+//     {
+//         Vector p = s->pixels_to_screen(pix);
+
+//         Ray ray(s->V, p - s->V);
+//         Vector color = s->traceRay(ray, 0);
+
+//         s->pix_texture->setPix(pix.x, pix.y, color * 255);
+//     }
+
+    // printf("%lf %lf\n", size.x, size.y);s
+
+    for (int x = 0; x < size.x; ++x)
+    {
+        for (int y = 0; y < size.y; ++y)
+        {
+            if (x == 195 && y == 150) d = 1;
+            Vector p = pixels_to_screen(IntVec(x, y));
+
+            Ray ray(V, p - V);
+            Vector traced_color = traceRay(ray, 0);
+            Vector color = limitVector(traced_color, 0, 1) * 255;
+
+            // pix_texture->setPix(pix.x, pix.y, color * 255);
+
+            dr4::Rectangle rect(dr4::Rect2f(dr4::Vec2f(x, y),
+                dr4::Vec2f(1, 1)), dr4::Color(color.x, color.y, color.z, 255), dr4::Color(0, 0, 0, 0));
+
+            texture->Draw(rect);
+        }
+    }
 }
 
 Vector OptScene::screen_to_pixels(Vector p)
 {
-    return Vector((p - screen_tl).x * width / screen_w.x, (p - screen_tl).y * height / screen_h.y);
+    return Vector((p - screen_tl).x * size.x / screen_w.x, (p - screen_tl).y * size.y / screen_h.y);
 }
 
 Vector OptScene::pixels_to_screen(IntVec pix)
 {
-    return screen_tl + screen_w * (1.0 * pix.x / width) + screen_h * (1.0 * pix.y / height);
+    return screen_tl + screen_w * (1.0 * pix.x / size.x) + screen_h * (1.0 * pix.y / size.y);
 }
 
 FixedVec OptScene::getRect(OptObject* obj)
@@ -265,5 +313,5 @@ void OptScene::moveCamera(Vector change)
 {
     V += change;
     screen_tl += change;
-    updateTexture();
 }
+

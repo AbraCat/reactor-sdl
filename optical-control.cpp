@@ -168,7 +168,8 @@ void MoveCameraButton::action()
 
 OptController::OptController(Widget* parent) : parent(parent)
 {
-    s = new OptScene(parent, {0, 0}, {scene_w, scene_h}, this);
+    // s = new OptScene(parent, {0, 0}, {scene_w, scene_h}, this);
+    s = nullptr;
 
     panel = new ObjControlPanel(parent, {properties_left, 0},
         {properties_left + properties_w, scene_h + button_h});
